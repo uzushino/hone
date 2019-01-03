@@ -10,6 +10,13 @@ pub fn eq_<L>(lhs: Rc<HasValue<L>>, rhs: Rc<HasValue<L>>) -> Rc<HasValue<bool>> 
     Rc::new(Raw(NeedParens::Parens, a + " = " + &b))
 }
 
+pub fn not_eq_<L>(lhs: Rc<HasValue<L>>, rhs: Rc<HasValue<L>>) -> Rc<HasValue<bool>> {
+    let a = lhs.to_string();
+    let b = rhs.to_string();
+
+    Rc::new(Raw(NeedParens::Parens, a + " <> " + &b))
+}
+
 pub fn in_<L>(lhs: Rc<HasValue<L>>, rhs: Rc<HasValueList<L>>) -> Rc<HasValue<bool>> {
     let comp = Raw(NeedParens::Parens, rhs.to_string());
     let op = binop_(" IN ", lhs, Rc::new(comp));

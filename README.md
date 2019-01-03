@@ -28,6 +28,7 @@ assert_eq!(a.unwrap().to_sql(),
 - [ ] INSERT
 
 - WHERE
+  - [x] eq(=) / not equal(<>)
   - [x] and / or 
   - [x] in / not in
 

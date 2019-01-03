@@ -4,6 +4,26 @@ use hone::query::*;
 use query::model::*;
 
 #[test]
+fn test_eq() {
+    let u = User::default();
+    let one = val_(1);
+    let eq = eq_(u.user_id(), one);
+
+    assert_eq!("(User.user_id = 1)", eq.to_string());
+}
+
+#[test]
+fn test_not_eq() {
+    let u = User::default();
+    let one = val_(1);
+    let neq = not_eq_(u.user_id(), one);
+
+    println!("{}", neq.to_string());
+
+    assert_eq!("(User.user_id <> 1)", neq.to_string());
+}
+
+#[test]
 fn test_where() {
     let a = Query::<User>::from_by(|q, a| {
         let one = val_(1);
