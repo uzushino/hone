@@ -97,6 +97,27 @@ impl<A, B> IsJoin<A, B> for LeftJoin<A, B> {
     }
 }
 
+impl<A, B> IsJoin<A, B> for RightJoin<A, B> {
+    type Kind = RightJoin<A, B>;
+
+    fn smart_join(lhs: A, rhs: B) -> Self::Kind {
+        RightJoin(lhs, rhs)
+    }
+
+    fn from_join(lhs: FromPreprocess<A>, rhs: FromPreprocess<B>) -> Result<FromPreprocess<Self::Kind>, ()> {
+        fn get_process<T>(p: FromPreprocess<T>) -> Result<(T, FromClause), ()> {
+            Ok((p.0, p.1))
+        };
+
+        let (l1, lf) = get_process(lhs)?;
+        let (r1, rf) = get_process(rhs)?;
+        let join_ = RightJoin::smart_join(l1, r1);
+        let from_ = FromClause::Join(Rc::new(lf), JoinKind::RightOuterJoinKind, Rc::new(rf), None);
+
+        Ok(FromPreprocess(join_, from_))
+    }
+}
+
 impl<A> Query<Option<A>> {
     fn from_option() -> FromPreprocess<Option<A>>
     where
@@ -210,6 +231,20 @@ impl<A, B> HasQuery for LeftJoin<A, B> {
     type T = LeftJoin<A, B>;
 }
 
+impl<A, B> Default for RightJoin<A, B>
+where
+    A: Default + HasQuery<T = A>,
+    B: Default + HasQuery<T = B>,
+{
+    fn default() -> Self {
+        RightJoin(A::default(), B::default())
+    }
+}
+
+impl<A, B> HasQuery for RightJoin<A, B> {
+    type T = RightJoin<A, B>;
+}
+
 pub trait FromProcess {
     type Item;
 
@@ -265,5 +300,20 @@ where
         let rhs = B::from_process()?;
 
         LeftJoin::<A, B>::from_join(lhs, rhs)
+    }
+}
+
+impl<A, B> FromProcess for RightJoin<A, B>
+where
+    A: Default + HasQuery<T = A> + FromProcess<Item = A>,
+    B: Default + HasQuery<T = B> + FromProcess<Item = B>,
+{
+    type Item = RightJoin<A, B>;
+
+    fn from_process() -> Result<FromPreprocess<Self::Item>, ()> {
+        let lhs = A::from_process()?;
+        let rhs = B::from_process()?;
+
+        RightJoin::<A, B>::from_join(lhs, rhs)
     }
 }

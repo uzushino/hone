@@ -173,9 +173,13 @@ pub struct InnerJoin<A, B>(pub A, pub B);
 pub struct LeftJoin<A, B>(pub A, pub B);
 
 #[derive(Debug, Clone)]
+pub struct RightJoin<A, B>(pub A, pub B);
+
+#[derive(Debug, Clone)]
 pub enum JoinKind {
     InnerJoinKind,     // INNER JOIN
     LeftOuterJoinKind, // LEFT OUTER JOIN
+    RightOuterJoinKind, // RIGHT OUTER JOIN
 }
 
 impl ToString for JoinKind {
@@ -183,6 +187,7 @@ impl ToString for JoinKind {
         match self {
             JoinKind::InnerJoinKind => String::from("INNER JOIN"),
             JoinKind::LeftOuterJoinKind => String::from("LEFT OUTER JOIN"),
+            JoinKind::RightOuterJoinKind => String::from("RIGHT OUTER JOIN"),
         }
     }
 }

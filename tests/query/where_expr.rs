@@ -18,8 +18,6 @@ fn test_not_eq() {
     let one = val_(1);
     let neq = not_eq_(u.user_id(), one);
 
-    println!("{}", neq.to_string());
-
     assert_eq!("(User.user_id <> 1)", neq.to_string());
 }
 

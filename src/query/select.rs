@@ -19,10 +19,7 @@ impl<A: ToString> SqlSelect for Rc<HasValue<A>> {
     }
 }
 
-impl<A> SqlSelect for A
-where
-    A: HasEntityDef,
-{
+impl<A> SqlSelect for A where A: HasEntityDef {
     fn cols(&self) -> String {
         let ed = A::entity_def();
         let ordered: BTreeMap<_, _> = ed.columns.iter().collect();
@@ -37,11 +34,7 @@ where
     }
 }
 
-impl<A, B> SqlSelect for (A, B)
-where
-    A: SqlSelect,
-    B: SqlSelect,
-{
+impl<A, B> SqlSelect for (A, B) where A: SqlSelect, B: SqlSelect {
     fn cols(&self) -> String {
         let ca = self.0.cols();
         let cb = self.1.cols();
