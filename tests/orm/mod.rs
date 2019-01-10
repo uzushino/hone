@@ -7,10 +7,11 @@ use diesel::prelude::*;
 use diesel::sql_query;
 use diesel_migrations;
 
-use hone::entity::*;
+use hone::entity::{HasEntityDef, EntityDef, Table as tbl};
 use hone::expression::*;
 use hone::query::*;
 use hone::types::*;
+use hone::entity::Column;
 
 fn establish_connection() -> SqliteConnection {
     let database_url = "/tmp/hoge.db";
@@ -33,10 +34,10 @@ struct Download {
 }
 
 impl Download {
-    pub fn id(&self) -> Rc<HasValue<i32>> {
+    pub fn id(&self) -> Rc<HasValue<i32, Column>> {
         Rc::new(Raw(NeedParens::Never, String::from("downloads.id")))
     }
-    pub fn version(&self) -> Rc<HasValue<String>> {
+    pub fn version(&self) -> Rc<HasValue<String, Column>> {
         Rc::new(Raw(NeedParens::Never, String::from("downloads.version")))
     }
 }
@@ -49,7 +50,7 @@ impl HasEntityDef for Download {
         m.insert("version".to_string(), "text".to_string());
 
         EntityDef {
-            table_name: String::from("downloads"),
+            table_name: tbl::new("downloads", None),
             columns: m,
         }
     }
@@ -76,9 +77,7 @@ fn test_diesel() {
     let connection = establish_connection();
 
     let a = downloads.filter(id.eq(1)).load::<Download>(&connection).unwrap();
-
     let a = a.first().unwrap();
-
     let b = Query::<Download>::from_by(|q, m| {
         let id_ = val_(1);
         let eq = eq_(m.id(), id_);

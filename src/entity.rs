@@ -1,12 +1,50 @@
 use std::collections::HashMap;
 use std::marker::PhantomData;
 
+use types::*;
+
 #[derive(Clone)]
 pub struct Entity<T>(PhantomData<T>);
 
 #[derive(Clone, Default)]
+pub struct Column(String, Option<String>);
+
+impl Column {
+    pub fn new(name: &str) -> Column {
+        Column(name.to_string(), None)
+    }
+    pub fn name(&self) -> String {
+        self.0.clone()
+    }
+}
+
+impl ToString for Column {
+    fn to_string(&self) -> String {
+        self.name()
+    }
+}
+
+impl<A, DB: ToLiteral> HasValue<A, DB> for Column {
+    fn to_sql(&self) -> String where Self: Sized {
+        DB::to_literal(self.0.clone())
+    }
+}
+
+#[derive(Clone, Default)]
+pub struct Table(String, Option<String>);
+
+impl Table {
+    pub fn new(name: &str, alias: Option<String>) -> Table {
+        Table(name.to_string(), alias)
+    }
+    pub fn name(&self) -> String {
+        self.0.clone()
+    }
+}
+
+#[derive(Clone, Default)]
 pub struct EntityDef {
-    pub table_name: String,
+    pub table_name: Table,
     pub columns: HashMap<String, String>,
 }
 

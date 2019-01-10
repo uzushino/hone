@@ -73,7 +73,7 @@ impl<A: SqlSelect> Query<A> {
     }
 }
 
-fn set_on(join: &FromClause, on: &Rc<HasValue<bool>>) -> Option<FromClause> {
+fn set_on(join: &FromClause, on: &Rc<HasValue<bool, bool>>) -> Option<FromClause> {
     match join.clone() {
         FromClause::Join(lhs, knd, rhs, on_) => {
             if let Some(f) = set_on(rhs.borrow(), on) {
@@ -93,7 +93,7 @@ fn set_on(join: &FromClause, on: &Rc<HasValue<bool>>) -> Option<FromClause> {
     }
 }
 
-fn find_imcomplete_and_set_on(joins: &[FromClause], on: Rc<HasValue<bool>>) -> either::Either<Rc<HasValue<bool>>, Vec<FromClause>> {
+fn find_imcomplete_and_set_on(joins: &[FromClause], on: Rc<HasValue<bool, bool>>) -> either::Either<Rc<HasValue<bool, bool>>, Vec<FromClause>> {
     match joins.split_first() {
         Some((ref join, rest)) => {
             if let Some(f) = set_on(*join, &on) {
