@@ -1,18 +1,15 @@
 use hone::expression::*;
 use hone::query::*;
-use hone::types::*;
 
 use query::model::*;
-
-use std::rc::Rc;
 
 #[test]
 fn test_eq() {
     let u = User::default();
-    let zero: Rc<HasValue<String>> = val_("aaaa".to_string());
-    let eq = eq_(u.email(), zero);
+    let one = val_("a@b.c".to_string());
+    let eq = eq_(u.email(), one);
 
-    assert_eq!("(User.user_id = 1)", eq.to_string());
+    assert_eq!("(User.email = 'a@b.c')", eq.to_string());
 }
 
 #[test]
@@ -105,7 +102,7 @@ fn test_where() {
         let one = val_(1);
         let two = val_(2);
         let three = val_(3);
-        let eq = in_(a.user_id(), val_list_(&[one, two, three, b.library_id()]));
+        let eq = in_(a.user_id(), val_list_(&[one, two, three]));
         let q = q.where_(eq);
 
         q.return_(a)
@@ -113,7 +110,7 @@ fn test_where() {
 
     assert_eq!(
         f.unwrap().to_sql(),
-        "SELECT email, user_id FROM Library,User WHERE (User.user_id IN ((1, 2, 3, Library.library_id)))".to_string()
+        "SELECT email, user_id FROM Library,User WHERE (User.user_id IN ((1, 2, 3)))".to_string()
     );
 
     let g = Query::<User>::from_by(|q, a| {

@@ -9,7 +9,7 @@ pub trait SqlSelect {
     fn col_count() -> usize;
 }
 
-impl<A: ToString> SqlSelect for Rc<HasValue<A>> {
+impl<A: ToString, DB> SqlSelect for Rc<HasValue<A, DB>> {
     fn cols(&self) -> String {
         self.to_string()
     }

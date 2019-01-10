@@ -27,46 +27,46 @@ pub trait HasPreprocess {}
 pub struct FromPreprocess<A>(pub A, pub FromClause);
 impl<A> HasPreprocess for FromPreprocess<A> {}
 
-pub trait IntoSql {
-    fn sql_value<A: ToString>(v: A) -> String ;
+pub trait ToLiteral {
+    fn to_literal<A: ToString>(v: A) -> String ;
 }
 
-impl IntoSql for String {
-    fn sql_value<A: ToString>(v: A) -> String {
+impl ToLiteral for String {
+    fn to_literal<A: ToString>(v: A) -> String {
         format!("'{}'", v.to_string()) 
     }
 }
 
-impl IntoSql for bool {
-    fn sql_value<A: ToString>(v: A) -> String {
+impl ToLiteral for bool {
+    fn to_literal<A: ToString>(v: A) -> String {
         format!("{}", v.to_string()) 
     }
 }
 
-impl IntoSql for i32 {
-    fn sql_value<A: ToString>(v: A) -> String {
+impl ToLiteral for i32 {
+    fn to_literal<A: ToString>(v: A) -> String {
         format!("{}", v.to_string()) 
     }
 }
 
-impl IntoSql for u32 {
-    fn sql_value<A: ToString>(v: A) -> String {
+impl ToLiteral for u32 {
+    fn to_literal<A: ToString>(v: A) -> String {
         format!("{}", v.to_string()) 
     }
 }
 
-impl IntoSql for Column {
-    fn sql_value<A: ToString>(v: A) -> String {
+impl ToLiteral for Column {
+    fn to_literal<A: ToString>(v: A) -> String {
         format!("{}", v.to_string()) 
     }
 }
 
 // Expr (Value a)
-pub trait HasValue<A> : ToString {
+pub trait HasValue<A, DB> : ToString {
     fn to_sql(&self) -> String;
 }
 
-impl<A: std::fmt::Display> HasValue<A> for Rc<HasValue<A>> where Self: ToString {
+impl<A: std::fmt::Display, DB> HasValue<A, DB> for Rc<HasValue<A, DB>> where Self: ToString {
     fn to_sql(&self) -> String { self.to_string() }
 }
 
@@ -79,9 +79,9 @@ pub enum NeedParens {
 #[derive(Clone)]
 pub struct Raw(pub NeedParens, pub String);
 
-impl<A: IntoSql> HasValue<A> for Raw {
+impl<A, DB: ToLiteral> HasValue<A, DB> for Raw {
     fn to_sql(&self) -> String where Self: Sized {
-        let s = A::sql_value(self.1.clone());
+        let s = DB::to_literal(self.1.clone());
 
         match self.0 {
             NeedParens::Never => s.to_string(),
@@ -101,9 +101,9 @@ impl ToString for Raw {
 
 pub struct CompositKey<A: ToString>(pub A);
 
-impl<A: IntoSql + ToString + Clone> HasValue<A> for CompositKey<A> {
+impl<A: ToString + Clone, DB: ToLiteral> HasValue<A, DB> for CompositKey<A> {
     fn to_sql(&self) -> String where Self: Sized {
-        A::sql_value(self.0.clone())
+        DB::to_literal(self.0.clone())
     }
 }
 
@@ -118,12 +118,12 @@ pub trait HasValueList<A>: ToString {
     fn is_empty(&self) -> bool;
 }
 
-pub enum List<A> {
-    NonEmpty(Box<dyn HasValue<A>>),
+pub enum List<A, DB> {
+    NonEmpty(Box<dyn HasValue<A, DB>>),
     Empty,
 }
 
-impl<A: ToString> HasValueList<A> for List<A> {
+impl<A: ToString, DB> HasValueList<A> for List<A, DB> {
     fn is_empty(&self) -> bool {
         match self {
             List::NonEmpty(_) => false,
@@ -132,7 +132,7 @@ impl<A: ToString> HasValueList<A> for List<A> {
     }
 }
 
-impl<A> ToString for List<A> {
+impl<A, DB> ToString for List<A, DB> {
     fn to_string(&self) -> String {
         match self {
             List::NonEmpty(a) => a.to_string(),
@@ -144,11 +144,11 @@ impl<A> ToString for List<A> {
 // Expr (OrderBy)
 pub trait HasOrder: ToString {}
 
-pub struct OrderBy<A>(pub OrderByType, pub Rc<HasValue<A>>);
+pub struct OrderBy<A, DB>(pub OrderByType, pub Rc<HasValue<A, DB>>);
 
-impl<A> HasOrder for OrderBy<A> {}
+impl<A, DB> HasOrder for OrderBy<A, DB> {}
 
-impl<A> ToString for OrderBy<A> {
+impl<A, DB> ToString for OrderBy<A, DB> {
     fn to_string(&self) -> String {
         let typ = match self.0 {
             OrderByType::Asc => " ASC".to_string(),
@@ -163,8 +163,8 @@ pub type OrderClause = Rc<HasOrder>;
 #[derive(Clone)]
 pub enum FromClause {
     Start(String),
-    Join(Rc<FromClause>, JoinKind, Rc<FromClause>, Option<Rc<HasValue<bool>>>),
-    OnClause(Rc<HasValue<bool>>),
+    Join(Rc<FromClause>, JoinKind, Rc<FromClause>, Option<Rc<HasValue<bool, bool>>>),
+    OnClause(Rc<HasValue<bool, bool>>),
 }
 
 impl ToString for FromClause {
@@ -181,7 +181,7 @@ impl ToString for FromClause {
 }
 
 impl FromClause {
-    pub fn on(self, on: Rc<HasValue<bool>>) -> Option<FromClause> {
+    pub fn on(self, on: Rc<HasValue<bool, bool>>) -> Option<FromClause> {
         match self {
             FromClause::Join(lhs, knd, rhs, None) => Some(FromClause::Join(lhs, knd, rhs, Some(on))),
             _ => None,
@@ -191,7 +191,7 @@ impl FromClause {
 
 #[derive(Clone)]
 pub enum WhereClause {
-    Where(Rc<HasValue<bool>>),
+    Where(Rc<HasValue<bool, bool>>),
     No,
 }
 

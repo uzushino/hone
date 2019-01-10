@@ -9,11 +9,11 @@ use hone::types::*;
 pub struct User {}
 
 impl User {
-    pub fn user_id(&self) -> Rc<HasValue<u32>> {
+    pub fn user_id(&self) -> Rc<HasValue<u32, Column>> {
         Rc::new(Column::new("User.user_id"))
     }
 
-    pub fn email(&self) -> Rc<HasValue<String>> {
+    pub fn email(&self) -> Rc<HasValue<String, Column>> {
         Rc::new(Column::new("User.email"))
     }
 }
@@ -40,11 +40,11 @@ impl HasQuery for User {
 pub struct Library();
 
 impl Library {
-    pub fn library_id(&self) -> Rc<HasValue<u32>> {
+    pub fn library_id(&self) -> Rc<HasValue<u32, Column>> {
         Rc::new(Column::new("Library.library_id"))
     }
 
-    pub fn title(&self) -> Rc<HasValue<String>> {
+    pub fn title(&self) -> Rc<HasValue<String, Column>> {
         Rc::new(Column::new("Library.title"))
     }
 }

@@ -17,12 +17,12 @@ impl<A> Query<A> {
         q
     }
 
-    pub fn on_(mut self, b: Rc<HasValue<bool>>) -> Query<A> {
+    pub fn on_(mut self, b: Rc<HasValue<bool, bool>>) -> Query<A> {
         self.state.from_clause.push(FromClause::OnClause(b));
         self
     }
 
-    pub fn where_(mut self, b: Rc<HasValue<bool>>) -> Query<A> {
+    pub fn where_(mut self, b: Rc<HasValue<bool, bool>>) -> Query<A> {
         let w = WhereClause::Where(b);
         self.state.where_clause = self.state.where_clause + w;
         self

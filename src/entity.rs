@@ -24,9 +24,9 @@ impl ToString for Column {
     }
 }
 
-impl<A: IntoSql> HasValue<A> for Column {
+impl<A, DB: ToLiteral> HasValue<A, DB> for Column {
     fn to_sql(&self) -> String where Self: Sized {
-        A::sql_value(self.0.clone())
+        DB::to_literal(self.0.clone())
     }
 }
 
