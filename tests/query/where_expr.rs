@@ -1,13 +1,16 @@
 use hone::expression::*;
 use hone::query::*;
+use hone::types::*;
 
 use query::model::*;
+
+use std::rc::Rc;
 
 #[test]
 fn test_eq() {
     let u = User::default();
-    let one = val_(1);
-    let eq = eq_(u.user_id(), one);
+    let zero: Rc<HasValue<String>> = val_("aaaa".to_string());
+    let eq = eq_(u.email(), zero);
 
     assert_eq!("(User.user_id = 1)", eq.to_string());
 }

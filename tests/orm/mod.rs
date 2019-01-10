@@ -7,7 +7,7 @@ use diesel::prelude::*;
 use diesel::sql_query;
 use diesel_migrations;
 
-use hone::entity::*;
+use hone::entity::{HasEntityDef, EntityDef, Table as tbl};
 use hone::expression::*;
 use hone::query::*;
 use hone::types::*;
@@ -49,7 +49,7 @@ impl HasEntityDef for Download {
         m.insert("version".to_string(), "text".to_string());
 
         EntityDef {
-            table_name: String::from("downloads"),
+            table_name: tbl::new("downloads", None),
             columns: m,
         }
     }

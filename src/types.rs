@@ -2,7 +2,7 @@ use std::default::Default;
 use std::ops::Add;
 use std::rc::Rc;
 
-use entity::Entity;
+use entity::{Entity, Column, Table};
 use expression::*;
 
 #[derive(Debug, Clone)]
@@ -27,8 +27,48 @@ pub trait HasPreprocess {}
 pub struct FromPreprocess<A>(pub A, pub FromClause);
 impl<A> HasPreprocess for FromPreprocess<A> {}
 
+pub trait IntoSql {
+    fn sql_value<A: ToString>(v: A) -> String ;
+}
+
+impl IntoSql for String {
+    fn sql_value<A: ToString>(v: A) -> String {
+        format!("'{}'", v.to_string()) 
+    }
+}
+
+impl IntoSql for bool {
+    fn sql_value<A: ToString>(v: A) -> String {
+        format!("{}", v.to_string()) 
+    }
+}
+
+impl IntoSql for i32 {
+    fn sql_value<A: ToString>(v: A) -> String {
+        format!("{}", v.to_string()) 
+    }
+}
+
+impl IntoSql for u32 {
+    fn sql_value<A: ToString>(v: A) -> String {
+        format!("{}", v.to_string()) 
+    }
+}
+
+impl IntoSql for Column {
+    fn sql_value<A: ToString>(v: A) -> String {
+        format!("{}", v.to_string()) 
+    }
+}
+
 // Expr (Value a)
-pub trait HasValue<A>: ToString {}
+pub trait HasValue<A> : ToString {
+    fn to_sql(&self) -> String;
+}
+
+impl<A: std::fmt::Display> HasValue<A> for Rc<HasValue<A>> where Self: ToString {
+    fn to_sql(&self) -> String { self.to_string() }
+}
 
 #[derive(Clone)]
 pub enum NeedParens {
@@ -39,20 +79,33 @@ pub enum NeedParens {
 #[derive(Clone)]
 pub struct Raw(pub NeedParens, pub String);
 
-impl<A> HasValue<A> for Raw {}
+impl<A: IntoSql> HasValue<A> for Raw {
+    fn to_sql(&self) -> String where Self: Sized {
+        let s = A::sql_value(self.1.clone());
+
+        match self.0 {
+            NeedParens::Never => s.to_string(),
+            NeedParens::Parens => "(".to_owned() + s.as_str() + ")",
+        }
+    }
+}
 
 impl ToString for Raw {
     fn to_string(&self) -> String {
         match self.0 {
-            NeedParens::Never => self.1.clone(),
+            NeedParens::Never => self.1.to_string(),
             NeedParens::Parens => "(".to_owned() + &self.1 + ")",
         }
     }
 }
 
-pub struct CompositKey<A>(pub A);
+pub struct CompositKey<A: ToString>(pub A);
 
-impl<A: ToString> HasValue<A> for CompositKey<A> {}
+impl<A: IntoSql + ToString + Clone> HasValue<A> for CompositKey<A> {
+    fn to_sql(&self) -> String where Self: Sized {
+        A::sql_value(self.0.clone())
+    }
+}
 
 impl<A: ToString> ToString for CompositKey<A> {
     fn to_string(&self) -> String {

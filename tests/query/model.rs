@@ -10,11 +10,11 @@ pub struct User {}
 
 impl User {
     pub fn user_id(&self) -> Rc<HasValue<u32>> {
-        Rc::new(Raw(NeedParens::Never, String::from("User.user_id")))
+        Rc::new(Column::new("User.user_id"))
     }
 
     pub fn email(&self) -> Rc<HasValue<String>> {
-        Rc::new(Raw(NeedParens::Never, String::from("User.email")))
+        Rc::new(Column::new("User.email"))
     }
 }
 
@@ -26,7 +26,7 @@ impl HasEntityDef for User {
         m.insert("email".to_string(), "text".to_string());
 
         EntityDef {
-            table_name: String::from("User"),
+            table_name: Table::new("User", None),
             columns: m,
         }
     }
@@ -41,11 +41,11 @@ pub struct Library();
 
 impl Library {
     pub fn library_id(&self) -> Rc<HasValue<u32>> {
-        Rc::new(Raw(NeedParens::Never, String::from("Library.library_id")))
+        Rc::new(Column::new("Library.library_id"))
     }
 
     pub fn title(&self) -> Rc<HasValue<String>> {
-        Rc::new(Raw(NeedParens::Never, String::from("Library.title")))
+        Rc::new(Column::new("Library.title"))
     }
 }
 
@@ -57,7 +57,7 @@ impl HasEntityDef for Library {
         m.insert("title".to_string(), "text".to_string());
 
         EntityDef {
-            table_name: String::from("Library"),
+            table_name: Table::new("Library", None),
             columns: m,
         }
     }
