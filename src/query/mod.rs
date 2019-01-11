@@ -1,7 +1,7 @@
 use std::borrow::Borrow;
 use std::rc::Rc;
 
-use types::*;
+use crate::types::*;
 
 mod from;
 mod select;

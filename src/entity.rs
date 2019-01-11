@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::marker::PhantomData;
 
-use types::*;
+use crate::types::*;
 
 #[derive(Clone)]
 pub struct Entity<T>(PhantomData<T>);

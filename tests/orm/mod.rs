@@ -70,7 +70,7 @@ fn setup() {
 
 #[test]
 fn test_diesel() {
-    use orm::downloads::dsl::*;
+    use super::orm::downloads::dsl::*;
 
     setup();
 

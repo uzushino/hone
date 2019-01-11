@@ -1,8 +1,8 @@
 use std::collections::BTreeMap;
 use std::rc::Rc;
 
-use entity::*;
-use types::*;
+use crate::entity::*;
+use crate::types::*;
 
 pub trait SqlSelect {
     fn cols(&self) -> String;

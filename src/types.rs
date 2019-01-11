@@ -2,8 +2,8 @@ use std::default::Default;
 use std::ops::Add;
 use std::rc::Rc;
 
-use entity::{Entity, Column, Table};
-use expression::*;
+use crate::entity::{Entity, Column, Table};
+use crate::expression::and_;
 
 #[derive(Debug, Clone)]
 pub enum OrderByType {

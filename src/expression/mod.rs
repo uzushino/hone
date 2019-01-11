@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
-use query::Query;
-use types::*;
+use crate::query::Query;
+use crate::types::*;
 
 pub fn eq_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
     let a = lhs.to_sql();
@@ -36,25 +36,24 @@ pub fn val_<A: ToString + ToLiteral>(typ: A) -> Rc<HasValue<A, A>> {
     Rc::new(Raw(NeedParens::Never, typ.to_string()))
 }
 
-pub fn val_list_<A: 'static + ToString, DB: 'static + ToLiteral>(vs: &[Rc<HasValue<A, DB>>]) -> Rc<HasValueList<A>> {
+pub fn val_list_<'a, A, DB>(vs: &[Rc<HasValue<A, DB>>]) -> Rc<'a + HasValueList<A>> 
+    where A: 'a + ToString, DB: 'a + ToLiteral {
     if vs.is_empty() {
         let l: List<A, DB> = List::Empty;
         return Rc::new(l);
     }
 
     let s = vs.to_vec().iter().map(|i| i.to_string().clone()).collect::<Vec<_>>().join(", ");
-
     let v = Raw(NeedParens::Parens, s.clone());
-    let res: List<A, DB> = List::NonEmpty(Box::new(v));
 
-    Rc::new(res)
+    Rc::new(List::NonEmpty(Box::new(v)) as List<A, DB>)
 }
 
 fn if_not_empty_list<A>(v: Rc<HasValueList<A>>, b: bool, e: Rc<HasValue<bool, bool>>) -> Rc<HasValue<bool, bool>> {
-    if (*v).is_empty() {
-        return val_(b);
-    };
-    e
+    match v {
+        _ if v.is_empty() => val_(b),
+        _ => e,
+    }
 }
 
 pub fn and_<L, DB1: ToLiteral, DB2: ToLiteral>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<L, DB1>> {
@@ -72,15 +71,17 @@ pub fn binop_<L, DB1, DB2>(op: &str, lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue
     Raw(NeedParens::Parens, a + op + &b)
 }
 
-pub fn asc_<A: 'static + ToString, DB: 'static + ToLiteral>(exp: Rc<HasValue<A, DB>>) -> Rc<HasOrder> {
+pub fn asc_<'a, A, DB>(exp: Rc<HasValue<A, DB>>) -> Rc<'a + HasOrder> 
+    where A: 'a + ToString, DB: 'a + ToLiteral {
     Rc::new(OrderBy(OrderByType::Asc, exp))
 }
 
-pub fn desc_<A: 'static + ToString, DB: 'static + ToLiteral>(exp: Rc<HasValue<A, DB>>) -> Rc<HasOrder> {
+pub fn desc_<'a, A, DB>(exp: Rc<HasValue<A, DB>>) -> Rc<'a + HasOrder> 
+    where A: 'a + ToString, DB: 'a + ToLiteral {
     Rc::new(OrderBy(OrderByType::Desc, exp))
 }
 
-pub fn sub_<A: 'static + ToString, DB: ToLiteral>(q: Query<Rc<HasValue<A, DB>>>) -> Rc<HasValue<A, DB>> {
-    let sql = q.to_sql();
-    Rc::new(Raw(NeedParens::Parens, sql))
+pub fn sub_<'a, A, DB>(q: Query<Rc<HasValue<A, DB>>>) -> Rc<'a + HasValue<A, DB>> 
+    where A: 'a + ToString, DB: 'a + ToLiteral {
+    Rc::new(Raw(NeedParens::Parens, q.to_sql()))
 }

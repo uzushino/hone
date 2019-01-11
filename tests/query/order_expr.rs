@@ -1,7 +1,7 @@
 use hone::expression::*;
 use hone::query::*;
 
-use query::model::*;
+use crate::query::model::*;
 
 #[test]
 fn test_order() {

@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
-use entity::*;
-use query::*;
+use crate::entity::*;
+use crate::query::*;
 
 impl<A> Query<A> {
     fn new(e: A) -> Self {

@@ -2,7 +2,7 @@ use hone::expression::*;
 use hone::query::*;
 use hone::types::*;
 
-use query::model::*;
+use crate::query::model::*;
 
 #[test]
 fn test_inner_join() {
