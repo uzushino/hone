@@ -43,8 +43,12 @@ pub fn val_list_<'a, A, DB>(vs: &[Rc<HasValue<A, DB>>]) -> Rc<'a + HasValueList<
         return Rc::new(l);
     }
 
-    let s = vs.to_vec().iter().map(|i| i.to_string().clone()).collect::<Vec<_>>().join(", ");
-    let v = Raw(NeedParens::Parens, s.clone());
+    let s = vs.to_vec()
+        .iter()
+        .map(|i| i.to_string())
+        .collect::<Vec<_>>().join(", ");
+
+    let v = Raw(NeedParens::Parens, s);
 
     Rc::new(List::NonEmpty(Box::new(v)) as List<A, DB>)
 }

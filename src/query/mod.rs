@@ -51,7 +51,7 @@ impl<A: SqlSelect> Query<A> {
     }
 
     fn make_where(&self) -> Result<String, ()> {
-        Ok(self.state.where_clause.clone().into())
+        Ok(self.state.where_clause.to_string())
     }
 
     fn make_order(&self) -> Result<String, ()> {
@@ -59,7 +59,11 @@ impl<A: SqlSelect> Query<A> {
             return Err(());
         }
 
-        let a = self.state.order_clause.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
+        let a = self.state.order_clause
+            .iter()
+            .map(|i| i.to_string())
+            .collect::<Vec<_>>()
+            .join(", ");
 
         Ok(a)
     }
@@ -67,7 +71,11 @@ impl<A: SqlSelect> Query<A> {
     fn make_from(&self) -> Result<String, ()> {
         let fc = combine_joins(self.state.from_clause.as_slice(), &mut [])?;
 
-        let from_str = fc.into_iter().map(|f| f.to_string()).collect::<Vec<_>>().join(",");
+        let from_str = fc
+            .into_iter()
+            .map(|f| f.to_string())
+            .collect::<Vec<_>>()
+            .join(",");
 
         Ok(from_str)
     }
@@ -98,7 +106,7 @@ fn find_imcomplete_and_set_on(joins: &[FromClause], on: Rc<HasValue<bool, bool>>
         Some((ref join, rest)) => {
             if let Some(f) = set_on(*join, &on) {
                 let mut rest = rest.to_vec();
-                rest.push(f.clone());
+                rest.push(f);
 
                 return either::Right(rest);
             }

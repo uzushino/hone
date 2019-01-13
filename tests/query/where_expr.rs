@@ -98,7 +98,7 @@ fn test_where() {
         "SELECT email, user_id FROM User WHERE (User.user_id IN ((1, 2, 3)))".to_string()
     );
 
-    let f = Query::<(User, Library)>::from_by(|q, (a, b)| {
+    let f = Query::<(User, Library)>::from_by(|q, (a, _b)| {
         let one = val_(1);
         let two = val_(2);
         let three = val_(3);

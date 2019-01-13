@@ -13,7 +13,7 @@ impl<A> Query<A> {
 
     pub fn return_<B>(self, ret: B) -> Query<B> {
         let mut q = Query::new(ret);
-        q.state = self.state.clone();
+        q.state = self.state;
         q
     }
 

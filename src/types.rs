@@ -2,7 +2,7 @@ use std::default::Default;
 use std::ops::Add;
 use std::rc::Rc;
 
-use crate::entity::{Entity, Column, Table};
+use crate::entity::{Entity, Column};
 use crate::expression::and_;
 
 #[derive(Debug, Clone)]
@@ -209,9 +209,9 @@ impl Add for WhereClause {
     }
 }
 
-impl From<WhereClause> for String {
-    fn from(inst: WhereClause) -> String {
-        match inst {
+impl ToString for WhereClause {
+    fn to_string(&self) -> String {
+        match self {
             WhereClause::No => String::default(),
             WhereClause::Where(v) => v.to_string(),
         }
