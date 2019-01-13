@@ -31,6 +31,7 @@ assert_eq!(a.unwrap().to_sql(),
   - [x] eq(=) / not equal(<>)
   - [x] and / or 
   - [x] in / not in
+  - [x] between
 
 - ORDER BY 
   - [x] ASC/DESC
