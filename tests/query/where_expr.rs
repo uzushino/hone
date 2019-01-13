@@ -22,6 +22,16 @@ fn test_not_eq() {
 }
 
 #[test]
+fn test_between() {
+    let u = User::default();
+    let one = val_(1);
+    let two = val_(2);
+    let between = between_(u.user_id(), one, two);
+
+    assert_eq!("(User.user_id BETWEEN 1 TO 2)", between.to_string());
+}
+
+#[test]
 fn test_where() {
     let a = Query::<User>::from_by(|q, a| {
         let one = val_(1);

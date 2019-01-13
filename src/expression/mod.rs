@@ -75,6 +75,14 @@ pub fn binop_<L, DB1, DB2>(op: &str, lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue
     Raw(NeedParens::Parens, a + op + &b)
 }
 
+pub fn between_<L, DB0: ToLiteral, DB1: ToLiteral, DB2: ToLiteral>(comp: Rc<HasValue<L, DB0>>, lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
+    let e = (*comp).to_string();
+    let a = (*lhs).to_string();
+    let b = (*rhs).to_string();
+
+    Rc::new(Raw(NeedParens::Parens, e + " BETWEEN " + &a + " TO " + &b))
+}
+
 pub fn asc_<'a, A, DB>(exp: Rc<HasValue<A, DB>>) -> Rc<'a + HasOrder> 
     where A: 'a + ToString, DB: 'a + ToLiteral {
     Rc::new(OrderBy(OrderByType::Asc, exp))
