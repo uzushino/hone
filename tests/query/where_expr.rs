@@ -32,6 +32,16 @@ fn test_between() {
 }
 
 #[test]
+fn test_is_null() {
+    let u = User::default();
+    let is_null = is_null_(u.user_id());
+    let is_not_null = is_not_null_(u.user_id());
+    let between = and_(is_null, is_not_null);
+
+    assert_eq!("((User.user_id IS NULL) AND (User.user_id IS NOT NULL))", between.to_string());
+}
+
+#[test]
 fn test_where() {
     let a = Query::<User>::from_by(|q, a| {
         let one = val_(1);

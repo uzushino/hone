@@ -32,6 +32,7 @@ assert_eq!(a.unwrap().to_sql(),
   - [x] and / or 
   - [x] in / not in
   - [x] between
+  - [x] is null / is not null
 
 - ORDER BY 
   - [x] ASC/DESC

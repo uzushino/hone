@@ -83,6 +83,16 @@ pub fn between_<L, DB0: ToLiteral, DB1: ToLiteral, DB2: ToLiteral>(comp: Rc<HasV
     Rc::new(Raw(NeedParens::Parens, e + " BETWEEN " + &a + " TO " + &b))
 }
 
+pub fn is_null_<A, DB>(a: Rc<HasValue<A, DB>>) -> Rc<HasValue<bool, bool>> 
+    where A: ToString, DB: ToLiteral {
+    Rc::new(Raw(NeedParens::Parens, a.to_string() + " IS NULL"))
+}
+
+pub fn is_not_null_<A, DB>(a: Rc<HasValue<A, DB>>) -> Rc<HasValue<bool, bool>> 
+    where A: ToString, DB: ToLiteral {
+    Rc::new(Raw(NeedParens::Parens, a.to_string() + " IS NOT NULL"))
+}
+
 pub fn asc_<'a, A, DB>(exp: Rc<HasValue<A, DB>>) -> Rc<'a + HasOrder> 
     where A: 'a + ToString, DB: 'a + ToLiteral {
     Rc::new(OrderBy(OrderByType::Asc, exp))
