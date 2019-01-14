@@ -1,6 +1,7 @@
 use std::default::Default;
 use std::ops::Add;
 use std::rc::Rc;
+use std::fmt;
 
 use crate::entity::{Entity, Column};
 use crate::expression::and_;
@@ -28,45 +29,45 @@ pub struct FromPreprocess<A>(pub A, pub FromClause);
 impl<A> HasPreprocess for FromPreprocess<A> {}
 
 pub trait ToLiteral {
-    fn to_literal<A: ToString>(v: A) -> String ;
+    fn to_literal<A: fmt::Display>(v: A) -> String ;
 }
 
 impl ToLiteral for String {
-    fn to_literal<A: ToString>(v: A) -> String {
+    fn to_literal<A: fmt::Display>(v: A) -> String {
         format!("'{}'", v.to_string()) 
     }
 }
 
 impl ToLiteral for bool {
-    fn to_literal<A: ToString>(v: A) -> String {
+    fn to_literal<A: fmt::Display>(v: A) -> String {
         format!("{}", v.to_string()) 
     }
 }
 
 impl ToLiteral for i32 {
-    fn to_literal<A: ToString>(v: A) -> String {
+    fn to_literal<A: fmt::Display>(v: A) -> String {
         format!("{}", v.to_string()) 
     }
 }
 
 impl ToLiteral for u32 {
-    fn to_literal<A: ToString>(v: A) -> String {
+    fn to_literal<A: fmt::Display>(v: A) -> String {
         format!("{}", v.to_string()) 
     }
 }
 
 impl ToLiteral for Column {
-    fn to_literal<A: ToString>(v: A) -> String {
+    fn to_literal<A: fmt::Display>(v: A) -> String {
         format!("{}", v.to_string()) 
     }
 }
 
 // Expr (Value a)
-pub trait HasValue<A, DB> : ToString {
+pub trait HasValue<A, DB> : fmt::Display {
     fn to_sql(&self) -> String;
 }
 
-impl<A: std::fmt::Display, DB> HasValue<A, DB> for Rc<HasValue<A, DB>> where Self: ToString {
+impl<A: std::fmt::Display, DB> HasValue<A, DB> for Rc<HasValue<A, DB>> where Self: fmt::Display {
     fn to_sql(&self) -> String { self.to_string() }
 }
 
@@ -90,31 +91,31 @@ impl<A, DB: ToLiteral> HasValue<A, DB> for Raw {
     }
 }
 
-impl ToString for Raw {
-    fn to_string(&self) -> String {
+impl fmt::Display for Raw {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.0 {
-            NeedParens::Never => self.1.to_string(),
-            NeedParens::Parens => "(".to_owned() + &self.1 + ")",
+            NeedParens::Never => write!(f, "{}", self.1),
+            NeedParens::Parens => write!(f, "({})", self.1),
         }
     }
 }
 
-pub struct CompositKey<A: ToString>(pub A);
+pub struct CompositKey<A: fmt::Display>(pub A);
 
-impl<A: ToString + Clone, DB: ToLiteral> HasValue<A, DB> for CompositKey<A> {
+impl<A: fmt::Display + Clone, DB: ToLiteral> HasValue<A, DB> for CompositKey<A> {
     fn to_sql(&self) -> String where Self: Sized {
         DB::to_literal(self.0.clone())
     }
 }
 
-impl<A: ToString> ToString for CompositKey<A> {
-    fn to_string(&self) -> String {
-        self.0.to_string()
+impl<A: fmt::Display> fmt::Display for CompositKey<A> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
 // Expr (ValueList a)
-pub trait HasValueList<A>: ToString {
+pub trait HasValueList<A>: fmt::Display {
     fn is_empty(&self) -> bool;
 }
 
@@ -123,7 +124,7 @@ pub enum List<A, DB> {
     Empty,
 }
 
-impl<A: ToString, DB> HasValueList<A> for List<A, DB> {
+impl<A: fmt::Display, DB> HasValueList<A> for List<A, DB> {
     fn is_empty(&self) -> bool {
         match self {
             List::NonEmpty(_) => false,
@@ -132,29 +133,29 @@ impl<A: ToString, DB> HasValueList<A> for List<A, DB> {
     }
 }
 
-impl<A, DB> ToString for List<A, DB> {
-    fn to_string(&self) -> String {
+impl<A, DB> fmt::Display for List<A, DB> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            List::NonEmpty(a) => a.to_string(),
-            List::Empty => String::default(),
+            List::NonEmpty(a) => write!(f, "{}", a),
+            List::Empty => write!(f, "{}", String::default()),
         }
     }
 }
 
 // Expr (OrderBy)
-pub trait HasOrder: ToString {}
+pub trait HasOrder: fmt::Display {}
 
 pub struct OrderBy<A, DB>(pub OrderByType, pub Rc<HasValue<A, DB>>);
 
 impl<A, DB> HasOrder for OrderBy<A, DB> {}
 
-impl<A, DB> ToString for OrderBy<A, DB> {
-    fn to_string(&self) -> String {
+impl<A, DB> fmt::Display for OrderBy<A, DB> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let typ = match self.0 {
-            OrderByType::Asc => " ASC".to_string(),
-            OrderByType::Desc => " DESC".to_string(),
+            OrderByType::Asc => "ASC",
+            OrderByType::Desc => "DESC",
         };
-        self.1.to_string() + &typ
+        write!(f, "{} {}", self.1, typ)
     }
 }
 
@@ -167,15 +168,13 @@ pub enum FromClause {
     OnClause(Rc<HasValue<bool, bool>>),
 }
 
-impl ToString for FromClause {
-    fn to_string(&self) -> String {
+impl fmt::Display for FromClause {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            FromClause::Start(ref s) => s.to_string(),
-            FromClause::Join(lhs, kind, rhs, ref on) => {
-                let s = on.clone().unwrap();
-                format!("{} {} {} ON {}", lhs.to_string(), kind.to_string(), rhs.to_string(), s.to_string())
-            }
-            FromClause::OnClause(_) => String::default(),
+            FromClause::Start(s) => write!(f, "{}", s),
+            FromClause::Join(lhs, kind, rhs, ref on) if on.is_some() => 
+                write!(f, "{} {} {} ON {}", lhs, kind, rhs, on.clone().unwrap()),
+            _ => Ok(()),
         }
     }
 }
@@ -209,11 +208,11 @@ impl Add for WhereClause {
     }
 }
 
-impl ToString for WhereClause {
-    fn to_string(&self) -> String {
+impl fmt::Display for WhereClause {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            WhereClause::No => String::default(),
-            WhereClause::Where(v) => v.to_string(),
+            WhereClause::No => Ok(()),
+            WhereClause::Where(v) => write!(f, "{}", v),
         }
     }
 }
@@ -235,13 +234,14 @@ pub enum JoinKind {
     RightOuterJoinKind, // RIGHT OUTER JOIN
 }
 
-impl ToString for JoinKind {
-    fn to_string(&self) -> String {
-        match self {
+impl fmt::Display for JoinKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let kind = match self {
             JoinKind::InnerJoinKind => String::from("INNER JOIN"),
             JoinKind::LeftOuterJoinKind => String::from("LEFT OUTER JOIN"),
             JoinKind::RightOuterJoinKind => String::from("RIGHT OUTER JOIN"),
-        }
+        };
+        write!(f, "{}", kind)
     }
 }
 

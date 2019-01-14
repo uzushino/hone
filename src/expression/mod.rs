@@ -1,4 +1,5 @@
 use std::rc::Rc;
+use std::fmt;
 
 use crate::query::Query;
 use crate::types::*;
@@ -17,7 +18,7 @@ pub fn not_eq_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>
     Rc::new(Raw(NeedParens::Parens, a + " <> " + &b))
 }
 
-pub fn in_<L: ToString, DB1>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValueList<L>>) -> Rc<HasValue<bool, bool>> {
+pub fn in_<L: fmt::Display, DB1>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValueList<L>>) -> Rc<HasValue<bool, bool>> {
     let comp: Rc<HasValue<L, i32>> = Rc::new(Raw(NeedParens::Parens, rhs.to_string()));
     let op = binop_(" IN ", lhs, comp);
 
@@ -32,12 +33,12 @@ pub fn not_in_<L: ToLiteral, DB1>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValueLis
     res
 }
 
-pub fn val_<A: ToString + ToLiteral>(typ: A) -> Rc<HasValue<A, A>> {
+pub fn val_<A: fmt::Display + ToLiteral>(typ: A) -> Rc<HasValue<A, A>> {
     Rc::new(Raw(NeedParens::Never, typ.to_string()))
 }
 
 pub fn val_list_<'a, A, DB>(vs: &[Rc<HasValue<A, DB>>]) -> Rc<'a + HasValueList<A>> 
-    where A: 'a + ToString, DB: 'a + ToLiteral {
+    where A: 'a + fmt::Display, DB: 'a + ToLiteral {
     if vs.is_empty() {
         let l: List<A, DB> = List::Empty;
         return Rc::new(l);
@@ -84,26 +85,26 @@ pub fn between_<L, DB0: ToLiteral, DB1: ToLiteral, DB2: ToLiteral>(comp: Rc<HasV
 }
 
 pub fn is_null_<A, DB>(a: Rc<HasValue<A, DB>>) -> Rc<HasValue<bool, bool>> 
-    where A: ToString, DB: ToLiteral {
+    where A: fmt::Display, DB: ToLiteral {
     Rc::new(Raw(NeedParens::Parens, a.to_string() + " IS NULL"))
 }
 
 pub fn is_not_null_<A, DB>(a: Rc<HasValue<A, DB>>) -> Rc<HasValue<bool, bool>> 
-    where A: ToString, DB: ToLiteral {
+    where A: fmt::Display, DB: ToLiteral {
     Rc::new(Raw(NeedParens::Parens, a.to_string() + " IS NOT NULL"))
 }
 
 pub fn asc_<'a, A, DB>(exp: Rc<HasValue<A, DB>>) -> Rc<'a + HasOrder> 
-    where A: 'a + ToString, DB: 'a + ToLiteral {
+    where A: 'a + fmt::Display, DB: 'a + ToLiteral {
     Rc::new(OrderBy(OrderByType::Asc, exp))
 }
 
 pub fn desc_<'a, A, DB>(exp: Rc<HasValue<A, DB>>) -> Rc<'a + HasOrder> 
-    where A: 'a + ToString, DB: 'a + ToLiteral {
+    where A: 'a + fmt::Display, DB: 'a + ToLiteral {
     Rc::new(OrderBy(OrderByType::Desc, exp))
 }
 
 pub fn sub_<'a, A, DB>(q: Query<Rc<HasValue<A, DB>>>) -> Rc<'a + HasValue<A, DB>> 
-    where A: 'a + ToString, DB: 'a + ToLiteral {
+    where A: 'a + fmt::Display, DB: 'a + ToLiteral {
     Rc::new(Raw(NeedParens::Parens, q.to_sql()))
 }
