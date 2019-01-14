@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::marker::PhantomData;
+use std::fmt;
 
 use crate::types::*;
 
@@ -18,9 +19,9 @@ impl Column {
     }
 }
 
-impl ToString for Column {
-    fn to_string(&self) -> String {
-        self.name()
+impl fmt::Display for Column {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
