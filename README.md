@@ -40,4 +40,8 @@ assert_eq!(a.unwrap().to_sql(),
 - JOINs
   - [x] Inner
   - [x] Left
-  - [ ] Right
+  - [x] Right
+
+- Functions
+  - [ ] SUM
+  - [ ] AVG
