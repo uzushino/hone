@@ -237,9 +237,9 @@ pub enum JoinKind {
 impl fmt::Display for JoinKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let kind = match self {
-            JoinKind::InnerJoinKind => String::from("INNER JOIN"),
-            JoinKind::LeftOuterJoinKind => String::from("LEFT OUTER JOIN"),
-            JoinKind::RightOuterJoinKind => String::from("RIGHT OUTER JOIN"),
+            JoinKind::InnerJoinKind => "INNER JOIN",
+            JoinKind::LeftOuterJoinKind => "LEFT OUTER JOIN",
+            JoinKind::RightOuterJoinKind => "RIGHT OUTER JOIN",
         };
         write!(f, "{}", kind)
     }

@@ -23,8 +23,10 @@ impl<A> SqlSelect for A where A: HasEntityDef {
     fn cols(&self) -> String {
         let ed = A::entity_def();
         let ordered: BTreeMap<_, _> = ed.columns.iter().collect();
-
-        let s = ordered.keys().map(|k| k.clone().to_string()).collect::<Vec<_>>();
+        let s = ordered.keys()
+            .into_iter()
+            .map(|k| k.to_string())
+            .collect::<Vec<_>>();
 
         s.join(", ")
     }
