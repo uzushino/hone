@@ -3,7 +3,7 @@ use crate::query::*;
 use self::column::*;
 use self::from::*;
 
-impl<A: Column> Delete<A> {
+impl<A> Delete<A> {
     fn make_where(&self) -> Result<String, ()> {
         Ok(self.0.state.where_clause.to_string())
     }
