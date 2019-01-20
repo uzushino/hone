@@ -1,7 +1,7 @@
 use std::rc::Rc;
 use std::fmt;
 
-use crate::query::Query;
+use crate::query::*;
 use crate::types::*;
 
 pub fn eq_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
@@ -106,5 +106,5 @@ pub fn desc_<'a, A, DB>(exp: Rc<HasValue<A, DB>>) -> Rc<'a + HasOrder>
 
 pub fn sub_<'a, A, DB>(q: Query<Rc<HasValue<A, DB>>>) -> Rc<'a + HasValue<A, DB>> 
     where A: 'a + fmt::Display, DB: 'a + ToLiteral {
-    Rc::new(Raw(NeedParens::Parens, q.to_sql()))
+    Rc::new(Raw(NeedParens::Parens, select(q).to_sql()))
 }

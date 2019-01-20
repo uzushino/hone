@@ -85,7 +85,8 @@ fn test_diesel() {
         q
     });
 
-    let b = sql_query(b.unwrap().to_sql()).load::<Download>(&connection).unwrap();
+    let b = sql_query(select(b.unwrap()).to_sql())
+        .load::<Download>(&connection).unwrap();
 
     let b = b.first().unwrap();
 

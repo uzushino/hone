@@ -51,7 +51,7 @@ fn test_where() {
         q.return_(a.user_id())
     });
 
-    assert_eq!(a.unwrap().to_sql(), "SELECT User.user_id FROM User WHERE (User.user_id = 1)".to_string());
+    assert_eq!(select(a.unwrap()).to_sql(), "SELECT User.user_id FROM User WHERE (User.user_id = 1)".to_string());
 
     let b = Query::<(_, _)>::from_by(|q, (a, b): (User, Library)| {
         let eq = eq_(a.user_id(), b.library_id());
@@ -59,7 +59,7 @@ fn test_where() {
     });
 
     assert_eq!(
-        b.unwrap().to_sql(),
+        select(b.unwrap()).to_sql(),
         "SELECT email, user_id, library_id, title FROM Library,User \
          WHERE (User.user_id = Library.library_id)"
             .to_string()
@@ -79,7 +79,7 @@ fn test_where() {
     });
 
     assert_eq!(
-        c.unwrap().to_sql(),
+        select(c.unwrap()).to_sql(),
         "SELECT email, user_id, library_id, title FROM Library,User \
          WHERE ((User.user_id = 1) AND (Library.library_id = 2))"
             .to_string()
@@ -98,7 +98,7 @@ fn test_where() {
     });
 
     assert_eq!(
-        d.unwrap().to_sql(),
+        select(d.unwrap()).to_sql(),
         "SELECT email, user_id, library_id, title FROM Library,User \
          WHERE ((User.user_id = 1) OR (Library.library_id = 2))"
             .to_string()
@@ -114,7 +114,7 @@ fn test_where() {
     });
 
     assert_eq!(
-        e.unwrap().to_sql(),
+        select(e.unwrap()).to_sql(),
         "SELECT email, user_id FROM User WHERE (User.user_id IN ((1, 2, 3)))".to_string()
     );
 
@@ -129,7 +129,7 @@ fn test_where() {
     });
 
     assert_eq!(
-        f.unwrap().to_sql(),
+        select(f.unwrap()).to_sql(),
         "SELECT email, user_id FROM Library,User WHERE (User.user_id IN ((1, 2, 3)))".to_string()
     );
 
@@ -156,7 +156,7 @@ fn test_where() {
     });
 
     assert_eq!(
-        g.unwrap().to_sql(),
+        select(g.unwrap()).to_sql(),
         "SELECT email, user_id FROM User WHERE ((User.user_id = 1) AND (User.email = (SELECT Library.title FROM Library WHERE \
          (Library.library_id = 2))))"
             .to_string()

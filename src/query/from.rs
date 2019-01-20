@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::rc::Rc;
 
 use crate::entity::*;
@@ -315,5 +316,63 @@ where
         let rhs = B::from_process()?;
 
         RightJoin::<A, B>::from_join(lhs, rhs)
+    }
+}
+
+pub fn set_on(join: &FromClause, on: &Rc<HasValue<bool, bool>>) -> Option<FromClause> {
+    match join.clone() {
+        FromClause::Join(lhs, knd, rhs, on_) => {
+            if let Some(f) = set_on(rhs.borrow(), on) {
+                return Some(FromClause::Join(lhs, knd, Rc::new(f), on_));
+            }
+
+            if let Some(f) = set_on(lhs.borrow(), on) {
+                return Some(FromClause::Join(Rc::new(f), knd, rhs, on_));
+            }
+
+            match on_ {
+                None => Some(FromClause::Join(lhs, knd, rhs, Some(on.clone()))),
+                _ => None,
+            }
+        }
+        _ => None,
+    }
+}
+
+pub fn find_imcomplete_and_set_on(joins: &[FromClause], on: Rc<HasValue<bool, bool>>) -> either::Either<Rc<HasValue<bool, bool>>, Vec<FromClause>> {
+    match joins.split_first() {
+        Some((ref join, rest)) => {
+            if let Some(f) = set_on(*join, &on) {
+                let mut rest = rest.to_vec();
+                rest.push(f);
+
+                return either::Right(rest);
+            }
+
+            let mut v = try_right!(find_imcomplete_and_set_on(rest, on));
+
+            v.insert(0, (*join).clone());
+            either::Right(v)
+        }
+        None => either::Left(on),
+    }
+}
+
+pub fn combine_joins(fs: &[FromClause], acc: &mut [FromClause]) -> Result<Vec<FromClause>, ()> {
+    match fs.split_first() {
+        Some((&FromClause::OnClause(ref on), rest)) => match find_imcomplete_and_set_on(acc, on.clone()) {
+            either::Right(mut acc_) => combine_joins(rest, acc_.as_mut_slice()),
+            either::Left(_) => Err(()),
+        },
+        Some((ref head, rest)) => {
+            let mut acc = acc.to_vec();
+            acc.push((*head).clone());
+
+            combine_joins(rest, acc.as_mut_slice())
+        }
+        _ => {
+            acc.reverse();
+            Ok(acc.to_vec())
+        }
     }
 }

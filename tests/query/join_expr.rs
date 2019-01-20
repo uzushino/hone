@@ -19,7 +19,7 @@ fn test_inner_join() {
     });
 
     assert_eq!(
-        a.unwrap().to_sql(),
+        select(a.unwrap()).to_sql(),
         "SELECT email, user_id, library_id, title FROM \
          User INNER JOIN Library ON (User.user_id = Library.library_id) \
          WHERE (User.user_id = 1)"
@@ -45,7 +45,7 @@ fn test_left_join() {
     });
 
     assert_eq!(
-        b.unwrap().to_sql(),
+        select(b.unwrap()).to_sql(),
         "SELECT email, user_id FROM \
          User LEFT OUTER JOIN Library INNER JOIN Library ON (User.user_id = Library.library_id) ON \
          (Library.library_id = Library.library_id) \
@@ -69,7 +69,7 @@ fn test_right_join() {
     });
 
     assert_eq!(
-        a.unwrap().to_sql(),
+        select(a.unwrap()).to_sql(),
         "SELECT email, user_id, library_id, title FROM \
          User RIGHT OUTER JOIN Library ON (User.user_id = Library.library_id) \
          WHERE (User.user_id = 1)"
@@ -98,7 +98,7 @@ fn test_nested_inner_join() {
     );
 
     assert_eq!(
-        c.unwrap().to_sql(),
+        select(c.unwrap()).to_sql(),
         "SELECT email, user_id FROM User \
          INNER JOIN Library ON (User.user_id = Library.library_id) \
          INNER JOIN Library ON (User.user_id = Library.library_id) \

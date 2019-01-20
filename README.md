@@ -17,7 +17,7 @@ let a = Query::<User>::from_by(|q, a| {
     q.return_(a.user_id())
 });
 
-assert_eq!(a.unwrap().to_sql(),
+assert_eq!(select(a.unwrap()).to_sql(),
             "SELECT User.user_id FROM User WHERE (User.user_id = 1)".to_string());
 ```
 
@@ -26,6 +26,7 @@ assert_eq!(a.unwrap().to_sql(),
 - [x] SELECT
 - [ ] UPDATE
 - [ ] INSERT
+- [x] DELETE
 
 - WHERE
   - [x] eq(=) / not equal(<>)

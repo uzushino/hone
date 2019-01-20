@@ -16,7 +16,7 @@ fn test_order() {
     });
 
     assert_eq!(
-        a.unwrap().to_sql(),
+        select(a.unwrap()).to_sql(),
         "SELECT email, user_id FROM User WHERE (User.user_id = 1) \
          ORDER BY User.user_id ASC, User.email DESC"
             .to_string()

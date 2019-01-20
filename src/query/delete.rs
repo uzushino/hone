@@ -3,27 +3,9 @@ use crate::query::*;
 use self::column::*;
 use self::from::*;
 
-impl<A: Column> Select<A> {
-    fn make_select(&self) -> Result<String, ()> {
-        Ok(self.0.value.cols())
-    }
-
+impl<A: Column> Delete<A> {
     fn make_where(&self) -> Result<String, ()> {
         Ok(self.0.state.where_clause.to_string())
-    }
-
-    fn make_order(&self) -> Result<String, ()> {
-        if self.0.state.order_clause.is_empty() {
-            return Err(());
-        }
-
-        let a = self.0.state.order_clause
-            .iter()
-            .map(|i| i.to_string())
-            .collect::<Vec<_>>()
-            .join(", ");
-
-        Ok(a)
     }
 
     fn make_from(&self) -> Result<String, ()> {
@@ -39,21 +21,16 @@ impl<A: Column> Select<A> {
     }
 }
 
-impl<A: Column> HasSelect for Select<A> {
+impl<A: Column> HasDelete for Delete<A> {
     fn to_sql(&self) -> String {
-        let mut sql: String = "".into();
+        let mut sql: String = "DELETE".into();
 
-        if let Ok(a) = self.make_select() {
-            sql = sql + "SELECT " + &a;
-        }
         if let Ok(a) = self.make_from() {
             sql = sql + " FROM " + &a;
         }
+
         if let Ok(a) = self.make_where() {
             sql = sql + " WHERE " + &a;
-        }
-        if let Ok(a) = self.make_order() {
-            sql = sql + " ORDER BY " + &a;
         }
 
         sql
