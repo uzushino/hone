@@ -15,3 +15,22 @@ fn test_select() {
 
     assert_eq!(select(a.unwrap()).to_sql(), "SELECT User.user_id, User.email, 2 FROM User WHERE (User.user_id = 1)".to_string());
 }
+
+#[test]
+fn test_functions() {
+    let u = User::default();
+    let sum = sum_(u.user_id());
+
+    assert_eq!("SUM(User.user_id)", sum.to_string());
+
+    let a = Query::<User>::from_by(|q, u| {
+        let sum = sum_(u.user_id());
+        let count = count_(u.user_id());
+        let avg = avg_(u.user_id());
+
+        q.return_((sum, count, avg))
+    });
+    
+    assert_eq!(select(a.unwrap()).to_sql(), 
+        "SELECT SUM(User.user_id), COUNT(User.user_id), AVG(User.user_id) FROM User".to_string());
+}

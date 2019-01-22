@@ -1,7 +1,6 @@
+use crate::types::*;
 use crate::query::*;
-
-use self::column::*;
-use self::from::*;
+use self::from::combine_joins;
 
 impl<A: Column> Select<A> {
     fn make_select(&self) -> Result<String, ()> {
@@ -9,7 +8,10 @@ impl<A: Column> Select<A> {
     }
 
     fn make_where(&self) -> Result<String, ()> {
-        Ok(self.0.state.where_clause.to_string())
+        match self.0.state.where_clause {
+            WhereClause::No => Err(()),
+            _ => Ok(self.0.state.where_clause.to_string())
+        }
     }
 
     fn make_order(&self) -> Result<String, ()> {

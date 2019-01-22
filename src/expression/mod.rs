@@ -2,7 +2,9 @@ use std::rc::Rc;
 use std::fmt;
 
 use crate::query::*;
+use crate::query::UnsafeSqlFunctionArgument;
 use crate::types::*;
+
 
 pub fn eq_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
     let a = lhs.to_sql();
@@ -107,4 +109,29 @@ pub fn desc_<'a, A, DB>(exp: Rc<HasValue<A, DB>>) -> Rc<'a + HasOrder>
 pub fn sub_<'a, A, DB>(q: Query<Rc<HasValue<A, DB>>>) -> Rc<'a + HasValue<A, DB>> 
     where A: 'a + fmt::Display, DB: 'a + ToLiteral {
     Rc::new(Raw(NeedParens::Parens, select(q).to_sql()))
+}
+
+fn unsafe_sql_function<A, B, DB>(name: &str, arg: A) -> Rc<HasValue<B, DB>> 
+    where A: UnsafeSqlFunctionArgument, DB: ToLiteral {
+    let args = A::to_arg_list(arg);
+    let results = args.iter().map(|v| v.to_string()).collect::<Vec<_>>();
+
+    Rc::new(Raw(NeedParens::Never, format!("{}({})", name, results.join(","))))
+}
+
+use crate::entity::*;
+
+pub fn sum_<'a, A>(a: A) -> Rc<'a + HasValue<u32, Column>> 
+    where A: 'a + UnsafeSqlFunctionArgument {
+    unsafe_sql_function("SUM", a)
+}
+
+pub fn count_<'a, A>(a: A) -> Rc<'a + HasValue<u32, Column>> 
+    where A: 'a + UnsafeSqlFunctionArgument {
+    unsafe_sql_function("COUNT", a)
+}
+
+pub fn avg_<'a, A>(a: A) -> Rc<'a + HasValue<f32, Column>> 
+    where A: 'a + UnsafeSqlFunctionArgument {
+    unsafe_sql_function("AVG", a)
 }

@@ -1,8 +1,11 @@
+use std::rc::Rc;
+
 use crate::types::*;
 
 mod column;
 mod from;
 mod select;
+mod functions;
 mod delete;
 
 use self::column::*;
@@ -43,4 +46,8 @@ pub trait HasDelete {
 
 pub fn delete<A: Column>(q: Query<A>) -> impl HasDelete {
     Delete(q)
+}
+
+pub trait UnsafeSqlFunctionArgument {
+    fn to_arg_list(arg: Self) -> Vec<Rc<HasValue<(), bool>>>;
 }
