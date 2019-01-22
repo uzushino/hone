@@ -1,5 +1,5 @@
-use crate::types::*;
 use crate::query::*;
+
 use self::from::combine_joins;
 
 impl<A: Column> Select<A> {
