@@ -44,5 +44,6 @@ assert_eq!(select(a.unwrap()).to_sql(),
   - [x] Right
 
 - Functions
-  - [ ] SUM
-  - [ ] AVG
+  - [x] SUM
+  - [x] AVG
+  - [x] COUNT
