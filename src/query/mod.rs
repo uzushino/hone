@@ -4,9 +4,10 @@ use crate::types::*;
 
 mod column;
 mod from;
-mod select;
 mod functions;
+mod select;
 mod delete;
+mod update;
 
 use self::column::*;
 
@@ -46,6 +47,16 @@ pub trait HasDelete {
 
 pub fn delete<A: Column>(q: Query<A>) -> impl HasDelete {
     Delete(q)
+}
+
+pub struct Update<A>(Query<A>);
+
+pub trait HasUpdate {
+    fn to_sql(&self) -> String;
+}
+
+pub fn update<A: Column>(q: Query<A>) -> impl HasUpdate {
+    Update(q)
 }
 
 pub trait UnsafeSqlFunctionArgument {

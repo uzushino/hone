@@ -119,6 +119,7 @@ fn unsafe_sql_function<A, B, DB>(name: &str, arg: A) -> Rc<HasValue<B, DB>>
     Rc::new(Raw(NeedParens::Never, format!("{}({})", name, results.join(","))))
 }
 
+
 use crate::entity::*;
 
 pub fn sum_<'a, A>(a: A) -> Rc<'a + HasValue<u32, Column>> 
