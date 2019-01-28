@@ -34,10 +34,8 @@ impl<A> Query<A> {
         self
     }
 
-    pub fn value_<B, DB1, DB2>(mut self, a: Rc<HasValue<B, DB1>>, b: Rc<HasValue<B, DB2>>) -> Query<A>
-        where B: 'static + std::fmt::Display, DB2: 'static + ToLiteral, DB1: 'static + ToLiteral {
-        let v = Rc::new(SetValue(a, b));
-        self.state.set_clause.push(v);
+    pub fn value_(mut self, a: Rc<HasSet>) -> Query<A> {
+        self.state.set_clause.push(a.clone());
         self
     }
 

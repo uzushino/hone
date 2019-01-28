@@ -12,9 +12,12 @@ fn test_set() {
         
         let email2 = val_("d@e.f".to_string());
         let one = val_(1);
+        
+        let set1 = set_(a.user_id(), one);
+        let set2 = set_(a.email(), email2);
 
-        let q = q.value_(a.user_id(), one);
-        let q = q.value_(a.email(), email2);
+        let q = q.value_(set1);
+        let q = q.value_(set2);
 
         q
     });
