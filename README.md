@@ -24,7 +24,7 @@ assert_eq!(select(a.unwrap()).to_sql(),
 ## Features
 
 - [x] SELECT
-- [ ] UPDATE
+- [x] UPDATE
 - [ ] INSERT
 - [x] DELETE
 
