@@ -118,8 +118,8 @@ fn unsafe_sql_function<A, B, DB>(name: &str, arg: A) -> Rc<HasValue<B, DB>>
     Rc::new(Raw(NeedParens::Never, format!("{}({})", name, results.join(","))))
 }
 
-pub fn set_<'a, L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<'a + HasSet> 
-    where L: 'a + fmt::Display, DB1: 'a + ToLiteral, DB2: 'a + ToLiteral {
+pub fn set_<'a, L, DB1>(lhs: Rc<HasValue<L, Column>>, rhs: Rc<HasValue<L, DB1>>) -> Rc<'a + HasSet> 
+    where L: 'a + fmt::Display, DB1: 'a + ToLiteral {
     Rc::new(SetValue(lhs, rhs))
 }
 
