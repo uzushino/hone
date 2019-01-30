@@ -22,7 +22,7 @@ impl<A: ToString, DB> Column for Rc<HasValue<A, DB>> {
 impl<A> Column for A where A: HasEntityDef {
     fn cols(&self) -> String {
         let ed = A::entity_def();
-        let ordered: BTreeMap<_, _> = ed.columns.iter().collect();
+        let ordered = ed.columns.iter().collect::<BTreeMap<_, _>>();
         let s = ordered.keys()
             .into_iter()
             .map(|k| k.to_string())

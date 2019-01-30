@@ -37,7 +37,7 @@ impl<A> Update<A> {
 
 impl<A: Column> HasUpdate for Update<A> {
     fn to_sql(&self) -> String {
-        let mut sql: String = "UPDATE".into();
+        let mut sql = String::from("UPDATE");
 
         if let Ok(a) = self.make_from() {
             sql = sql + " " + &a;

@@ -2,7 +2,6 @@ use std::rc::Rc;
 use std::fmt;
 
 use crate::query::*;
-use crate::query::UnsafeSqlFunctionArgument;
 use crate::types::*;
 
 

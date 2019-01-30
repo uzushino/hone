@@ -23,7 +23,7 @@ impl<A> Delete<A> {
 
 impl<A: Column> HasDelete for Delete<A> {
     fn to_sql(&self) -> String {
-        let mut sql: String = "DELETE".into();
+        let mut sql = String::from("DELETE");
 
         if let Ok(a) = self.make_from() {
             sql = sql + " FROM " + &a;

@@ -43,7 +43,7 @@ impl<A: Column> Select<A> {
 
 impl<A: Column> HasSelect for Select<A> {
     fn to_sql(&self) -> String {
-        let mut sql: String = "".into();
+        let mut sql = String::default();
 
         if let Ok(a) = self.make_select() {
             sql = sql + "SELECT " + &a;
