@@ -3,7 +3,7 @@ use crate::query::*;
 use self::from::combine_joins;
 
 impl<A: Column> Select<A> {
-    fn make_select(&self) -> Result<String, ()> {
+    pub fn make_select(&self) -> Result<String, ()> {
         Ok(self.0.value.cols())
     }
 
