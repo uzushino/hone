@@ -1,6 +1,7 @@
 use std::rc::Rc;
 
 use crate::types::*;
+use crate::entity::HasEntityDef;
 
 mod column;
 mod from;
@@ -8,6 +9,7 @@ mod functions;
 mod select;
 mod delete;
 mod update;
+mod insert;
 
 use self::column::*;
 
@@ -57,6 +59,21 @@ pub trait HasUpdate {
 
 pub fn update<A: Column>(q: Query<A>) -> impl HasUpdate {
     Update(q)
+}
+
+pub struct InsertInto<A>(Query<A>);
+pub struct InsertSelect<A>(Select<A>);
+
+pub trait HasInsert {
+    fn to_sql(&self) -> String;
+}
+
+pub fn insert_into<A: HasEntityDef>(q: Query<A>) -> impl HasInsert {
+    InsertInto(q)
+}
+
+pub fn insert_select<A: HasEntityDef>(q: Select<A>) -> impl HasInsert {
+    InsertSelect(q)
 }
 
 pub trait UnsafeSqlFunctionArgument {

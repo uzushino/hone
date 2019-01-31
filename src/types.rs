@@ -245,13 +245,24 @@ impl fmt::Display for JoinKind {
     }
 }
 
-pub trait HasSet : fmt::Display {}
+pub trait HasSet : fmt::Display {
+    fn column(&self) -> String;
+    fn value(&self) -> String;
+}
 
-pub struct SetValue<A, DB1, DB2>(pub Rc<HasValue<A, DB1>>, pub Rc<HasValue<A, DB2>>);
+pub struct SetValue<A, DB>(pub Rc<HasValue<A, Column>>, pub Rc<HasValue<A, DB>>);
 
-impl<A, DB1, DB2> HasSet for SetValue<A, DB1, DB2> {}
+impl<A, DB> HasSet for SetValue<A, DB> {
+    fn column(&self) -> String {
+        self.0.to_sql()
+    }
+    
+    fn value(&self) -> String {
+        self.1.to_sql()
+    }
+}
 
-impl<A, DB1, DB2> fmt::Display for SetValue<A, DB1, DB2> {
+impl<A, DB2> fmt::Display for SetValue<A, DB2> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{} = {}", self.0, self.1.to_sql())
     }
