@@ -62,7 +62,7 @@ pub fn update<A: Column>(q: Query<A>) -> impl HasUpdate {
 }
 
 pub struct InsertInto<A>(Query<A>);
-pub struct InsertSelect<A>(Select<A>);
+pub struct InsertSelect<A, B: HasSelect>(Query<A>, B);
 
 pub trait HasInsert {
     fn to_sql(&self) -> String;
@@ -72,8 +72,12 @@ pub fn insert_into<A: HasEntityDef>(q: Query<A>) -> impl HasInsert {
     InsertInto(q)
 }
 
-pub fn insert_select<A: HasEntityDef>(q: Select<A>) -> impl HasInsert {
-    InsertSelect(q)
+pub fn insert_select<A: Column, B, F>(q: Query<A>, f: F) -> InsertSelect<B, impl HasSelect>
+where F: Fn(Query<B>, B, &Query<A>) -> Query<B>, B: Default {
+    let qs = Query::new(B::default());
+    let qs = f(qs, B::default(), &q);
+
+    InsertSelect(qs, Select(q))
 }
 
 pub trait UnsafeSqlFunctionArgument {

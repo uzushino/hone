@@ -5,7 +5,7 @@ use crate::entity::*;
 use crate::query::*;
 
 impl<A> Query<A> {
-    fn new(e: A) -> Self {
+    pub fn new(e: A) -> Self {
         Query {
             state: QueryState::default(),
             value: e,

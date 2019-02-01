@@ -42,6 +42,19 @@ fn test_is_null() {
 }
 
 #[test]
+fn test_where_2() {
+    let a = Query::<User>::from_by(|q, a| {
+        let one = val_(1);
+        let eq = eq_(a.user_id(), one);
+        let q = q.where_(eq);
+        
+        q.return_(a.user_id())
+    });
+
+    assert_eq!(select(a.unwrap()).to_sql(), "SELECT User.user_id FROM User WHERE (User.user_id = 1)".to_string());
+}
+
+#[test]
 fn test_where() {
     let a = Query::<User>::from_by(|q, a| {
         let one = val_(1);

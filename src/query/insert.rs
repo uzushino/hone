@@ -51,19 +51,24 @@ impl<A: HasEntityDef> HasInsert for InsertInto<A> {
     }
 }
 
-impl<A> InsertSelect<A> where A: HasEntityDef {
+impl<A, B> InsertSelect<A, B> where A: HasEntityDef, B: HasSelect {
     fn make_table(&self) -> Result<String, ()> {
         let ed = A::entity_def();
         Ok(ed.table_name.name())
     }
     
     fn make_column(&self) -> Result<String, ()> {
-        let s = self.0.make_select().unwrap();
+        let s = self.0.state.set_clause
+            .iter()
+            .map(|f| f.column())
+            .collect::<Vec<_>>()
+            .join(", ");
+
         Ok(s)
     }
 }
 
-impl<A: HasEntityDef> HasInsert for InsertSelect<A> {
+impl<A: HasEntityDef, B: HasSelect> HasInsert for InsertSelect<A, B> {
     fn to_sql(&self) -> String {
         let mut sql: String = "INSERT INTO ".into();
 
@@ -75,7 +80,7 @@ impl<A: HasEntityDef> HasInsert for InsertSelect<A> {
             sql = sql + "(" + &a + ")";
         }
 
-        sql = sql + self.0.to_sql().as_ref();
+        sql = sql + " " + self.1.to_sql().as_ref();
 
         sql
     }
