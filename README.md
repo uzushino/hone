@@ -1,4 +1,4 @@
-# hone
+ hone
 
 Type safe rust library for building SQL query strings, inspired by [esqueleto(haskell)](https://github.com/bitemyapp/esqueleto).
 
@@ -24,8 +24,12 @@ assert_eq!(select(a.unwrap()).to_sql(),
 ## Features
 
 - [x] SELECT
-- [x] UPDATE
-- [ ] INSERT
+- [ ] UPDATE
+  - [x] UPDATE SET
+  - [ ] UPDATE SET FROM
+- [x] INSERT
+  - [x] INSERT INTO
+  - [x] INSERT INTO SELECT
 - [x] DELETE
 
 - WHERE
