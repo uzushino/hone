@@ -1,4 +1,5 @@
 use crate::query::*;
+use crate::types::QueryState;
 
 use self::from::combine_joins;
 
@@ -59,5 +60,9 @@ impl<A: Column> HasSelect for Select<A> {
         }
 
         sql
+    }
+
+    fn get_state(&self) -> QueryState {
+        self.0.state.clone()
     }
 }

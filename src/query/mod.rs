@@ -35,6 +35,8 @@ pub struct Select<A>(Query<A>);
 
 pub trait HasSelect {
     fn to_sql(&self) -> String;
+
+    fn get_state(&self) -> QueryState;
 }
 
 pub fn select<A: Column>(q: Query<A>) -> impl HasSelect {
@@ -42,6 +44,7 @@ pub fn select<A: Column>(q: Query<A>) -> impl HasSelect {
 }
 
 pub struct Update<A>(Query<A>);
+pub struct UpdateSelect<A, B: HasSelect>(Query<A>, B);
 
 pub trait HasUpdate {
     fn to_sql(&self) -> String;
@@ -49,6 +52,14 @@ pub trait HasUpdate {
 
 pub fn update<A: Column>(q: Query<A>) -> impl HasUpdate { 
     Update(q)
+}
+
+pub fn update_select<A: Column, B, F>(q: Query<A>, f: F) -> UpdateSelect<B, impl HasSelect>
+where F: Fn(Query<B>, B, &Query<A>) -> Query<B>, B: Default {
+    let qs = Query::new(B::default());
+    let qs = f(qs, B::default(), &q);
+
+    UpdateSelect(qs, Select(q))
 }
 
 pub struct InsertInto<A>(Query<A>);

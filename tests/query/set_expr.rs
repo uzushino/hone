@@ -61,3 +61,32 @@ fn test_set_join() {
     );
 
 }
+
+#[test]
+fn test_update_select() {
+    let u = Query::<User>::from_by(|q, u| {
+        let one = val_(1);
+        let eq = eq_(u.user_id(), one);
+        let q = q.where_(eq);
+
+        q.return_((u.user_id(), u.email()))
+    });
+    let u = u.unwrap();
+
+    let q = update_select(u, |q: Query<Library>, l, u| {
+        let set1 = set_(l.library_id(), u.value.0.clone());
+        let set2 = set_(l.title(), u.value.1.clone());
+
+        let q = q.value_(set1);
+        let q = q.value_(set2);
+        
+        q
+    });
+
+    assert_eq!(
+        q.to_sql(),
+        "UPDATE Library \
+         SET Library.library_id = User.user_id, Library.title = User.email \
+         FROM User WHERE (User.user_id = 1)".to_string()
+    );
+}

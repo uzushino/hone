@@ -70,7 +70,7 @@ impl<A, B> InsertSelect<A, B> where A: HasEntityDef, B: HasSelect {
 
 impl<A: HasEntityDef, B: HasSelect> HasInsert for InsertSelect<A, B> {
     fn to_sql(&self) -> String {
-        let mut sql: String = "INSERT INTO ".into();
+        let mut sql = String::from("INSERT INTO ");
 
         if let Ok(a) = self.make_table() {
             sql = sql + &a;
