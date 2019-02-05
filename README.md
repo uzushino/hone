@@ -1,4 +1,4 @@
- hone
+# hone
 
 Type safe rust library for building SQL query strings, inspired by [esqueleto(haskell)](https://github.com/bitemyapp/esqueleto).
 
