@@ -1,8 +1,6 @@
 use crate::query::*;
 
 use crate::entity::HasEntityDef;
-use self::column::*;
-use self::from::*;
 
 impl<A> InsertInto<A> where A: HasEntityDef {
     fn make_table(&self) -> Result<String, ()> {

@@ -40,6 +40,13 @@ impl<A: Column> Select<A> {
 
         Ok(from_str)
     }
+
+    pub fn make_limit(&self) -> Result<String, ()> {
+        match self.0.state.limit_clause {
+            LimitClause::Limit(_, _) => Ok(self.0.state.limit_clause.to_string()),
+            LimitClause::No => Err(())
+        }
+    }
 }
 
 impl<A: Column> HasSelect for Select<A> {
@@ -57,6 +64,9 @@ impl<A: Column> HasSelect for Select<A> {
         }
         if let Ok(a) = self.make_order() {
             sql = sql + " ORDER BY " + &a;
+        }
+        if let Ok(a) = self.make_limit() {
+            sql = sql + " " + &a;
         }
 
         sql

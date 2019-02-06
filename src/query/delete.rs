@@ -19,6 +19,13 @@ impl<A> Delete<A> {
 
         Ok(from_str)
     }
+
+    pub fn make_limit(&self) -> Result<String, ()> {
+        match self.0.state.limit_clause {
+            LimitClause::Limit(_, _) => Ok(self.0.state.limit_clause.to_string()),
+            LimitClause::No => Err(())
+        }
+    }
 }
 
 impl<A: Column> HasDelete for Delete<A> {
@@ -31,6 +38,10 @@ impl<A: Column> HasDelete for Delete<A> {
 
         if let Ok(a) = self.make_where() {
             sql = sql + " WHERE " + &a;
+        }
+        
+        if let Ok(a) = self.make_limit() {
+            sql = sql + " " + &a;
         }
 
         sql

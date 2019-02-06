@@ -39,6 +39,16 @@ impl<A> Query<A> {
         self
     }
 
+    pub fn limit_(mut self, a: u32) -> Query<A> {
+        self.state.limit_clause = self.state.limit_clause + LimitClause::Limit(Some(a), None);
+        self
+    }
+    
+    pub fn offset_(mut self, a: u32) -> Query<A> {
+        self.state.limit_clause = self.state.limit_clause + LimitClause::Limit(None, Some(a));
+        self
+    }
+
     fn from_start() -> FromPreprocess<A>
     where
         A: Default + HasEntityDef,

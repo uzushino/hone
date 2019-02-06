@@ -271,11 +271,59 @@ impl<A, DB2> fmt::Display for SetValue<A, DB2> {
 pub type SetClause = Rc<HasSet>;
 
 #[derive(Clone)]
+pub enum LimitClause {
+    Limit(Option<u32>, Option<u32>),
+    No,
+}
+
+impl Default for LimitClause {
+    fn default() -> Self {
+        LimitClause::No
+    }
+}
+
+impl Add for LimitClause {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self::Output {
+        match self {
+            LimitClause::Limit(lhs1, rhs1) => {
+                match other {
+                    LimitClause::Limit(lhs2, rhs2) =>  LimitClause::Limit(lhs1.or(lhs2), rhs1.or(rhs2)),
+                    LimitClause::No => self,
+                }
+            },
+            LimitClause::No => other,
+        }
+    }
+}
+
+impl fmt::Display for LimitClause {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            LimitClause::Limit(limit, offset) => {
+                let mut result: Vec<String> = Vec::new();
+
+                if let Some(n) = limit {
+                    result.push(format!("LIMIT {}", n));
+                }
+                if let Some(n) = offset {
+                    result.push(format!("OFFSET {}", n));
+                }
+                write!(f, "{}", result.join(" "))
+            },
+            LimitClause::No => Err(fmt::Error)
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct QueryState {
     pub from_clause: Vec<FromClause>,
     pub where_clause: WhereClause,
     pub order_clause: Vec<OrderClause>,
     pub set_clause: Vec<SetClause>,
+    pub limit_clause: LimitClause,
 }
 
 impl Default for QueryState {
@@ -285,6 +333,7 @@ impl Default for QueryState {
             order_clause: vec![],
             where_clause: WhereClause::No,
             set_clause: vec![],
+            limit_clause: LimitClause::default(),
         }
     }
 }

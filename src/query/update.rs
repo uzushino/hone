@@ -75,16 +75,6 @@ impl<A, B> UpdateSelect<A, B> where A: HasEntityDef, B: HasSelect {
         Ok(a)
     }
     
-    fn make_column(&self) -> Result<String, ()> {
-        let s = self.0.state.set_clause
-            .iter()
-            .map(|f| f.column())
-            .collect::<Vec<_>>()
-            .join(", ");
-
-        Ok(s)
-    }
-
     fn make_from(&self) -> Result<String, ()> {
         let st = self.1.get_state();
         let fc = combine_joins(st.from_clause.as_slice(), &mut [])?;
@@ -104,6 +94,13 @@ impl<A, B> UpdateSelect<A, B> where A: HasEntityDef, B: HasSelect {
         match st.where_clause {
             WhereClause::No => Err(()),
             _ => Ok(st.where_clause.to_string())
+        }
+    }
+
+    pub fn make_limit(&self) -> Result<String, ()> {
+        match self.0.state.limit_clause {
+            LimitClause::Limit(_, _) => Ok(self.0.state.limit_clause.to_string()),
+            LimitClause::No => Err(())
         }
     }
 }
@@ -127,6 +124,10 @@ impl<A: HasEntityDef, B: HasSelect> HasUpdate for UpdateSelect<A, B> {
         
         if let Ok(a) = self.make_where() {
             sql = sql + " WHERE " + &a;
+        }
+        
+        if let Ok(a) = self.make_limit() {
+            sql = sql + " " + &a;
         }
 
         sql
