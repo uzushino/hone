@@ -46,6 +46,9 @@ assert_eq!(select(a.unwrap()).to_sql(),
   - [x] Inner
   - [x] Left
   - [x] Right
+  
+- [ ] Limit
+- [ ] Offset
 
 - Functions
   - [x] SUM
