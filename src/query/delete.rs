@@ -5,11 +5,11 @@ use self::from::*;
 
 impl<A> Delete<A> {
     fn make_where(&self) -> Result<String, ()> {
-        Ok(self.0.state.where_clause.to_string())
+        Ok(self.0.state.borrow().where_clause.to_string())
     }
 
     fn make_from(&self) -> Result<String, ()> {
-        let fc = combine_joins(self.0.state.from_clause.as_slice(), &mut [])?;
+        let fc = combine_joins(self.0.state.borrow().from_clause.as_slice(), &mut [])?;
 
         let from_str = fc
             .into_iter()
@@ -21,8 +21,8 @@ impl<A> Delete<A> {
     }
 
     pub fn make_limit(&self) -> Result<String, ()> {
-        match self.0.state.limit_clause {
-            LimitClause::Limit(_, _) => Ok(self.0.state.limit_clause.to_string()),
+        match self.0.state.borrow().limit_clause {
+            LimitClause::Limit(_, _) => Ok(self.0.state.borrow().limit_clause.to_string()),
             LimitClause::No => Err(())
         }
     }
@@ -39,7 +39,7 @@ impl<A: Column> HasDelete for Delete<A> {
         if let Ok(a) = self.make_where() {
             sql = sql + " WHERE " + &a;
         }
-        
+
         if let Ok(a) = self.make_limit() {
             sql = sql + " " + &a;
         }

@@ -3,11 +3,12 @@ use std::rc::Rc;
 
 use crate::entity::*;
 use crate::query::*;
+use crate::types::*;
 
 impl<A> Query<A> {
     pub fn new(e: A) -> Self {
         Query {
-            state: QueryState::default(),
+            state: Rc::new(RefCell::new(QueryState::default())),
             value: e,
         }
     }
@@ -18,34 +19,49 @@ impl<A> Query<A> {
         q
     }
 
-    pub fn on_(mut self, b: Rc<HasValue<bool, bool>>) -> Query<A> {
-        self.state.from_clause.push(FromClause::OnClause(b));
+    pub fn on_(self, b: Rc<HasValue<bool, bool>>) -> Query<A> {
+        self.state.borrow_mut().from_clause.push(FromClause::OnClause(b));
         self
     }
 
-    pub fn where_(mut self, b: Rc<HasValue<bool, bool>>) -> Query<A> {
+    pub fn where_(self, b: Rc<HasValue<bool, bool>>) -> Query<A> {
         let w = WhereClause::Where(b);
-        self.state.where_clause = self.state.where_clause + w;
+        let n = self.state.borrow_mut().where_clause.clone();
+        {
+            (*self.state.borrow_mut()).where_clause = n + w;
+        }
         self
     }
 
-    pub fn order_(mut self, b: Vec<Rc<HasOrder>>) -> Query<A> {
-        self.state.order_clause = b;
+    pub fn order_(self, b: Vec<Rc<HasOrder>>) -> Query<A> {
+        self.state.borrow_mut().order_clause = b;
         self
     }
 
-    pub fn value_(mut self, a: Rc<HasSet>) -> Query<A> {
-        self.state.set_clause.push(a.clone());
+    pub fn group_by_(self, b: Box<HasGroupBy>) -> Query<A> {
+        self.state.borrow_mut().groupby_clause.push(b);
         self
     }
 
-    pub fn limit_(mut self, a: u32) -> Query<A> {
-        self.state.limit_clause = self.state.limit_clause + LimitClause::Limit(Some(a), None);
+    pub fn value_(self, a: Rc<HasSet>) -> Query<A> {
+        self.state.borrow_mut().set_clause.push(a.clone());
+        self
+    }
+
+    pub fn limit_(self, a: u32) -> Query<A> {
+        let s = self.state.borrow_mut().limit_clause.clone();
+        {
+
+            self.state.borrow_mut().limit_clause = s + LimitClause::Limit(Some(a), None);
+        }
         self
     }
     
-    pub fn offset_(mut self, a: u32) -> Query<A> {
-        self.state.limit_clause = self.state.limit_clause + LimitClause::Limit(None, Some(a));
+    pub fn offset_(self, a: u32) -> Query<A> {
+        let s = self.state.borrow_mut().limit_clause.clone();
+        {
+            self.state.borrow_mut().limit_clause = s + LimitClause::Limit(None, Some(a));
+        }
         self
     }
 
@@ -58,7 +74,7 @@ impl<A> Query<A> {
     }
 
     fn from_finish(q: &mut Query<A>, exp: FromPreprocess<A>) -> Result<A, ()> {
-        q.state.from_clause.push(exp.1);
+        q.state.borrow_mut().from_clause.push(exp.1);
         Ok(exp.0)
     }
 }
@@ -202,9 +218,21 @@ where
     fn from_() -> Result<Query<Self::Kind>, ()> {
         let a = Query::<A>::from_()?;
         let b = Query::<B>::from_()?;
-        let mut qs = Query::new((a.value, b.value));
+        let qs = Query::new((a.value, b.value));
 
-        qs.state = a.state + b.state;
+        { 
+            let mut sa = a.state.borrow_mut();
+            let mut sb = b.state.borrow_mut(); 
+            sa.from_clause.append(&mut sb.from_clause.clone());
+
+            let s = QueryState {
+                from_clause: sa.from_clause.clone(),
+                where_clause: sa.where_clause.clone() + sb.where_clause.clone(),
+                ..Default::default()
+            };
+
+            qs.state.replace(s);
+        }
 
         Ok(qs)
     }

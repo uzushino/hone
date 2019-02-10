@@ -1,4 +1,5 @@
 use std::rc::Rc;
+use std::cell::{RefCell,Ref, RefMut};
 
 use crate::types::*;
 use crate::entity::HasEntityDef;
@@ -18,7 +19,7 @@ pub trait HasQuery {
 }
 
 pub struct Query<A> {
-    pub state: QueryState,
+    pub state: Rc<RefCell<QueryState>>,
     pub value: A,
 }
 
@@ -36,7 +37,7 @@ pub struct Select<A>(Query<A>);
 pub trait HasSelect {
     fn to_sql(&self) -> String;
 
-    fn get_state(&self) -> QueryState;
+    fn get_state(&self) -> Ref<QueryState>;
 }
 
 pub fn select<A: Column>(q: Query<A>) -> impl HasSelect {

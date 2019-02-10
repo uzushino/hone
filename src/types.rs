@@ -317,13 +317,21 @@ impl fmt::Display for LimitClause {
     }
 }
 
-#[derive(Clone)]
+pub trait HasGroupBy {}
+
+pub struct GroupBy<A, DB>(pub Rc<HasValue<A, DB>>);
+
+impl<A, DB> HasGroupBy for GroupBy<A, DB> {}
+
+pub type GroupByClause = Box<HasGroupBy>;
+
 pub struct QueryState {
     pub from_clause: Vec<FromClause>,
     pub where_clause: WhereClause,
     pub order_clause: Vec<OrderClause>,
     pub set_clause: Vec<SetClause>,
     pub limit_clause: LimitClause,
+    pub groupby_clause: Vec<GroupByClause>,
 }
 
 impl Default for QueryState {
@@ -334,6 +342,7 @@ impl Default for QueryState {
             where_clause: WhereClause::No,
             set_clause: vec![],
             limit_clause: LimitClause::default(),
+            groupby_clause: vec![],
         }
     }
 }

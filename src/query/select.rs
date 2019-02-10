@@ -9,18 +9,18 @@ impl<A: Column> Select<A> {
     }
 
     fn make_where(&self) -> Result<String, ()> {
-        match self.0.state.where_clause {
+        match self.0.state.borrow().where_clause {
             WhereClause::No => Err(()),
-            _ => Ok(self.0.state.where_clause.to_string())
+            _ => Ok(self.0.state.borrow().where_clause.to_string())
         }
     }
 
     fn make_order(&self) -> Result<String, ()> {
-        if self.0.state.order_clause.is_empty() {
+        if self.0.state.borrow().order_clause.is_empty() {
             return Err(());
         }
 
-        let a = self.0.state.order_clause
+        let a = self.0.state.borrow().order_clause
             .iter()
             .map(|i| i.to_string())
             .collect::<Vec<_>>()
@@ -30,7 +30,7 @@ impl<A: Column> Select<A> {
     }
 
     fn make_from(&self) -> Result<String, ()> {
-        let fc = combine_joins(self.0.state.from_clause.as_slice(), &mut [])?;
+        let fc = combine_joins(self.0.state.borrow().from_clause.as_slice(), &mut [])?;
 
         let from_str = fc
             .into_iter()
@@ -42,8 +42,8 @@ impl<A: Column> Select<A> {
     }
 
     pub fn make_limit(&self) -> Result<String, ()> {
-        match self.0.state.limit_clause {
-            LimitClause::Limit(_, _) => Ok(self.0.state.limit_clause.to_string()),
+        match self.0.state.borrow().limit_clause {
+            LimitClause::Limit(_, _) => Ok(self.0.state.borrow().limit_clause.to_string()),
             LimitClause::No => Err(())
         }
     }
@@ -72,7 +72,7 @@ impl<A: Column> HasSelect for Select<A> {
         sql
     }
 
-    fn get_state(&self) -> QueryState {
-        self.0.state.clone()
+    fn get_state(&self) -> Ref<QueryState> {
+        self.0.state.borrow()
     }
 }

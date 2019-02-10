@@ -5,11 +5,11 @@ use self::from::*;
 
 impl<A: Column> Update<A> {
     fn make_where(&self) -> Result<String, ()> {
-        Ok(self.0.state.where_clause.to_string())
+        Ok(self.0.state.borrow().where_clause.to_string())
     }
 
     fn make_from(&self) -> Result<String, ()> {
-        let fc = combine_joins(self.0.state.from_clause.as_slice(), &mut [])?;
+        let fc = combine_joins(self.0.state.borrow().from_clause.as_slice(), &mut [])?;
 
         let from_str = fc
             .into_iter()
@@ -21,11 +21,11 @@ impl<A: Column> Update<A> {
     }
     
     fn make_set(&self) -> Result<String, ()> {
-        if self.0.state.set_clause.is_empty() {
+        if self.0.state.borrow().set_clause.is_empty() {
             return Err(());
         }
 
-        let a = self.0.state.set_clause
+        let a = self.0.state.borrow().set_clause
             .iter()
             .map(|i| i.to_string())
             .collect::<Vec<_>>()
@@ -62,11 +62,11 @@ impl<A, B> UpdateSelect<A, B> where A: HasEntityDef, B: HasSelect {
     }
     
     fn make_set(&self) -> Result<String, ()> {
-        if self.0.state.set_clause.is_empty() {
+        if self.0.state.borrow().set_clause.is_empty() {
             return Err(());
         }
 
-        let a = self.0.state.set_clause
+        let a = self.0.state.borrow().set_clause
             .iter()
             .map(|i| i.to_string())
             .collect::<Vec<_>>()
@@ -98,13 +98,12 @@ impl<A, B> UpdateSelect<A, B> where A: HasEntityDef, B: HasSelect {
     }
 
     pub fn make_limit(&self) -> Result<String, ()> {
-        match self.0.state.limit_clause {
-            LimitClause::Limit(_, _) => Ok(self.0.state.limit_clause.to_string()),
+        match self.0.state.borrow().limit_clause {
+            LimitClause::Limit(_, _) => Ok(self.0.state.borrow().limit_clause.to_string()),
             LimitClause::No => Err(())
         }
     }
 }
-
 
 impl<A: HasEntityDef, B: HasSelect> HasUpdate for UpdateSelect<A, B> {
     fn to_sql(&self) -> String {

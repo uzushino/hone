@@ -9,7 +9,7 @@ impl<A> InsertInto<A> where A: HasEntityDef {
     }
 
     fn make_column(&self) -> Result<String, ()> {
-        let s = self.0.state.set_clause
+        let s = self.0.state.borrow().set_clause
             .iter()
             .map(|f| f.column())
             .collect::<Vec<_>>()
@@ -19,7 +19,7 @@ impl<A> InsertInto<A> where A: HasEntityDef {
     }
 
     fn make_values(&self) -> Result<String, ()> {
-        let s = self.0.state.set_clause
+        let s = self.0.state.borrow().set_clause
             .iter()
             .map(|f| f.value())
             .collect::<Vec<_>>()
@@ -56,7 +56,7 @@ impl<A, B> InsertSelect<A, B> where A: HasEntityDef, B: HasSelect {
     }
     
     fn make_column(&self) -> Result<String, ()> {
-        let s = self.0.state.set_clause
+        let s = self.0.state.borrow().set_clause
             .iter()
             .map(|f| f.column())
             .collect::<Vec<_>>()
