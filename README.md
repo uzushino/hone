@@ -42,6 +42,8 @@ assert_eq!(select(a.unwrap()).to_sql(),
 - ORDER BY 
   - [x] ASC/DESC
 
+- [ ] GROUP BY 
+
 - JOINs
   - [x] Inner
   - [x] Left
