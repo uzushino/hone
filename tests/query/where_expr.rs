@@ -57,6 +57,17 @@ fn test_limit_offset() {
 }
 
 #[test]
+fn test_groupby() {
+    let a = Query::<User>::from_by(|q, a| {
+        let q = q.group_by_(a.user_id());
+        let q = q.group_by_(a.email());
+        q.return_(a.user_id())
+    });
+
+    assert_eq!(select(a.unwrap()).to_sql(), "SELECT User.user_id FROM User GROUP BY User.user_id, User.email".to_string());
+}
+
+#[test]
 fn test_where() {
     let a = Query::<User>::from_by(|q, a| {
         let one = val_(1);

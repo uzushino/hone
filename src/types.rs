@@ -317,13 +317,19 @@ impl fmt::Display for LimitClause {
     }
 }
 
-pub trait HasGroupBy {}
+pub trait HasGroupBy : fmt::Display {}
 
 pub struct GroupBy<A, DB>(pub Rc<HasValue<A, DB>>);
 
 impl<A, DB> HasGroupBy for GroupBy<A, DB> {}
 
 pub type GroupByClause = Box<HasGroupBy>;
+
+impl<A, DB> fmt::Display for GroupBy<A, DB> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 pub struct QueryState {
     pub from_clause: Vec<FromClause>,

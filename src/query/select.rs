@@ -47,6 +47,20 @@ impl<A: Column> Select<A> {
             LimitClause::No => Err(())
         }
     }
+    
+    pub fn make_group(&self) -> Result<String, ()> {
+        if self.0.state.borrow().groupby_clause.is_empty() {
+            return Err(())
+        };
+
+        let c = self.0.state.borrow().groupby_clause
+            .iter()
+            .map(|v| (*v).to_string())
+            .collect::<Vec<_>>()
+            .join(", ");
+
+        Ok(c)
+    }
 }
 
 impl<A: Column> HasSelect for Select<A> {
@@ -64,6 +78,9 @@ impl<A: Column> HasSelect for Select<A> {
         }
         if let Ok(a) = self.make_order() {
             sql = sql + " ORDER BY " + &a;
+        }
+        if let Ok(a) = self.make_group() {
+            sql = sql + " GROUP BY " + &a;
         }
         if let Ok(a) = self.make_limit() {
             sql = sql + " " + &a;

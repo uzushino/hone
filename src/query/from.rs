@@ -3,7 +3,6 @@ use std::rc::Rc;
 
 use crate::entity::*;
 use crate::query::*;
-use crate::types::*;
 
 impl<A> Query<A> {
     pub fn new(e: A) -> Self {
@@ -38,8 +37,14 @@ impl<A> Query<A> {
         self
     }
 
-    pub fn group_by_(self, b: Box<HasGroupBy>) -> Query<A> {
-        self.state.borrow_mut().groupby_clause.push(b);
+    pub fn group_by_<T, DB>(self, b: Rc<HasValue<T, DB>>) -> Query<A> where T: 'static, DB: 'static {
+        let v = GroupBy(b);
+
+        self.state
+            .borrow_mut()
+            .groupby_clause
+            .push(Box::new(v));
+
         self
     }
 
@@ -51,7 +56,6 @@ impl<A> Query<A> {
     pub fn limit_(self, a: u32) -> Query<A> {
         let s = self.state.borrow_mut().limit_clause.clone();
         {
-
             self.state.borrow_mut().limit_clause = s + LimitClause::Limit(Some(a), None);
         }
         self
@@ -382,35 +386,33 @@ pub fn set_on(join: &FromClause, on: &Rc<HasValue<bool, bool>>) -> Option<FromCl
     }
 }
 
-pub fn find_imcomplete_and_set_on(joins: &[FromClause], on: Rc<HasValue<bool, bool>>) -> either::Either<Rc<HasValue<bool, bool>>, Vec<FromClause>> {
+pub fn find_imcomplete_and_set_on(joins: &[FromClause], on: Rc<HasValue<bool, bool>>) -> Result<Vec<FromClause>, Rc<HasValue<bool, bool>>> {
     match joins.split_first() {
         Some((ref join, rest)) => {
             if let Some(f) = set_on(*join, &on) {
                 let mut rest = rest.to_vec();
                 rest.push(f);
-
-                return either::Right(rest);
+                return Ok(rest);
             }
 
-            let mut v = try_right!(find_imcomplete_and_set_on(rest, on));
-
+            let mut v = find_imcomplete_and_set_on(rest, on)?;
             v.insert(0, (*join).clone());
-            either::Right(v)
+
+            Ok(v)
         }
-        None => either::Left(on),
+        None => Err(on),
     }
 }
 
 pub fn combine_joins(fs: &[FromClause], acc: &mut [FromClause]) -> Result<Vec<FromClause>, ()> {
     match fs.split_first() {
         Some((&FromClause::OnClause(ref on), rest)) => match find_imcomplete_and_set_on(acc, on.clone()) {
-            either::Right(mut acc_) => combine_joins(rest, acc_.as_mut_slice()),
-            either::Left(_) => Err(()),
+            Ok(mut acc_) => combine_joins(rest, acc_.as_mut_slice()),
+            Err(_) => Err(()),
         },
-        Some((ref head, rest)) => {
+        Some((head, rest)) => {
             let mut acc = acc.to_vec();
-            acc.push((*head).clone());
-
+            acc.push(head.clone());
             combine_joins(rest, acc.as_mut_slice())
         }
         _ => {
