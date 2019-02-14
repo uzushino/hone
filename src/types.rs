@@ -1,9 +1,9 @@
 use std::default::Default;
+use std::fmt;
 use std::ops::Add;
 use std::rc::Rc;
-use std::fmt;
 
-use crate::entity::{Entity, Column};
+use crate::entity::{Column, Entity};
 use crate::expression::and_;
 
 #[derive(Debug, Clone)]
@@ -29,46 +29,51 @@ pub struct FromPreprocess<A>(pub A, pub FromClause);
 impl<A> HasPreprocess for FromPreprocess<A> {}
 
 pub trait ToLiteral {
-    fn to_literal<A: fmt::Display>(v: A) -> String ;
+    fn to_literal<A: fmt::Display>(v: A) -> String;
 }
 
 impl ToLiteral for String {
     fn to_literal<A: fmt::Display>(v: A) -> String {
-        format!("'{}'", v.to_string()) 
+        format!("'{}'", v.to_string())
     }
 }
 
 impl ToLiteral for bool {
     fn to_literal<A: fmt::Display>(v: A) -> String {
-        format!("{}", v.to_string()) 
+        format!("{}", v.to_string())
     }
 }
 
 impl ToLiteral for i32 {
     fn to_literal<A: fmt::Display>(v: A) -> String {
-        format!("{}", v.to_string()) 
+        format!("{}", v.to_string())
     }
 }
 
 impl ToLiteral for u32 {
     fn to_literal<A: fmt::Display>(v: A) -> String {
-        format!("{}", v.to_string()) 
+        format!("{}", v.to_string())
     }
 }
 
 impl ToLiteral for Column {
     fn to_literal<A: fmt::Display>(v: A) -> String {
-        format!("{}", v.to_string()) 
+        format!("{}", v.to_string())
     }
 }
 
 // Expr (Value a)
-pub trait HasValue<A, DB> : fmt::Display {
+pub trait HasValue<A, DB>: fmt::Display {
     fn to_sql(&self) -> String;
 }
 
-impl<A: std::fmt::Display, DB> HasValue<A, DB> for Rc<HasValue<A, DB>> where Self: fmt::Display {
-    fn to_sql(&self) -> String { self.to_string() }
+impl<A: std::fmt::Display, DB> HasValue<A, DB> for Rc<HasValue<A, DB>>
+where
+    Self: fmt::Display,
+{
+    fn to_sql(&self) -> String {
+        self.to_string()
+    }
 }
 
 #[derive(Clone)]
@@ -81,7 +86,10 @@ pub enum NeedParens {
 pub struct Raw(pub NeedParens, pub String);
 
 impl<A, DB: ToLiteral> HasValue<A, DB> for Raw {
-    fn to_sql(&self) -> String where Self: Sized {
+    fn to_sql(&self) -> String
+    where
+        Self: Sized,
+    {
         let s = DB::to_literal(self.1.clone());
 
         match self.0 {
@@ -103,7 +111,10 @@ impl fmt::Display for Raw {
 pub struct CompositKey<A: fmt::Display>(pub A);
 
 impl<A: fmt::Display + Clone, DB: ToLiteral> HasValue<A, DB> for CompositKey<A> {
-    fn to_sql(&self) -> String where Self: Sized {
+    fn to_sql(&self) -> String
+    where
+        Self: Sized,
+    {
         DB::to_literal(self.0.clone())
     }
 }
@@ -172,8 +183,7 @@ impl fmt::Display for FromClause {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             FromClause::Start(s) => write!(f, "{}", s),
-            FromClause::Join(lhs, kind, rhs, ref on) if on.is_some() => 
-                write!(f, "{} {} {} ON {}", lhs, kind, rhs, on.clone().unwrap()),
+            FromClause::Join(lhs, kind, rhs, ref on) if on.is_some() => write!(f, "{} {} {} ON {}", lhs, kind, rhs, on.clone().unwrap()),
             _ => Ok(()),
         }
     }
@@ -229,8 +239,8 @@ pub struct RightJoin<A, B>(pub A, pub B);
 
 #[derive(Debug, Clone)]
 pub enum JoinKind {
-    InnerJoinKind,     // INNER JOIN
-    LeftOuterJoinKind, // LEFT OUTER JOIN
+    InnerJoinKind,      // INNER JOIN
+    LeftOuterJoinKind,  // LEFT OUTER JOIN
     RightOuterJoinKind, // RIGHT OUTER JOIN
 }
 
@@ -245,7 +255,7 @@ impl fmt::Display for JoinKind {
     }
 }
 
-pub trait HasSet : fmt::Display {
+pub trait HasSet: fmt::Display {
     fn column(&self) -> String;
     fn value(&self) -> String;
 }
@@ -256,7 +266,7 @@ impl<A, DB> HasSet for SetValue<A, DB> {
     fn column(&self) -> String {
         self.0.to_sql()
     }
-    
+
     fn value(&self) -> String {
         self.1.to_sql()
     }
@@ -287,11 +297,9 @@ impl Add for LimitClause {
 
     fn add(self, other: Self) -> Self::Output {
         match self {
-            LimitClause::Limit(lhs1, rhs1) => {
-                match other {
-                    LimitClause::Limit(lhs2, rhs2) =>  LimitClause::Limit(lhs1.or(lhs2), rhs1.or(rhs2)),
-                    LimitClause::No => self,
-                }
+            LimitClause::Limit(lhs1, rhs1) => match other {
+                LimitClause::Limit(lhs2, rhs2) => LimitClause::Limit(lhs1.or(lhs2), rhs1.or(rhs2)),
+                LimitClause::No => self,
             },
             LimitClause::No => other,
         }
@@ -311,13 +319,13 @@ impl fmt::Display for LimitClause {
                     result.push(format!("OFFSET {}", n));
                 }
                 write!(f, "{}", result.join(" "))
-            },
-            LimitClause::No => Err(fmt::Error)
+            }
+            LimitClause::No => Err(fmt::Error),
         }
     }
 }
 
-pub trait HasGroupBy : fmt::Display {}
+pub trait HasGroupBy: fmt::Display {}
 
 pub struct GroupBy<A, DB>(pub Rc<HasValue<A, DB>>);
 

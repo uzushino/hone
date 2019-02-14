@@ -13,7 +13,10 @@ fn test_select() {
         q.return_((a.user_id(), a.email(), val_(2)))
     });
 
-    assert_eq!(select(a.unwrap()).to_sql(), "SELECT User.user_id, User.email, 2 FROM User WHERE (User.user_id = 1)".to_string());
+    assert_eq!(
+        select(a.unwrap()).to_sql(),
+        "SELECT User.user_id, User.email, 2 FROM User WHERE (User.user_id = 1)".to_string()
+    );
 }
 
 #[test]
@@ -30,7 +33,9 @@ fn test_functions() {
 
         q.return_((sum, count, avg))
     });
-    
-    assert_eq!(select(a.unwrap()).to_sql(), 
-        "SELECT SUM(User.user_id), COUNT(User.user_id), AVG(User.user_id) FROM User".to_string());
+
+    assert_eq!(
+        select(a.unwrap()).to_sql(),
+        "SELECT SUM(User.user_id), COUNT(User.user_id), AVG(User.user_id) FROM User".to_string()
+    );
 }

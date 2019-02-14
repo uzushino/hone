@@ -7,11 +7,11 @@ use diesel::prelude::*;
 use diesel::sql_query;
 use diesel_migrations;
 
-use hone::entity::{HasEntityDef, EntityDef, Table as tbl};
+use hone::entity::Column;
+use hone::entity::{EntityDef, HasEntityDef, Table as tbl};
 use hone::expression::*;
 use hone::query::*;
 use hone::types::*;
-use hone::entity::Column;
 
 fn establish_connection() -> SqliteConnection {
     let database_url = "/tmp/hoge.db";
@@ -85,8 +85,7 @@ fn test_diesel() {
         q
     });
 
-    let b = sql_query(select(b.unwrap()).to_sql())
-        .load::<Download>(&connection).unwrap();
+    let b = sql_query(select(b.unwrap()).to_sql()).load::<Download>(&connection).unwrap();
 
     let b = b.first().unwrap();
 

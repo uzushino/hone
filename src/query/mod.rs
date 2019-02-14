@@ -1,16 +1,16 @@
+use std::cell::{Ref, RefCell};
 use std::rc::Rc;
-use std::cell::{RefCell, Ref};
 
-use crate::types::*;
 use crate::entity::HasEntityDef;
+use crate::types::*;
 
 mod column;
+mod delete;
 mod from;
 mod functions;
-mod select;
-mod delete;
-mod update;
 mod insert;
+mod select;
+mod update;
 
 use self::column::*;
 
@@ -51,12 +51,15 @@ pub trait HasUpdate {
     fn to_sql(&self) -> String;
 }
 
-pub fn update<A: Column>(q: Query<A>) -> impl HasUpdate { 
+pub fn update<A: Column>(q: Query<A>) -> impl HasUpdate {
     Update(q)
 }
 
 pub fn update_select<A: Column, B, F>(q: Query<A>, f: F) -> UpdateSelect<B, impl HasSelect>
-where F: Fn(Query<B>, B, &Query<A>) -> Query<B>, B: Default {
+where
+    F: Fn(Query<B>, B, &Query<A>) -> Query<B>,
+    B: Default,
+{
     let qs = Query::new(B::default());
     let qs = f(qs, B::default(), &q);
 
@@ -75,7 +78,10 @@ pub fn insert_into<A: HasEntityDef>(q: Query<A>) -> impl HasInsert {
 }
 
 pub fn insert_select<A: Column, B, F>(q: Query<A>, f: F) -> InsertSelect<B, impl HasSelect>
-where F: Fn(Query<B>, B, &Query<A>) -> Query<B>, B: Default {
+where
+    F: Fn(Query<B>, B, &Query<A>) -> Query<B>,
+    B: Default,
+{
     let qs = Query::new(B::default());
     let qs = f(qs, B::default(), &q);
 

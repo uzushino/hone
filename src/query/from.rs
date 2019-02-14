@@ -1,8 +1,8 @@
 use std::borrow::Borrow;
 use std::rc::Rc;
 
-use crate::entity::*;
 use crate::entity::Column as CL;
+use crate::entity::*;
 use crate::query::*;
 
 impl<A> Query<A> {
@@ -38,18 +38,23 @@ impl<A> Query<A> {
         self
     }
 
-    pub fn group_by_<T, DB>(self, b: Rc<HasValue<T, DB>>) -> Query<A> where T: 'static, DB: 'static {
+    pub fn group_by_<T, DB>(self, b: Rc<HasValue<T, DB>>) -> Query<A>
+    where
+        T: 'static,
+        DB: 'static,
+    {
         let v = GroupBy(b);
 
-        self.state
-            .borrow_mut()
-            .groupby_clause
-            .push(Box::new(v));
+        self.state.borrow_mut().groupby_clause.push(Box::new(v));
 
         self
     }
 
-    pub fn value_<T, DB>(self, a: Rc<HasValue<T, CL>>, b: Rc<HasValue<T, DB>>) -> Query<A> where T: 'static, DB: 'static {
+    pub fn value_<T, DB>(self, a: Rc<HasValue<T, CL>>, b: Rc<HasValue<T, DB>>) -> Query<A>
+    where
+        T: 'static,
+        DB: 'static,
+    {
         let v = Box::new(SetValue(a, b));
         self.state.borrow_mut().set_clause.push(v);
         self
@@ -62,7 +67,7 @@ impl<A> Query<A> {
         }
         self
     }
-    
+
     pub fn offset_(self, a: u32) -> Query<A> {
         let s = self.state.borrow_mut().limit_clause.clone();
         {
@@ -226,9 +231,9 @@ where
         let b = Query::<B>::from_()?;
         let qs = Query::new((a.value, b.value));
 
-        { 
+        {
             let mut sa = a.state.borrow_mut();
-            let mut sb = b.state.borrow_mut(); 
+            let mut sb = b.state.borrow_mut();
             sa.from_clause.append(&mut sb.from_clause.clone());
 
             let s = QueryState {

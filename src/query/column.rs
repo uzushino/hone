@@ -1,8 +1,8 @@
 use std::collections::BTreeMap;
 use std::rc::Rc;
 
-use crate::types::*;
 use crate::entity::HasEntityDef;
+use crate::types::*;
 
 pub trait Column {
     fn cols(&self) -> String;
@@ -19,14 +19,14 @@ impl<A: ToString, DB> Column for Rc<HasValue<A, DB>> {
     }
 }
 
-impl<A> Column for A where A: HasEntityDef {
+impl<A> Column for A
+where
+    A: HasEntityDef,
+{
     fn cols(&self) -> String {
         let ed = A::entity_def();
         let ordered = ed.columns.iter().collect::<BTreeMap<_, _>>();
-        let s = ordered.keys()
-            .into_iter()
-            .map(|k| k.to_string())
-            .collect::<Vec<_>>();
+        let s = ordered.keys().into_iter().map(|k| k.to_string()).collect::<Vec<_>>();
 
         s.join(", ")
     }
@@ -36,7 +36,11 @@ impl<A> Column for A where A: HasEntityDef {
     }
 }
 
-impl<A, B> Column for (A, B) where A: Column, B: Column {
+impl<A, B> Column for (A, B)
+where
+    A: Column,
+    B: Column,
+{
     fn cols(&self) -> String {
         let ca = self.0.cols();
         let cb = self.1.cols();
@@ -49,7 +53,12 @@ impl<A, B> Column for (A, B) where A: Column, B: Column {
     }
 }
 
-impl<A, B, C> Column for (A, B, C) where A: Column, B: Column, C: Column {
+impl<A, B, C> Column for (A, B, C)
+where
+    A: Column,
+    B: Column,
+    C: Column,
+{
     fn cols(&self) -> String {
         let ca = self.0.cols();
         let cb = self.1.cols();

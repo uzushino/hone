@@ -11,11 +11,7 @@ impl<A> Delete<A> {
     fn make_from(&self) -> Result<String, ()> {
         let fc = combine_joins(self.0.state.borrow().from_clause.as_slice(), &mut [])?;
 
-        let from_str = fc
-            .into_iter()
-            .map(|f| f.to_string())
-            .collect::<Vec<_>>()
-            .join(",");
+        let from_str = fc.into_iter().map(|f| f.to_string()).collect::<Vec<_>>().join(",");
 
         Ok(from_str)
     }
@@ -23,7 +19,7 @@ impl<A> Delete<A> {
     pub fn make_limit(&self) -> Result<String, ()> {
         match self.0.state.borrow().limit_clause {
             LimitClause::Limit(_, _) => Ok(self.0.state.borrow().limit_clause.to_string()),
-            LimitClause::No => Err(())
+            LimitClause::No => Err(()),
         }
     }
 }

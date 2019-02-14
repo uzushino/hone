@@ -11,7 +11,7 @@ impl<A: Column> Select<A> {
     fn make_where(&self) -> Result<String, ()> {
         match self.0.state.borrow().where_clause {
             WhereClause::No => Err(()),
-            _ => Ok(self.0.state.borrow().where_clause.to_string())
+            _ => Ok(self.0.state.borrow().where_clause.to_string()),
         }
     }
 
@@ -20,7 +20,11 @@ impl<A: Column> Select<A> {
             return Err(());
         }
 
-        let a = self.0.state.borrow().order_clause
+        let a = self
+            .0
+            .state
+            .borrow()
+            .order_clause
             .iter()
             .map(|i| i.to_string())
             .collect::<Vec<_>>()
@@ -32,11 +36,7 @@ impl<A: Column> Select<A> {
     fn make_from(&self) -> Result<String, ()> {
         let fc = combine_joins(self.0.state.borrow().from_clause.as_slice(), &mut [])?;
 
-        let from_str = fc
-            .into_iter()
-            .map(|f| f.to_string())
-            .collect::<Vec<_>>()
-            .join(",");
+        let from_str = fc.into_iter().map(|f| f.to_string()).collect::<Vec<_>>().join(",");
 
         Ok(from_str)
     }
@@ -44,16 +44,20 @@ impl<A: Column> Select<A> {
     pub fn make_limit(&self) -> Result<String, ()> {
         match self.0.state.borrow().limit_clause {
             LimitClause::Limit(_, _) => Ok(self.0.state.borrow().limit_clause.to_string()),
-            LimitClause::No => Err(())
+            LimitClause::No => Err(()),
         }
     }
-    
+
     pub fn make_group(&self) -> Result<String, ()> {
         if self.0.state.borrow().groupby_clause.is_empty() {
-            return Err(())
+            return Err(());
         };
 
-        let c = self.0.state.borrow().groupby_clause
+        let c = self
+            .0
+            .state
+            .borrow()
+            .groupby_clause
             .iter()
             .map(|v| (*v).to_string())
             .collect::<Vec<_>>()

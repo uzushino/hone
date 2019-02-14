@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use std::marker::PhantomData;
 use std::fmt;
+use std::marker::PhantomData;
 
 use crate::types::*;
 
@@ -26,7 +26,10 @@ impl fmt::Display for Column {
 }
 
 impl<A, DB: ToLiteral> HasValue<A, DB> for Column {
-    fn to_sql(&self) -> String where Self: Sized {
+    fn to_sql(&self) -> String
+    where
+        Self: Sized,
+    {
         DB::to_literal(self.0.clone())
     }
 }

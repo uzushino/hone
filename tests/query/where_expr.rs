@@ -53,7 +53,10 @@ fn test_limit_offset() {
         q.return_(a.user_id())
     });
 
-    assert_eq!(select(a.unwrap()).to_sql(), "SELECT User.user_id FROM User WHERE (User.user_id = 1) LIMIT 100 OFFSET 200".to_string());
+    assert_eq!(
+        select(a.unwrap()).to_sql(),
+        "SELECT User.user_id FROM User WHERE (User.user_id = 1) LIMIT 100 OFFSET 200".to_string()
+    );
 }
 
 #[test]
@@ -64,7 +67,10 @@ fn test_groupby() {
         q.return_(a.user_id())
     });
 
-    assert_eq!(select(a.unwrap()).to_sql(), "SELECT User.user_id FROM User GROUP BY User.user_id, User.email".to_string());
+    assert_eq!(
+        select(a.unwrap()).to_sql(),
+        "SELECT User.user_id FROM User GROUP BY User.user_id, User.email".to_string()
+    );
 }
 
 #[test]
@@ -77,7 +83,10 @@ fn test_where() {
         q.return_(a.user_id())
     });
 
-    assert_eq!(select(a.unwrap()).to_sql(), "SELECT User.user_id FROM User WHERE (User.user_id = 1)".to_string());
+    assert_eq!(
+        select(a.unwrap()).to_sql(),
+        "SELECT User.user_id FROM User WHERE (User.user_id = 1)".to_string()
+    );
 
     let b = Query::<(_, _)>::from_by(|q, (a, b): (User, Library)| {
         let eq = eq_(a.user_id(), b.library_id());

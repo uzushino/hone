@@ -35,13 +35,14 @@ fn test_insert_select() {
     let q = insert_select(u, |q: Query<Library>, l, u| {
         let q = q.value_(l.library_id(), u.value.0.clone());
         let q = q.value_(l.title(), u.value.1.clone());
-        
+
         q
     });
 
     assert_eq!(
         q.to_sql(),
         "INSERT INTO Library(Library.library_id, Library.title) \
-         SELECT User.user_id, User.email FROM User WHERE (User.user_id = 1)".to_string()
+         SELECT User.user_id, User.email FROM User WHERE (User.user_id = 1)"
+            .to_string()
     );
 }

@@ -10,10 +10,10 @@ fn test_set() {
         let email1 = val_("a@b.c".to_string());
         let eq = eq_(a.email(), email1);
         let q = q.where_(eq);
-        
+
         let email2 = val_("d@e.f".to_string());
         let one = val_(1);
-        
+
         let q = q.value_(a.user_id(), one);
         let q = q.value_(a.email(), email2);
 
@@ -23,7 +23,7 @@ fn test_set() {
     assert_eq!(
         update(a.unwrap()).to_sql(),
         "UPDATE User SET User.user_id = 1, User.email = 'd@e.f' \
-        WHERE (User.email = 'a@b.c')"
+         WHERE (User.email = 'a@b.c')"
             .to_string()
     );
 }
@@ -34,10 +34,10 @@ fn test_set_join() {
         let email1 = val_("a@b.c".to_string());
         let eq = eq_(a.email(), email1);
         let q = q.where_(eq);
-        
+
         let on_eq = eq_(a.user_id(), b.library_id());
         let q = q.on_(on_eq);
-        
+
         let email2 = val_("d@e.f".to_string());
         let one = val_(1);
 
@@ -50,10 +50,9 @@ fn test_set_join() {
     assert_eq!(
         update(a.unwrap()).to_sql(),
         "UPDATE User INNER JOIN Library ON (User.user_id = Library.library_id) SET User.user_id = 1, User.email = 'd@e.f' \
-        WHERE (User.email = 'a@b.c')"
+         WHERE (User.email = 'a@b.c')"
             .to_string()
     );
-
 }
 
 #[test]
@@ -70,7 +69,7 @@ fn test_update_select() {
     let q = update_select(u, |q: Query<Library>, l, u| {
         let q = q.value_(l.library_id(), u.value.0.clone());
         let q = q.value_(l.title(), u.value.1.clone());
-        
+
         q
     });
 
@@ -78,6 +77,7 @@ fn test_update_select() {
         q.to_sql(),
         "UPDATE Library \
          SET Library.library_id = User.user_id, Library.title = User.email \
-         FROM User WHERE (User.user_id = 1)".to_string()
+         FROM User WHERE (User.user_id = 1)"
+            .to_string()
     );
 }
