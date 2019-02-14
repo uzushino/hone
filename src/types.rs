@@ -268,7 +268,7 @@ impl<A, DB2> fmt::Display for SetValue<A, DB2> {
     }
 }
 
-pub type SetClause = Rc<HasSet>;
+pub type SetClause = Box<HasSet>;
 
 #[derive(Clone)]
 pub enum LimitClause {

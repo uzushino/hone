@@ -2,6 +2,7 @@ use std::borrow::Borrow;
 use std::rc::Rc;
 
 use crate::entity::*;
+use crate::entity::Column as CL;
 use crate::query::*;
 
 impl<A> Query<A> {
@@ -48,8 +49,9 @@ impl<A> Query<A> {
         self
     }
 
-    pub fn value_(self, a: Rc<HasSet>) -> Query<A> {
-        self.state.borrow_mut().set_clause.push(a.clone());
+    pub fn value_<T, DB>(self, a: Rc<HasValue<T, CL>>, b: Rc<HasValue<T, DB>>) -> Query<A> where T: 'static, DB: 'static {
+        let v = Box::new(SetValue(a, b));
+        self.state.borrow_mut().set_clause.push(v);
         self
     }
 

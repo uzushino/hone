@@ -92,7 +92,6 @@ pub fn delete<A: Column>(q: Query<A>) -> impl HasDelete {
     Delete(q)
 }
 
-
 pub trait UnsafeSqlFunctionArgument {
     fn to_arg_list(arg: Self) -> Vec<Rc<HasValue<(), bool>>>;
 }

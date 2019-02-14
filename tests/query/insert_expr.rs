@@ -8,12 +8,9 @@ fn test_insert_into() {
     let a = Query::<User>::from_by(|q, a| {
         let one = val_(1);
         let email1 = val_("a@b.c".to_string());
-        
-        let set1 = set_(a.user_id(), one);
-        let set2 = set_(a.email(), email1);
 
-        let q = q.value_(set1);
-        let q = q.value_(set2);
+        let q = q.value_(a.user_id(), one);
+        let q = q.value_(a.email(), email1);
 
         q
     });
@@ -36,11 +33,8 @@ fn test_insert_select() {
     let u = u.unwrap();
 
     let q = insert_select(u, |q: Query<Library>, l, u| {
-        let set1 = set_(l.library_id(), u.value.0.clone());
-        let set2 = set_(l.title(), u.value.1.clone());
-
-        let q = q.value_(set1);
-        let q = q.value_(set2);
+        let q = q.value_(l.library_id(), u.value.0.clone());
+        let q = q.value_(l.title(), u.value.1.clone());
         
         q
     });
