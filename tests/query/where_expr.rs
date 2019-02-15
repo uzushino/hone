@@ -22,6 +22,15 @@ fn test_not_eq() {
 }
 
 #[test]
+fn test_like() {
+    let u = User::default();
+    let one = val_("%aaa%".to_string());
+    let eq = like_(u.user_id(), one);
+
+    assert_eq!("(User.user_id LIKE '%aaa%')", eq.to_string());
+}
+
+#[test]
 fn test_between() {
     let u = User::default();
     let one = val_(1);

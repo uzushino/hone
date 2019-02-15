@@ -70,8 +70,8 @@ pub fn or_<L, DB1: ToLiteral, DB2: ToLiteral>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc
 }
 
 pub fn binop_<L, DB1, DB2>(op: &str, lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Raw {
-    let a = (*lhs).to_string();
-    let b = (*rhs).to_string();
+    let a = lhs.to_string();
+    let b = rhs.to_string();
 
     Raw(NeedParens::Parens, a + op + &b)
 }
@@ -168,4 +168,9 @@ where
     A: 'a + UnsafeSqlFunctionArgument,
 {
     unsafe_sql_function("AVG", a)
+}
+
+pub fn like_<A, DB: ToLiteral>(lhs: Rc<HasValue<A, DB>>, rhs: Rc<HasValue<String, String>>) -> Rc<HasValue<bool, String>> {
+    let op: Rc<HasValue<A, DB>> = Rc::new(Raw(NeedParens::Never, lhs.to_sql()));
+    Rc::new(Raw(NeedParens::Parens, op.to_sql() + " LIKE " + &(*rhs).to_sql()))
 }
