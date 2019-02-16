@@ -1,5 +1,4 @@
 use crate::query::*;
-
 use crate::entity::HasEntityDef;
 
 impl<A> InsertInto<A>
@@ -11,32 +10,41 @@ where
         Ok(ed.table_name.name())
     }
 
-    fn make_column(&self) -> Result<String, ()> {
-        let s = self.0.state.borrow().set_clause.iter().map(|f| f.column()).collect::<Vec<_>>().join(", ");
+    fn make_column(&self, clause: &Vec<SetClause>) -> Result<String, ()> {
+        let s = clause
+            .iter()
+            .map(|f| f.column())
+            .collect::<Vec<_>>()
+            .join(", ");
 
         Ok(s)
     }
 
-    fn make_values(&self) -> Result<String, ()> {
-        let s = self.0.state.borrow().set_clause.iter().map(|f| f.value()).collect::<Vec<_>>().join(", ");
+    fn make_values(&self, clause: &Vec<SetClause>) -> Result<String, ()> {
+        let s = clause
+            .iter()
+            .map(|f| f.value())
+            .collect::<Vec<_>>()
+            .join(", ");
 
         Ok(s)
     }
 }
 
-impl<A: HasEntityDef> HasInsert for InsertInto<A> {
+impl<A: HasEntityDef> ToSql for InsertInto<A> {
     fn to_sql(&self) -> String {
-        let mut sql: String = "INSERT INTO ".into();
+        let mut sql = String::from("INSERT INTO ");
+        let state = self.0.state.borrow();
 
         if let Ok(a) = self.make_table() {
             sql = sql + &a;
         }
 
-        if let Ok(a) = self.make_column() {
+        if let Ok(a) = self.make_column(&state.set_clause) {
             sql = sql + "(" + &a + ")";
         }
 
-        if let Ok(a) = self.make_values() {
+        if let Ok(a) = self.make_values(&state.set_clause) {
             sql = sql + " VALUES " + "(" + &a + ")";
         }
 
@@ -54,22 +62,26 @@ where
         Ok(ed.table_name.name())
     }
 
-    fn make_column(&self) -> Result<String, ()> {
-        let s = self.0.state.borrow().set_clause.iter().map(|f| f.column()).collect::<Vec<_>>().join(", ");
+    fn make_column(&self, clause: &Vec<SetClause>) -> Result<String, ()> {
+        let s = clause.iter()
+            .map(|f| f.column())
+            .collect::<Vec<_>>()
+            .join(", ");
 
         Ok(s)
     }
 }
 
-impl<A: HasEntityDef, B: HasSelect> HasInsert for InsertSelect<A, B> {
+impl<A: HasEntityDef, B: HasSelect> ToSql for InsertSelect<A, B> {
     fn to_sql(&self) -> String {
         let mut sql = String::from("INSERT INTO ");
+        let state = self.0.state.borrow();
 
         if let Ok(a) = self.make_table() {
             sql = sql + &a;
         }
 
-        if let Ok(a) = self.make_column() {
+        if let Ok(a) = self.make_column(&state.set_clause) {
             sql = sql + "(" + &a + ")";
         }
 
