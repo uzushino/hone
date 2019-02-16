@@ -1,11 +1,6 @@
 use crate::query::*;
-use crate::types::QueryState;
 
 impl<A: Column> Select<A> {
-    fn get_state(&self) -> Ref<QueryState> {
-        self.0.state.borrow()
-    }
-
     fn make_select(&self) -> Result<String, ()> {
         Ok(self.0.value.cols())
     }

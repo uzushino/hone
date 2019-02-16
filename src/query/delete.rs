@@ -1,5 +1,4 @@
 use crate::query::*;
-use self::column::*;
 
 impl<A> Delete<A> {}
 

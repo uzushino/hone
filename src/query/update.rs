@@ -1,5 +1,4 @@
 use crate::query::*;
-use self::column::*;
 
 impl<A: Column> Update<A> {
     fn make_set(&self, clause: &Vec<SetClause>) -> Result<String, ()> {
@@ -7,11 +6,7 @@ impl<A: Column> Update<A> {
             return Err(());
         }
 
-        let a = clause
-            .iter()
-            .map(|i| i.to_string())
-            .collect::<Vec<_>>()
-            .join(", ");
+        let a = clause.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
 
         Ok(a)
     }
@@ -52,11 +47,7 @@ where
             return Err(());
         }
 
-        let a = clause
-            .iter()
-            .map(|i| i.to_string())
-            .collect::<Vec<_>>()
-            .join(", ");
+        let a = clause.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
 
         Ok(a)
     }

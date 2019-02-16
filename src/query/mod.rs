@@ -39,11 +39,7 @@ pub trait ToSql {
             return Err(());
         }
 
-        let a = clause
-            .iter()
-            .map(|i| i.to_string())
-            .collect::<Vec<_>>()
-            .join(", ");
+        let a = clause.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
 
         Ok(a)
     }
@@ -51,10 +47,7 @@ pub trait ToSql {
     fn make_from(&self, clause: &Vec<FromClause>) -> Result<String, ()> {
         let fc = combine_joins(clause.as_slice(), &mut [])?;
 
-        let s = fc.into_iter()
-            .map(|f| f.to_string())
-            .collect::<Vec<_>>()
-            .join(",");
+        let s = fc.into_iter().map(|f| f.to_string()).collect::<Vec<_>>().join(",");
 
         Ok(s)
     }
@@ -71,10 +64,7 @@ pub trait ToSql {
             return Err(());
         };
 
-        let c = clause.iter()
-            .map(|v| v.to_string())
-            .collect::<Vec<_>>()
-            .join(", ");
+        let c = clause.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(", ");
 
         Ok(c)
     }
@@ -89,7 +79,7 @@ pub trait FromQuery {
         F: Fn(Query<Self::Kind>, Self::Kind) -> Query<R>;
 }
 
-pub trait HasSelect : ToSql {
+pub trait HasSelect: ToSql {
     fn get_state(&self) -> Ref<QueryState>;
 }
 impl<A: Column> HasSelect for Select<A> {
@@ -104,7 +94,7 @@ pub fn select<A: Column>(q: Query<A>) -> impl HasSelect {
     Select(q)
 }
 
-pub trait HasUpdate : ToSql {}
+pub trait HasUpdate: ToSql {}
 
 pub struct Update<A>(Query<A>);
 impl<A: Column> HasUpdate for Update<A> {}
@@ -127,7 +117,7 @@ where
     UpdateSelect(qs, Select(q))
 }
 
-pub trait HasInsert : ToSql {}
+pub trait HasInsert: ToSql {}
 
 pub struct InsertInto<A>(Query<A>);
 impl<A: HasEntityDef> HasInsert for InsertInto<A> {}
@@ -150,7 +140,7 @@ where
     InsertSelect(qs, Select(q))
 }
 
-pub trait HasDelete : ToSql {}
+pub trait HasDelete: ToSql {}
 
 pub struct Delete<A>(Query<A>);
 impl<A: Column> HasDelete for Delete<A> {}

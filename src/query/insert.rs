@@ -1,5 +1,5 @@
-use crate::query::*;
 use crate::entity::HasEntityDef;
+use crate::query::*;
 
 impl<A> InsertInto<A>
 where
@@ -11,21 +11,13 @@ where
     }
 
     fn make_column(&self, clause: &Vec<SetClause>) -> Result<String, ()> {
-        let s = clause
-            .iter()
-            .map(|f| f.column())
-            .collect::<Vec<_>>()
-            .join(", ");
+        let s = clause.iter().map(|f| f.column()).collect::<Vec<_>>().join(", ");
 
         Ok(s)
     }
 
     fn make_values(&self, clause: &Vec<SetClause>) -> Result<String, ()> {
-        let s = clause
-            .iter()
-            .map(|f| f.value())
-            .collect::<Vec<_>>()
-            .join(", ");
+        let s = clause.iter().map(|f| f.value()).collect::<Vec<_>>().join(", ");
 
         Ok(s)
     }
@@ -63,10 +55,7 @@ where
     }
 
     fn make_column(&self, clause: &Vec<SetClause>) -> Result<String, ()> {
-        let s = clause.iter()
-            .map(|f| f.column())
-            .collect::<Vec<_>>()
-            .join(", ");
+        let s = clause.iter().map(|f| f.column()).collect::<Vec<_>>().join(", ");
 
         Ok(s)
     }

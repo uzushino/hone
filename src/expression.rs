@@ -1,9 +1,9 @@
 use std::fmt;
 use std::rc::Rc;
 
+use crate::entity::*;
 use crate::query::*;
 use crate::types::*;
-use crate::entity::*;
 
 pub fn eq_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
     let a = lhs.to_sql();
