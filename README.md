@@ -24,9 +24,9 @@ assert_eq!(select(a.unwrap()).to_sql(),
 ## Features
 
 - [x] SELECT
-- [ ] UPDATE
+- [x] UPDATE
   - [x] UPDATE SET
-  - [ ] UPDATE SET FROM
+  - [x] UPDATE SET FROM
 - [x] INSERT
   - [x] INSERT INTO
   - [x] INSERT INTO SELECT
@@ -42,7 +42,7 @@ assert_eq!(select(a.unwrap()).to_sql(),
 - ORDER BY 
   - [x] ASC/DESC
 
-- [ ] GROUP BY 
+- [x] GROUP BY 
 
 - JOINs
   - [x] Inner
