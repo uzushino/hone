@@ -67,15 +67,6 @@ pub trait HasValue<A, DB>: fmt::Display {
     fn to_sql(&self) -> String;
 }
 
-impl<A: std::fmt::Display, DB> HasValue<A, DB> for Rc<HasValue<A, DB>>
-where
-    Self: fmt::Display,
-{
-    fn to_sql(&self) -> String {
-        self.to_string()
-    }
-}
-
 #[derive(Clone)]
 pub enum NeedParens {
     Never,
