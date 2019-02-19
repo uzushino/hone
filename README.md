@@ -32,6 +32,8 @@ assert_eq!(select(a.unwrap()).to_sql(),
   - [x] INSERT INTO SELECT
 - [x] DELETE
 
+- DISTINCT / DISTINCT ON
+
 - WHERE
   - [x] eq(=) / not equal(<>)
   - [x] and / or 
