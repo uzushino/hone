@@ -1,16 +1,19 @@
+use crate::types::*;
 use crate::query::*;
 
 impl<A: Column> Select<A> {
-    fn make_select(&self) -> Result<String, ()> {
-        Ok(self.0.value.cols())
+    fn make_select(&self, distinct: &DistinctClause) -> Result<String, ()> {
+        let kind = distinct.to_string();
+        Ok(kind + &self.0.value.cols())
     }
 }
+
 impl<A: Column> ToSql for Select<A> {
     fn to_sql(&self) -> String {
         let mut sql = String::default();
         let state = self.get_state();
 
-        if let Ok(a) = self.make_select() {
+        if let Ok(a) = self.make_select(&state.distinct_clause) {
             sql = sql + "SELECT " + &a;
         }
         if let Ok(a) = self.make_from(&state.from_clause) {

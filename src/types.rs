@@ -246,6 +246,8 @@ impl fmt::Display for JoinKind {
     }
 }
 
+// SET
+
 pub trait HasSet: fmt::Display {
     fn column(&self) -> String;
     fn value(&self) -> String;
@@ -270,6 +272,8 @@ impl<A, DB2> fmt::Display for SetValue<A, DB2> {
 }
 
 pub type SetClause = Box<HasSet>;
+
+// LIMIT / OFFSET
 
 #[derive(Clone)]
 pub enum LimitClause {
@@ -309,12 +313,15 @@ impl fmt::Display for LimitClause {
                 if let Some(n) = offset {
                     result.push(format!("OFFSET {}", n));
                 }
+
                 write!(f, "{}", result.join(" "))
             }
             LimitClause::No => Err(fmt::Error),
         }
     }
 }
+
+// GROUP BY
 
 pub trait HasGroupBy: fmt::Display {}
 
@@ -330,7 +337,71 @@ impl<A, DB> fmt::Display for GroupBy<A, DB> {
     }
 }
 
+// DISTNCT(ON)
+pub trait IntoValue: fmt::Display {}
+
+impl<A, DB> IntoValue for Rc<HasValue<A, DB>> {}
+
+pub trait HasDistinct: fmt::Display {}
+
+impl<A, DB> HasDistinct for Rc<HasValue<A, DB>> {}
+impl<A, DB> HasDistinct for HasValue<A, DB> {}
+
+#[derive(Clone)]
+pub enum Distinct {
+    All,
+    Standard,
+    On(Vec<Rc<HasDistinct>>),
+}
+
+impl Default for Distinct {
+    fn default() -> Self {
+        Distinct::All
+    }
+}
+
+impl Add for Distinct {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self::Output {
+        match self {
+            Distinct::All => other,
+            Distinct::Standard => Distinct::Standard,
+            Distinct::On(mut a) => match other {
+                Distinct::On(b) => {
+                    a.append(&mut b.clone());
+                    Distinct::On(a.clone())
+                },
+                _ => Distinct::On(a.clone())
+            }
+        }
+    }
+}
+
+impl fmt::Display for Distinct {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Distinct::All => write!(f, ""),
+            Distinct::Standard => write!(f, "DISTINCT "),
+            Distinct::On(vs) => {
+                let cs = vs
+                    .iter()
+                    .map(|c| c.to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+
+                write!(f, "DISTINCT ON ({}) ", cs)
+            }
+        }
+    }
+}
+
+impl HasDistinct for Distinct { }
+
+pub type DistinctClause = Distinct;
+
 pub struct QueryState {
+    pub distinct_clause: DistinctClause,
     pub from_clause: Vec<FromClause>,
     pub where_clause: WhereClause,
     pub order_clause: Vec<OrderClause>,
@@ -342,6 +413,7 @@ pub struct QueryState {
 impl Default for QueryState {
     fn default() -> Self {
         QueryState {
+            distinct_clause: DistinctClause::default(),
             from_clause: vec![],
             order_clause: vec![],
             where_clause: WhereClause::No,

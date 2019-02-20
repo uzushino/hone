@@ -44,9 +44,7 @@ impl<A> Query<A> {
         DB: 'static,
     {
         let v = GroupBy(b);
-
         self.state.borrow_mut().groupby_clause.push(Box::new(v));
-
         self
     }
 
@@ -72,6 +70,15 @@ impl<A> Query<A> {
         let s = self.state.borrow_mut().limit_clause.clone();
         {
             self.state.borrow_mut().limit_clause = s + LimitClause::Limit(None, Some(a));
+        }
+        self
+    }
+    
+    pub fn distinct_on_(self, a: Vec<Rc<HasDistinct>>) -> Query<A> 
+    {
+        let s = self.state.borrow_mut().distinct_clause.clone();
+        {
+            self.state.borrow_mut().distinct_clause = s + Distinct::On(a);
         }
         self
     }
