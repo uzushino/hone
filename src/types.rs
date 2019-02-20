@@ -338,14 +338,8 @@ impl<A, DB> fmt::Display for GroupBy<A, DB> {
 }
 
 // DISTNCT(ON)
-pub trait IntoValue: fmt::Display {}
-
-impl<A, DB> IntoValue for Rc<HasValue<A, DB>> {}
-
 pub trait HasDistinct: fmt::Display {}
-
 impl<A, DB> HasDistinct for Rc<HasValue<A, DB>> {}
-impl<A, DB> HasDistinct for HasValue<A, DB> {}
 
 #[derive(Clone)]
 pub enum Distinct {
