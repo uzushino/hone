@@ -1,5 +1,6 @@
 use std::borrow::Borrow;
 use std::rc::Rc;
+use std::cell::{Ref, RefCell};
 
 use crate::entity::Column as CL;
 use crate::entity::*;
@@ -78,7 +79,14 @@ impl<A> Query<A> {
     {
         let s = self.state.borrow_mut().distinct_clause.clone();
         {
-            self.state.borrow_mut().distinct_clause = s + Distinct::On(a);
+            self.state.borrow_mut().distinct_clause = match s {
+                Distinct::On(mut v) => {
+                    v.append(&mut a.to_vec());
+                    Distinct::On(v.to_vec())
+                },
+                Distinct::All => Distinct::On(a.to_vec()),
+                Distinct::Standard => s
+            }
         }
         self
     }

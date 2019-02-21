@@ -174,7 +174,7 @@ pub fn like_<A, DB: ToLiteral>(lhs: Rc<HasValue<A, DB>>, rhs: Rc<HasValue<String
     Rc::new(Raw(NeedParens::Parens, op.to_sql() + " LIKE " + &(*rhs).to_sql()))
 }
 
-pub fn don_<'a, A, DB>(a: Rc<HasValue<A, DB>>) -> Rc<'a + HasDistinct> where A: 'a, DB: 'a
+pub fn don_<'a, A>(a: A) -> Rc<'a + HasDistinct> where A: 'a + HasDistinct
 {
     Rc::new(a)
 }

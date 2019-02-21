@@ -354,24 +354,6 @@ impl Default for Distinct {
     }
 }
 
-impl Add for Distinct {
-    type Output = Self;
-
-    fn add(self, other: Self) -> Self::Output {
-        match self {
-            Distinct::All => other,
-            Distinct::Standard => Distinct::Standard,
-            Distinct::On(mut a) => match other {
-                Distinct::On(b) => {
-                    a.append(&mut b.clone());
-                    Distinct::On(a.clone())
-                },
-                _ => Distinct::On(a.clone())
-            }
-        }
-    }
-}
-
 impl fmt::Display for Distinct {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
