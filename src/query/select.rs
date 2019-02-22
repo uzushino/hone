@@ -1,5 +1,5 @@
-use crate::types::*;
 use crate::query::*;
+use crate::types::*;
 
 impl<A: Column> Select<A> {
     fn make_select(&self, distinct: &DistinctClause) -> Result<String, ()> {

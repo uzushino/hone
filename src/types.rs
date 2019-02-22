@@ -348,9 +348,13 @@ impl Clone for Box<HasDistinct> {
     }
 }
 
-impl<A, DB> HasDistinct for Rc<HasValue<A, DB>> where A: 'static, DB: 'static {
+impl<A, DB> HasDistinct for Rc<HasValue<A, DB>>
+where
+    A: 'static,
+    DB: 'static,
+{
     fn box_clone(&self) -> Box<HasDistinct> {
-        Box::new((* self).clone())
+        Box::new((*self).clone())
     }
 }
 
@@ -361,7 +365,7 @@ pub enum Distinct {
     On(Vec<Box<dyn HasDistinct>>),
 }
 
-impl HasDistinct for Distinct { 
+impl HasDistinct for Distinct {
     fn box_clone(&self) -> Box<HasDistinct> {
         Box::new((*self).clone())
     }
@@ -379,11 +383,7 @@ impl fmt::Display for Distinct {
             Distinct::All => write!(f, ""),
             Distinct::Standard => write!(f, "DISTINCT "),
             Distinct::On(vs) => {
-                let cs = vs
-                    .iter()
-                    .map(|c| c.to_string())
-                    .collect::<Vec<_>>()
-                    .join(", ");
+                let cs = vs.iter().map(|c| c.to_string()).collect::<Vec<_>>().join(", ");
 
                 write!(f, "DISTINCT ON ({}) ", cs)
             }

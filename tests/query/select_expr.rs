@@ -22,10 +22,7 @@ fn test_select() {
 #[test]
 fn test_distinct() {
     let a = Query::<User>::from_by(|q, a| {
-        let q = q.distinct_on_(vec![
-            don_(a.user_id()),
-            don_(a.email()),
-        ]);
+        let q = q.distinct_on_(vec![don_(a.user_id()), don_(a.email())]);
 
         q.return_((a.user_id(), a.email()))
     });

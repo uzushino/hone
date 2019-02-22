@@ -1,6 +1,6 @@
 use std::borrow::Borrow;
-use std::rc::Rc;
 use std::cell::{Ref, RefCell};
+use std::rc::Rc;
 
 use crate::entity::Column as CL;
 use crate::entity::*;
@@ -74,9 +74,8 @@ impl<A> Query<A> {
         }
         self
     }
-    
-    pub fn distinct_on_(self, mut a: Vec<Box<HasDistinct>>) -> Query<A> 
-    {
+
+    pub fn distinct_on_(self, mut a: Vec<Box<HasDistinct>>) -> Query<A> {
         {
             let s = &mut *self.state.borrow_mut();
 
@@ -84,11 +83,9 @@ impl<A> Query<A> {
                 Distinct::On(ref mut v) => {
                     v.append(&mut a);
                     s.distinct_clause = Distinct::On(v.to_vec())
-                },
-                Distinct::All => {
-                    s.distinct_clause = Distinct::On(a)
-                },
-                _ => {},
+                }
+                Distinct::All => s.distinct_clause = Distinct::On(a),
+                _ => {}
             };
         }
 
