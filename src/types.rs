@@ -338,14 +338,33 @@ impl<A, DB> fmt::Display for GroupBy<A, DB> {
 }
 
 // DISTNCT(ON)
-pub trait HasDistinct: fmt::Display {}
-impl<A, DB> HasDistinct for Rc<HasValue<A, DB>> {}
+pub trait HasDistinct: fmt::Display {
+    fn box_clone(&self) -> Box<HasDistinct>;
+}
+
+impl Clone for Box<HasDistinct> {
+    fn clone(&self) -> Box<HasDistinct> {
+        self.box_clone()
+    }
+}
+
+impl<A, DB> HasDistinct for Rc<HasValue<A, DB>> where A: 'static, DB: 'static {
+    fn box_clone(&self) -> Box<HasDistinct> {
+        Box::new((* self).clone())
+    }
+}
 
 #[derive(Clone)]
 pub enum Distinct {
     All,
     Standard,
-    On(Vec<Rc<HasDistinct>>),
+    On(Vec<Box<dyn HasDistinct>>),
+}
+
+impl HasDistinct for Distinct { 
+    fn box_clone(&self) -> Box<HasDistinct> {
+        Box::new((*self).clone())
+    }
 }
 
 impl Default for Distinct {
@@ -371,8 +390,6 @@ impl fmt::Display for Distinct {
         }
     }
 }
-
-impl HasDistinct for Distinct { }
 
 pub type DistinctClause = Distinct;
 

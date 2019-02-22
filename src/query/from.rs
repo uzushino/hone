@@ -75,19 +75,23 @@ impl<A> Query<A> {
         self
     }
     
-    pub fn distinct_on_(self, a: Vec<Rc<HasDistinct>>) -> Query<A> 
+    pub fn distinct_on_(self, mut a: Vec<Box<HasDistinct>>) -> Query<A> 
     {
-        let s = self.state.borrow_mut().distinct_clause.clone();
         {
-            self.state.borrow_mut().distinct_clause = match s {
-                Distinct::On(mut v) => {
-                    v.append(&mut a.to_vec());
-                    Distinct::On(v.to_vec())
+            let s = &mut *self.state.borrow_mut();
+
+            match &mut s.distinct_clause {
+                Distinct::On(ref mut v) => {
+                    v.append(&mut a);
+                    s.distinct_clause = Distinct::On(v.to_vec())
                 },
-                Distinct::All => Distinct::On(a.to_vec()),
-                Distinct::Standard => s
-            }
+                Distinct::All => {
+                    s.distinct_clause = Distinct::On(a)
+                },
+                _ => {},
+            };
         }
+
         self
     }
 
