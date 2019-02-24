@@ -401,6 +401,7 @@ pub struct QueryState {
     pub set_clause: Vec<SetClause>,
     pub limit_clause: LimitClause,
     pub groupby_clause: Vec<GroupByClause>,
+    pub having_clause: WhereClause,
 }
 
 impl Default for QueryState {
@@ -413,6 +414,7 @@ impl Default for QueryState {
             set_clause: vec![],
             limit_clause: LimitClause::default(),
             groupby_clause: vec![],
+            having_clause: WhereClause::No,
         }
     }
 }

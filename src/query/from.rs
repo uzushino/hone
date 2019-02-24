@@ -1,5 +1,5 @@
 use std::borrow::Borrow;
-use std::cell::{Ref, RefCell};
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::entity::Column as CL;
@@ -28,9 +28,11 @@ impl<A> Query<A> {
     pub fn where_(self, b: Rc<HasValue<bool, bool>>) -> Query<A> {
         let w = WhereClause::Where(b);
         let n = self.state.borrow_mut().where_clause.clone();
+
         {
             (*self.state.borrow_mut()).where_clause = n + w;
         }
+
         self
     }
 
@@ -46,6 +48,17 @@ impl<A> Query<A> {
     {
         let v = GroupBy(b);
         self.state.borrow_mut().groupby_clause.push(Box::new(v));
+        self
+    }
+    
+    pub fn having_(self, b: Rc<HasValue<bool, bool>>) -> Query<A> {
+        let w = WhereClause::Where(b);
+        let n = self.state.borrow_mut().having_clause.clone();
+
+        {
+            (*self.state.borrow_mut()).having_clause = n + w;
+        }
+
         self
     }
 
