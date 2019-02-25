@@ -45,6 +45,7 @@ assert_eq!(select(a.unwrap()).to_sql(),
   - [x] ASC/DESC
 
 - [x] GROUP BY 
+- [ ] Having
 
 - JOINs
   - [x] Inner
