@@ -83,6 +83,26 @@ fn test_groupby() {
 }
 
 #[test]
+fn test_having() {
+    let a = Query::<User>::from_by(|q, a| {
+        let q = q.group_by_(a.user_id());
+        let q = q.group_by_(a.email());
+        
+        let one = val_(1);
+        let eq = eq_(a.user_id(), one);
+        let q = q.having_(eq);
+
+        q.return_(a.user_id())
+    });
+
+    assert_eq!(
+        select(a.unwrap()).to_sql(),
+        "SELECT User.user_id FROM User GROUP BY User.user_id, User.email \
+        HAVING (User.user_id = 1)".to_string()
+    );
+}
+
+#[test]
 fn test_where() {
     let a = Query::<User>::from_by(|q, a| {
         let one = val_(1);

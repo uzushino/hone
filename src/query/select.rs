@@ -27,6 +27,9 @@ impl<A: Column> ToSql for Select<A> {
         if let Ok(a) = self.make_group(&state.groupby_clause) {
             sql = sql + " GROUP BY " + &a;
         }
+        if let Ok(a) = self.make_having(&state.having_clause) {
+            sql = sql + " HAVING " + &a;
+        }
         if let Ok(a) = self.make_limit(&state.limit_clause) {
             sql = sql + " " + &a;
         }
