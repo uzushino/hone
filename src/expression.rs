@@ -140,6 +140,20 @@ where
     Rc::new(Raw(NeedParens::Never, format!("{}({})", name, results.join(","))))
 }
 
+pub fn unsafe_sql_value<A, DB>(name: &str) -> Rc<HasValue<A, DB>> 
+    where DB: ToLiteral 
+{
+    Rc::new(Raw(NeedParens::Never, String::from(name)))
+}
+
+pub fn random_() -> Rc<HasValue<i32, i32>> {
+    unsafe_sql_value("RANDOM()")
+}
+
+pub fn count_rows_() -> Rc<HasValue<i32, i32>> {
+    unsafe_sql_value("COUNT(*)")
+}
+
 pub fn set_<'a, L, DB1>(lhs: Rc<HasValue<L, Column>>, rhs: Rc<HasValue<L, DB1>>) -> Rc<'a + HasSet>
 where
     L: 'a + fmt::Display,
