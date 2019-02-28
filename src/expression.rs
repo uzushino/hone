@@ -154,6 +154,10 @@ pub fn count_rows_() -> Rc<HasValue<i32, i32>> {
     unsafe_sql_value("COUNT(*)")
 }
 
+pub fn not_<A, DB>(a: Rc<HasValue<A, DB>>) -> Rc<HasValue<bool, bool>> {
+    Rc::new(Raw(NeedParens::Never, "NOT ".to_string() + &a.to_sql()))
+}
+
 pub fn set_<'a, L, DB1>(lhs: Rc<HasValue<L, Column>>, rhs: Rc<HasValue<L, DB1>>) -> Rc<'a + HasSet>
 where
     L: 'a + fmt::Display,
