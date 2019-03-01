@@ -121,6 +121,11 @@ where
     Rc::new(OrderBy(OrderByType::Desc, exp))
 }
 
+pub fn exists_<A, DB>(q: Query<Rc<HasValue<A, DB>>>) -> Rc<'static + HasValue<bool, bool>>
+where A: 'static + fmt::Display, DB: 'static + ToLiteral {
+    unsafe_sql_function("EXISTS ", sub_(q), NeedParens::Never)
+}
+
 pub fn sub_<'a, A, DB>(q: Query<Rc<HasValue<A, DB>>>) -> Rc<'a + HasValue<A, DB>>
 where
     A: 'a + fmt::Display,
@@ -129,15 +134,19 @@ where
     Rc::new(Raw(NeedParens::Parens, select(q).to_sql()))
 }
 
-fn unsafe_sql_function<A, B, DB>(name: &str, arg: A) -> Rc<HasValue<B, DB>>
+fn unsafe_sql_function<A, B, DB>(name: &str, arg: A, parens: NeedParens) -> Rc<HasValue<B, DB>>
 where
     A: UnsafeSqlFunctionArgument,
     DB: ToLiteral,
 {
     let args = A::to_arg_list(arg);
     let results = args.iter().map(|v| v.to_string()).collect::<Vec<_>>();
+    let expr = match parens {
+        NeedParens::Parens => format!("{}({})", name, results.join(",")),
+        NeedParens::Never => format!("{}{}", name, results.join(",")),
+    };
 
-    Rc::new(Raw(NeedParens::Never, format!("{}({})", name, results.join(","))))
+    Rc::new(Raw(NeedParens::Never, expr))
 }
 
 pub fn unsafe_sql_value<A, DB>(name: &str) -> Rc<HasValue<A, DB>> 
@@ -170,21 +179,21 @@ pub fn sum_<'a, A>(a: A) -> Rc<'a + HasValue<u32, Column>>
 where
     A: 'a + UnsafeSqlFunctionArgument,
 {
-    unsafe_sql_function("SUM", a)
+    unsafe_sql_function("SUM", a, NeedParens::Parens)
 }
 
 pub fn count_<'a, A>(a: A) -> Rc<'a + HasValue<u32, Column>>
 where
     A: 'a + UnsafeSqlFunctionArgument,
 {
-    unsafe_sql_function("COUNT", a)
+    unsafe_sql_function("COUNT", a, NeedParens::Parens)
 }
 
 pub fn avg_<'a, A>(a: A) -> Rc<'a + HasValue<f32, Column>>
 where
     A: 'a + UnsafeSqlFunctionArgument,
 {
-    unsafe_sql_function("AVG", a)
+    unsafe_sql_function("AVG", a, NeedParens::Parens)
 }
 
 pub fn like_<A, DB: ToLiteral>(lhs: Rc<HasValue<A, DB>>, rhs: Rc<HasValue<String, String>>) -> Rc<HasValue<bool, String>> {
