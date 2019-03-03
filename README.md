@@ -40,12 +40,13 @@ assert_eq!(select(a.unwrap()).to_sql(),
   - [x] in / not in
   - [x] between
   - [x] is null / is not null
+  - [x] exists / not exists
 
 - ORDER BY 
   - [x] ASC/DESC
 
 - [x] GROUP BY 
-- [ ] Having
+- [x] Having
 
 - JOINs
   - [x] Inner
