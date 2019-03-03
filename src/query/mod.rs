@@ -68,7 +68,7 @@ pub trait ToSql {
 
         Ok(c)
     }
-    
+
     fn make_having(&self, clause: &WhereClause) -> Result<String, ()> {
         match clause {
             WhereClause::No => Err(()),

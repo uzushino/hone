@@ -57,11 +57,9 @@ fn test_functions() {
 #[test]
 fn test_exists() {
     let a = Query::<User>::from_by(|q, _| {
-        let sub = Query::<User>::from_by(|q, u| {
-            q.return_(u.user_id())
-        }).unwrap();
-       
-       let q = q.where_(exists_(sub));
+        let sub = Query::<User>::from_by(|q, u| q.return_(u.user_id())).unwrap();
+
+        let q = q.where_(exists_(sub));
 
         q
     });
@@ -70,13 +68,11 @@ fn test_exists() {
         select(a.unwrap()).to_sql(),
         "SELECT email, user_id FROM User WHERE EXISTS (SELECT User.user_id FROM User)".to_string()
     );
-    
+
     let a = Query::<User>::from_by(|q, _| {
-        let sub = Query::<User>::from_by(|q, u| {
-            q.return_(u.user_id())
-        }).unwrap();
-       
-       let q = q.where_(not_(exists_(sub)));
+        let sub = Query::<User>::from_by(|q, u| q.return_(u.user_id())).unwrap();
+
+        let q = q.where_(not_(exists_(sub)));
 
         q
     });

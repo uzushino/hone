@@ -122,7 +122,10 @@ where
 }
 
 pub fn exists_<A, DB>(q: Query<Rc<HasValue<A, DB>>>) -> Rc<'static + HasValue<bool, bool>>
-where A: 'static + fmt::Display, DB: 'static + ToLiteral {
+where
+    A: 'static + fmt::Display,
+    DB: 'static + ToLiteral,
+{
     unsafe_sql_function("EXISTS ", sub_(q), NeedParens::Never)
 }
 
@@ -149,8 +152,9 @@ where
     Rc::new(Raw(NeedParens::Never, expr))
 }
 
-pub fn unsafe_sql_value<A, DB>(name: &str) -> Rc<HasValue<A, DB>> 
-    where DB: ToLiteral 
+pub fn unsafe_sql_value<A, DB>(name: &str) -> Rc<HasValue<A, DB>>
+where
+    DB: ToLiteral,
 {
     Rc::new(Raw(NeedParens::Never, String::from(name)))
 }

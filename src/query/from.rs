@@ -50,7 +50,7 @@ impl<A> Query<A> {
         self.state.borrow_mut().groupby_clause.push(Box::new(v));
         self
     }
-    
+
     pub fn having_(self, b: Rc<HasValue<bool, bool>>) -> Query<A> {
         let w = WhereClause::Where(b);
         let n = self.state.borrow_mut().having_clause.clone();
