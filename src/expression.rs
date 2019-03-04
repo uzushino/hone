@@ -55,6 +55,35 @@ where
     Rc::new(List::NonEmpty(Box::new(v)) as List<A, DB>)
 }
 
+pub fn gt_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
+    let a = lhs.to_sql();
+    let b = rhs.to_sql();
+
+    Rc::new(Raw(NeedParens::Parens, a + " > " + &b))
+}
+
+pub fn gte_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
+    let a = lhs.to_sql();
+    let b = rhs.to_sql();
+
+    Rc::new(Raw(NeedParens::Parens, a + " >= " + &b))
+}
+
+pub fn lt_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
+    let a = lhs.to_sql();
+    let b = rhs.to_sql();
+
+    Rc::new(Raw(NeedParens::Parens, a + " < " + &b))
+}
+
+pub fn lte_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
+    let a = lhs.to_sql();
+    let b = rhs.to_sql();
+
+    Rc::new(Raw(NeedParens::Parens, a + " <= " + &b))
+}
+
+
 fn if_not_empty_list<A>(v: Rc<HasValueList<A>>, b: bool, e: Rc<HasValue<bool, bool>>) -> Rc<HasValue<bool, bool>> {
     match v {
         _ if v.is_empty() => val_(b),
