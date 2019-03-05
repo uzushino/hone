@@ -83,7 +83,6 @@ pub fn lte_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -
     Rc::new(Raw(NeedParens::Parens, a + " <= " + &b))
 }
 
-
 fn if_not_empty_list<A>(v: Rc<HasValueList<A>>, b: bool, e: Rc<HasValue<bool, bool>>) -> Rc<HasValue<bool, bool>> {
     match v {
         _ if v.is_empty() => val_(b),

@@ -41,6 +41,27 @@ fn test_between() {
 }
 
 #[test]
+fn test_relational_operator() {
+    let u = User::default();
+    let one = val_(1);
+
+    let q = gt_(u.user_id(), one);
+    assert_eq!("(User.user_id > 1)", q.to_string());
+    
+    let one = val_(1);
+    let q = gte_(u.user_id(), one);
+    assert_eq!("(User.user_id >= 1)", q.to_string());
+    
+    let one = val_(1);
+    let q = lt_(u.user_id(), one);
+    assert_eq!("(User.user_id < 1)", q.to_string());
+    
+    let one = val_(1);
+    let q = lte_(u.user_id(), one);
+    assert_eq!("(User.user_id <= 1)", q.to_string());
+}
+
+#[test]
 fn test_is_null() {
     let u = User::default();
     let is_null = is_null_(u.user_id());
