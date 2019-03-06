@@ -47,6 +47,7 @@ assert_eq!(select(a.unwrap()).to_sql(),
 
 - [x] GROUP BY 
 - [x] Having
+- [ ] CASE / THEN / ELSE
 
 - JOINs
   - [x] Inner
