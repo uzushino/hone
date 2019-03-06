@@ -233,6 +233,11 @@ pub fn like_<A, DB: ToLiteral>(lhs: Rc<HasValue<A, DB>>, rhs: Rc<HasValue<String
     Rc::new(Raw(NeedParens::Parens, op.to_sql() + " LIKE " + &(*rhs).to_sql()))
 }
 
+pub fn ilike_<A, DB: ToLiteral>(lhs: Rc<HasValue<A, DB>>, rhs: Rc<HasValue<String, String>>) -> Rc<HasValue<bool, String>> {
+    let op: Rc<HasValue<A, DB>> = Rc::new(Raw(NeedParens::Never, lhs.to_sql()));
+    Rc::new(Raw(NeedParens::Parens, op.to_sql() + " ILIKE " + &(*rhs).to_sql()))
+}
+
 pub fn don_<A, DB>(a: Rc<HasValue<A, DB>>) -> Box<HasDistinct>
 where
     A: 'static,
