@@ -12,13 +12,11 @@ where
 
     fn make_column(&self, clause: &Vec<SetClause>) -> Result<String, ()> {
         let s = clause.iter().map(|f| f.column()).collect::<Vec<_>>().join(", ");
-
         Ok(s)
     }
 
     fn make_values(&self, clause: &Vec<SetClause>) -> Result<String, ()> {
         let s = clause.iter().map(|f| f.value()).collect::<Vec<_>>().join(", ");
-
         Ok(s)
     }
 }
@@ -56,7 +54,6 @@ where
 
     fn make_column(&self, clause: &Vec<SetClause>) -> Result<String, ()> {
         let s = clause.iter().map(|f| f.column()).collect::<Vec<_>>().join(", ");
-
         Ok(s)
     }
 }
@@ -74,8 +71,6 @@ impl<A: HasEntityDef, B: HasSelect> ToSql for InsertSelect<A, B> {
             sql = sql + "(" + &a + ")";
         }
 
-        sql = sql + " " + self.1.to_sql().as_ref();
-
-        sql
+        sql + " " + self.1.to_sql().as_ref()
     }
 }

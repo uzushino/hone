@@ -2,15 +2,16 @@ use crate::query::*;
 
 impl<A: Column> Update<A> {
     fn make_set(&self, clause: &Vec<SetClause>) -> Result<String, ()> {
-        if clause.is_empty() {
-            return Err(());
+        match clause.as_slice() {
+            [] => Err(()),
+            _ => {
+                let a = clause.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
+                Ok(a)
+            }
         }
-
-        let a = clause.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
-
-        Ok(a)
     }
 }
+
 impl<A: Column> ToSql for Update<A> {
     fn to_sql(&self) -> String {
         let mut sql = String::from("UPDATE");
@@ -43,13 +44,13 @@ where
     }
 
     fn make_set(&self, clause: &Vec<SetClause>) -> Result<String, ()> {
-        if clause.is_empty() {
-            return Err(());
+        match clause.as_slice() {
+            [] => Err(()),
+            _ => {
+                let a = clause.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
+                Ok(a)
+            }
         }
-
-        let a = clause.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
-
-        Ok(a)
     }
 }
 

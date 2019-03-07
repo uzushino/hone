@@ -35,18 +35,17 @@ pub trait ToSql {
     }
 
     fn make_order(&self, clause: &Vec<OrderClause>) -> Result<String, ()> {
-        if clause.is_empty() {
-            return Err(());
+        match clause.as_slice() {
+            [] => Err(()),
+            _ => {
+                let s = clause.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
+                Ok(s)
+            }
         }
-
-        let a = clause.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
-
-        Ok(a)
     }
 
     fn make_from(&self, clause: &Vec<FromClause>) -> Result<String, ()> {
         let fc = combine_joins(clause.as_slice(), &mut [])?;
-
         let s = fc.into_iter().map(|f| f.to_string()).collect::<Vec<_>>().join(",");
 
         Ok(s)

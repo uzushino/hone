@@ -49,7 +49,6 @@ where
     }
 
     let s = vs.to_vec().iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
-
     let v = Raw(NeedParens::Parens, s);
 
     Rc::new(List::NonEmpty(Box::new(v)) as List<A, DB>)
@@ -226,6 +225,13 @@ where
     A: 'a + UnsafeSqlFunctionArgument,
 {
     unsafe_sql_function("AVG", a, NeedParens::Parens)
+}
+
+pub fn round_<'a, A>(a: A) -> Rc<'a + HasValue<f32, Column>>
+where
+    A: 'a + UnsafeSqlFunctionArgument,
+{
+    unsafe_sql_function("ROUND", a, NeedParens::Parens)
 }
 
 pub fn like_<A, DB: ToLiteral>(lhs: Rc<HasValue<A, DB>>, rhs: Rc<HasValue<String, String>>) -> Rc<HasValue<bool, String>> {

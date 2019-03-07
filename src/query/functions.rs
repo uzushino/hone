@@ -18,7 +18,7 @@ where
         let mut result = vec![];
 
         for (_, i) in a.iter().enumerate() {
-            let v = UnsafeSqlFunctionArgument::to_arg_list((*i).clone());
+            let v = UnsafeSqlFunctionArgument::to_arg_list(i.clone());
             result.append(&mut v.to_vec())
         }
 
