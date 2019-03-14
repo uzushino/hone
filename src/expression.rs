@@ -251,3 +251,28 @@ where
 {
     Box::new(a)
 }
+
+pub fn case_<'a, A, DB1, DB2>(when: &[(Rc<HasValue<bool, bool>>, Rc<HasValue<A, DB1>>)], expr: Rc<HasValue<A, DB2>>) -> Rc<HasValue<A, DB2>> 
+    where A: 'a + fmt::Display, DB1: 'a + ToLiteral, DB2: 'a + ToLiteral
+{
+    let s = "CASE".to_string() + &map_when(when) + " ELSE " + &expr.to_sql() + " END";
+    Rc::new(Raw(NeedParens::Parens, s))
+}
+
+fn map_when<A, DB>(when: &[(Rc<HasValue<bool, bool>>, Rc<HasValue<A, DB>>)]) -> String {
+    when.iter().fold(String::default(), |acc, (a, b)| {
+        acc + " WHEN " + &a.to_sql() + " THEN " + &b.to_sql()
+    })
+}
+
+pub fn when_<A, DB>(cond: Rc<HasValue<bool, bool>>, _: (), expr: Rc<HasValue<A, DB>>) -> (Rc<HasValue<bool, bool>>, Rc<HasValue<A, DB>>) {
+    (cond, expr)
+}
+
+pub fn then_() -> () {
+    ()
+}
+
+pub fn else_<A, DB>(a: Rc<HasValue<A, DB>>) -> Rc<HasValue<A, DB>> {
+    a
+}

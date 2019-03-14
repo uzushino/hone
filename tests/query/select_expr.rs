@@ -82,3 +82,40 @@ fn test_exists() {
         "SELECT email, user_id FROM User WHERE NOT EXISTS (SELECT User.user_id FROM User)".to_string()
     );
 }
+
+#[test]
+fn test_case() {
+    let a = Query::<User>::from_by(|q, a| {
+        let sub1 = Query::<User>::from_by(|q, u| {
+            let one = val_(1);
+            let eq = eq_(a.user_id(), one);
+            let q = q.where_(eq);
+            q.return_(u.email())
+        }).unwrap();
+        
+        let sub2 = Query::<User>::from_by(|q, u| {
+            let one = val_(1);
+            let eq = eq_(a.user_id(), one);
+            let q = q.where_(eq);
+            let q = q.limit_(1);
+
+            q.return_(u.user_id())
+        }).unwrap();
+
+        let one = val_(1u32);
+        let case = case_(&[
+            when_(exists_(sub1), then_(), sub_(sub2)), 
+        ], one);
+
+        q.return_(case)
+    });
+
+    assert_eq!(
+        select(a.unwrap()).to_sql(),
+        "SELECT (CASE \
+        WHEN EXISTS (SELECT User.email FROM User WHERE (User.user_id = 1)) \
+        THEN (SELECT User.user_id FROM User WHERE (User.user_id = 1) LIMIT 1) \
+        ELSE 1 \
+        END) FROM User".to_string()
+    );
+}
