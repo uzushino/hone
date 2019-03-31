@@ -155,6 +155,13 @@ pub fn delete<A: Column>(q: Query<A>) -> impl HasDelete {
     Delete(q)
 }
 
+pub struct Truncate<A>(Query<A>);
+impl<A: Column> HasDelete for Truncate <A> {}
+
+pub fn truncate<A: Column>(q: Query<A>) -> impl HasDelete {
+    Truncate(q)
+}
+
 pub trait UnsafeSqlFunctionArgument {
     fn to_arg_list(arg: Self) -> Vec<Rc<HasValue<(), bool>>>;
 }

@@ -23,3 +23,18 @@ impl<A: Column> ToSql for Delete<A> {
         sql
     }
 }
+
+impl<A> Truncate <A> {}
+
+impl<A: Column> ToSql for Truncate <A> {
+    fn to_sql(&self) -> String {
+        let mut sql = String::from("TRUNCATE TABLE ");
+        let state = self.0.state.borrow();
+
+        if let Ok(a) = self.make_from(&state.from_clause) {
+            sql = sql + &a;
+        }
+
+        sql
+    }
+}
