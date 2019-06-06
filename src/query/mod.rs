@@ -138,8 +138,8 @@ pub fn insert_into<A: HasEntityDef>(q: Query<A>) -> impl HasInsert {
     InsertInto(q)
 }
 
-pub fn insert_values<A: HasEntityDef, T1, T2>(q: Query<A>) -> InsertValues<A, (T1, T2)> {
-    InsertValues(q)
+pub fn insert_values<A: HasEntityDef, T1: Default, T2: Default>(q: Query<A>) -> InsertValues<A, (T1, T2)> {
+    InsertValues(q, (T1::default(), T2::default()))
 }
 
 pub fn insert_select<A: Column, B, F>(q: Query<A>, f: F) -> InsertSelect<B, impl HasSelect>

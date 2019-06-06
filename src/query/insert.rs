@@ -90,17 +90,6 @@ impl<A: HasEntityDef, T1, T2> InsertValues<A, (T1, T2)>
 
 impl<A: HasEntityDef, T1, T2> ToSql for InsertValues<A, (T1, T2)> {
     fn to_sql(&self) -> String {
-        let mut sql = String::from("INSERT INTO ");
-        let state = self.0.state.borrow();
-
-        if let Ok(a) = self.make_table() {
-            sql = sql + &a;
-        }
-
-        if let Ok(a) = self.make_column(&state.set_clause) {
-            sql = sql + "(" + &a + ")";
-        }
-
-        sql + " " + self.1.to_sql().as_ref()
+        unimplemented!()
     }
 }
