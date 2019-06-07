@@ -133,18 +133,11 @@ trait ToValues {}
 impl<T1> ToValues for (T1,) {}
 impl<T1, T2> ToValues for (T1, T2) {}
 
-pub struct InsertValues<A, B>(Query<A>, B);
-impl<A: HasEntityDef, T1: ToValues> HasInsert for InsertValues<A, T1> {}
-
 pub struct InsertSelect<A, B: HasSelect>(Query<A>, B);
 impl<A: HasEntityDef, B: HasSelect> HasInsert for InsertSelect<A, B> {}
 
 pub fn insert_into<A: HasEntityDef>(q: Query<A>) -> impl HasInsert {
     InsertInto(q)
-}
-
-pub fn insert_values<A: HasEntityDef, T1: ToValues + Default>(q: Query<A>) -> InsertValues<A, T1> {
-    InsertValues(q, T1::default())
 }
 
 pub fn insert_select<A: Column, B, F>(q: Query<A>, f: F) -> InsertSelect<B, impl HasSelect>
