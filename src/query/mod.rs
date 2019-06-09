@@ -128,15 +128,19 @@ pub trait HasInsert: ToSql {}
 pub struct InsertInto<A>(Query<A>);
 impl<A: HasEntityDef> HasInsert for InsertInto<A> {}
 
-trait ToValues {}
+pub trait ToValues {}
 
-impl<T1> ToValues for (T1,) {}
+impl<T1> ToValues for T1 where T1: HasEntityDef {}
 impl<T1, T2> ToValues for (T1, T2) {}
 
 pub struct InsertSelect<A, B: HasSelect>(Query<A>, B);
 impl<A: HasEntityDef, B: HasSelect> HasInsert for InsertSelect<A, B> {}
 
 pub fn insert_into<A: HasEntityDef>(q: Query<A>) -> impl HasInsert {
+    InsertInto(q)
+}
+
+pub fn insert_intos<A: HasEntityDef>(q: Query<A>) -> impl HasInsert {
     InsertInto(q)
 }
 

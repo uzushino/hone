@@ -5,6 +5,7 @@ use std::rc::Rc;
 use crate::entity::Column as CL;
 use crate::entity::*;
 use crate::query::*;
+use crate::types::Values;
 
 impl<A> Query<A> {
     pub fn new(e: A) -> Self {
@@ -69,6 +70,13 @@ impl<A> Query<A> {
     {
         let v = Box::new(SetValue(a, b));
         self.state.borrow_mut().set_clause.push(v);
+        self
+    }
+    
+    pub fn values_<T, DB>(self, a: T, b: T) -> Query<A>
+    where T: ToValues + 'static
+    {
+        self.state.borrow_mut().values_clause = Some(Box::new(Values(a, b)));
         self
     }
 

@@ -45,7 +45,7 @@ impl<A: HasEntityDef> ToSql for InsertInto<A> {
 impl<A, B> InsertSelect<A, B>
 where
     A: HasEntityDef,
-    B: HasSelect,
+    B: HasSelect
 {
     fn make_table(&self) -> Result<String, ()> {
         let ed = A::entity_def();

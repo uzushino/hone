@@ -5,6 +5,7 @@ use std::rc::Rc;
 
 use crate::entity::{Column, Entity};
 use crate::expression::and_;
+use crate::query::ToValues;
 
 #[derive(Debug, Clone)]
 pub enum OrderByType {
@@ -393,12 +394,15 @@ impl fmt::Display for Distinct {
 
 pub type DistinctClause = Distinct;
 
+pub type ValuesClause = HasValues;
+
 pub struct QueryState {
     pub distinct_clause: DistinctClause,
     pub from_clause: Vec<FromClause>,
     pub where_clause: WhereClause,
     pub order_clause: Vec<OrderClause>,
     pub set_clause: Vec<SetClause>,
+    pub values_clause: Option<Box<ValuesClause>>,
     pub limit_clause: LimitClause,
     pub groupby_clause: Vec<GroupByClause>,
     pub having_clause: WhereClause,
@@ -412,6 +416,7 @@ impl Default for QueryState {
             order_clause: vec![],
             where_clause: WhereClause::No,
             set_clause: vec![],
+            values_clause: None,
             limit_clause: LimitClause::default(),
             groupby_clause: vec![],
             having_clause: WhereClause::No,
@@ -428,3 +433,7 @@ impl Add for QueryState {
         self
     }
 }
+
+pub trait HasValues {}
+impl<A: ToValues> HasValues for Values<A> {}
+pub struct Values<A: ToValues>(pub A, pub A);
