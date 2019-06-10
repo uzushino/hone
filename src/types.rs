@@ -394,7 +394,7 @@ impl fmt::Display for Distinct {
 
 pub type DistinctClause = Distinct;
 
-pub type ValuesClause = HasValues;
+pub type ValuesClause = Box<HasValues>;
 
 pub struct QueryState {
     pub distinct_clause: DistinctClause,
@@ -402,7 +402,7 @@ pub struct QueryState {
     pub where_clause: WhereClause,
     pub order_clause: Vec<OrderClause>,
     pub set_clause: Vec<SetClause>,
-    pub values_clause: Option<Box<ValuesClause>>,
+    pub values_clause: Option<ValuesClause>,
     pub limit_clause: LimitClause,
     pub groupby_clause: Vec<GroupByClause>,
     pub having_clause: WhereClause,
@@ -435,5 +435,7 @@ impl Add for QueryState {
 }
 
 pub trait HasValues {}
-impl<A: ToValues> HasValues for Values<A> {}
-pub struct Values<A: ToValues>(pub A, pub A);
+
+impl<A: ToValues, B: ToValues> HasValues for Values<A, B> {}
+
+pub struct Values<A: ToValues, B: ToValues>(pub A, pub Vec<B>);

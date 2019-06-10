@@ -73,8 +73,8 @@ impl<A> Query<A> {
         self
     }
     
-    pub fn values_<T, DB>(self, a: T, b: T) -> Query<A>
-    where T: ToValues + 'static
+    pub fn values_<T, S>(self, a: T, b: Vec<S>) -> Query<A>
+    where T: ToValues + 'static, S: ToValues + 'static
     {
         self.state.borrow_mut().values_clause = Some(Box::new(Values(a, b)));
         self

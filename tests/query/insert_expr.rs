@@ -46,3 +46,14 @@ fn test_insert_select() {
             .to_string()
     );
 }
+
+#[test]
+fn test_insert_values() {
+    let a = Query::<User>::from_by(|q, a| {
+        let one = val_(1);
+        let email1 = val_("a@b.c".to_string());
+        let q = q.values_((a.user_id(), a.email()), vec![(one, email1)]);
+
+        q
+    });
+}
