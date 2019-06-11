@@ -83,14 +83,30 @@ where
         let ed = A::entity_def();
         Ok(ed.table_name.name())
     }
+    
+    fn make_column(&self, values: &Box<HasValues>) -> Result<String, ()> {
+        let c = values.columns();
+        if c.is_empty() {
+            return Err(());
+        }
+
+        Ok(values.columns().join(", "))
+    }
 }
 
 impl<A: HasEntityDef> ToSql for InsertValues<A> {
     fn to_sql(&self) -> String {
         let mut sql = String::from("INSERT INTO ");
+        let state = self.0.state.borrow();
 
         if let Ok(a) = self.make_table() {
             sql = sql + &a;
+        }
+
+        if let Some(clause) = &state.values_clause {
+            if let Ok(a) = self.make_column(clause) {
+                sql = sql + "(" + &a + ")";
+            }
         }
 
         sql

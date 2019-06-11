@@ -434,7 +434,11 @@ impl Add for QueryState {
     }
 }
 
-pub trait HasValues {}
+pub trait HasValues {
+    fn columns(&self) -> Vec<String> {
+        vec![]
+    }
+}
 
 impl<A: ToValues, B: ToValues> HasValues for Values<A, B> {}
 
