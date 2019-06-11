@@ -74,3 +74,25 @@ impl<A: HasEntityDef, B: HasSelect> ToSql for InsertSelect<A, B> {
         sql + " " + self.1.to_sql().as_ref()
     }
 }
+
+impl<A> InsertValues<A>
+where
+    A: HasEntityDef
+{
+    fn make_table(&self) -> Result<String, ()> {
+        let ed = A::entity_def();
+        Ok(ed.table_name.name())
+    }
+}
+
+impl<A: HasEntityDef> ToSql for InsertValues<A> {
+    fn to_sql(&self) -> String {
+        let mut sql = String::from("INSERT INTO ");
+
+        if let Ok(a) = self.make_table() {
+            sql = sql + &a;
+        }
+
+        sql
+    }
+}

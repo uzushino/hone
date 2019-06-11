@@ -56,4 +56,9 @@ fn test_insert_values() {
 
         q
     });
+    
+    assert_eq!(
+        insert_values(a.unwrap()).to_sql(),
+        "INSERT INTO User".to_string()
+    );
 }
