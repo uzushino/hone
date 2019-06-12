@@ -86,11 +86,21 @@ where
     
     fn make_column(&self, values: &Box<HasValues>) -> Result<String, ()> {
         let c = values.columns();
+
         if c.is_empty() {
             return Err(());
         }
 
-        Ok(values.columns().join(", "))
+        Ok(c.join(", "))
+    }
+
+    fn make_values(&self, clause: &Box<HasValues>) -> Result<String, ()> {
+        let values = clause.values()
+            .iter()
+            .map(|v| v.join(""))
+            .collect::<Vec<String>>();
+        
+        Ok(values.join(","))
     }
 }
 
@@ -106,6 +116,10 @@ impl<A: HasEntityDef> ToSql for InsertValues<A> {
         if let Some(clause) = &state.values_clause {
             if let Ok(a) = self.make_column(clause) {
                 sql = sql + "(" + &a + ")";
+            }
+        
+            if let Ok(a) = self.make_values(&clause) {
+                sql = sql + " VALUES " + "(" + &a + ")";
             }
         }
 

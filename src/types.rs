@@ -438,6 +438,10 @@ pub trait HasValues {
     fn columns(&self) -> Vec<String> {
         vec![]
     }
+    
+    fn values(&self) -> Vec<Vec<String>> {
+        vec![]
+    }
 }
 
 impl<A: ToValues, B: ToValues> HasValues for Values<A, B> {}
