@@ -64,7 +64,9 @@ impl ToLiteral for Column {
 }
 
 // Expr (Value a)
-pub trait HasValue<A, DB>: fmt::Display {
+pub trait HasValue<A>: fmt::Display {
+    type Output;
+
     fn to_sql(&self) -> String;
 }
 
