@@ -79,12 +79,9 @@ pub enum NeedParens {
 #[derive(Clone)]
 pub struct Raw(pub NeedParens, pub String);
 
-impl<A, DB: ToLiteral> HasValue<A, DB> for Raw {
-    fn to_sql(&self) -> String
-    where
-        Self: Sized,
-    {
-        let s = DB::to_literal(self.1.clone());
+impl<A> HasValue<A> for Raw {
+    fn to_sql(&self) -> String where Self: Sized, <Self as HasValue<A>>::Output: ToLiteral {
+        let s = Self::Output::to_literal(self.1.clone());
 
         match self.0 {
             NeedParens::Never => s.to_string(),
@@ -102,14 +99,11 @@ impl fmt::Display for Raw {
     }
 }
 
-pub struct CompositKey<A: fmt::Display>(pub A);
+pub struct CompositKey<A>(pub A);
 
-impl<A: fmt::Display + Clone, DB: ToLiteral> HasValue<A, DB> for CompositKey<A> {
-    fn to_sql(&self) -> String
-    where
-        Self: Sized,
-    {
-        DB::to_literal(self.0.clone())
+impl<A> HasValue<A> for CompositKey<A> {
+    fn to_sql(&self) -> String where Self: Sized, <Self as HasValue<A>>::Output: ToLiteral {
+        Self::Output::to_literal(self.0)
     }
 }
 
@@ -120,16 +114,16 @@ impl<A: fmt::Display> fmt::Display for CompositKey<A> {
 }
 
 // Expr (ValueList a)
-pub trait HasValueList<A>: fmt::Display {
+pub trait HasValueList<A> {
     fn is_empty(&self) -> bool;
 }
 
-pub enum List<A, DB> {
-    NonEmpty(Box<dyn HasValue<A, DB>>),
+pub enum List<A> {
+    NonEmpty(Box<dyn HasValue<A, Output=ToLiteral>>),
     Empty,
 }
 
-impl<A: fmt::Display, DB> HasValueList<A> for List<A, DB> {
+impl<A: fmt::Display> HasValueList<A> for List<A> {
     fn is_empty(&self) -> bool {
         match self {
             List::NonEmpty(_) => false,
@@ -138,10 +132,10 @@ impl<A: fmt::Display, DB> HasValueList<A> for List<A, DB> {
     }
 }
 
-impl<A, DB> fmt::Display for List<A, DB> {
+impl<A> fmt::Display for List<A> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            List::NonEmpty(a) => write!(f, "{}", a),
+            List::NonEmpty(a) => write!(f, "{}", a.to_string()),
             List::Empty => write!(f, "{}", String::default()),
         }
     }
@@ -150,17 +144,18 @@ impl<A, DB> fmt::Display for List<A, DB> {
 // Expr (OrderBy)
 pub trait HasOrder: fmt::Display {}
 
-pub struct OrderBy<A, DB>(pub OrderByType, pub Rc<HasValue<A, DB>>);
+pub struct OrderBy<A>(pub OrderByType, pub Rc<HasValue<A, Output=ToLiteral>>);
 
-impl<A, DB> HasOrder for OrderBy<A, DB> {}
+impl<A> HasOrder for OrderBy<A> {}
 
-impl<A, DB> fmt::Display for OrderBy<A, DB> {
+impl<A> fmt::Display for OrderBy<A> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let typ = match self.0 {
             OrderByType::Asc => "ASC",
             OrderByType::Desc => "DESC",
         };
-        write!(f, "{} {}", self.1, typ)
+
+        write!(f, "{} {}", self.1.to_sql(), typ)
     }
 }
 
