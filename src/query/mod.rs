@@ -128,12 +128,29 @@ pub trait HasInsert: ToSql {}
 pub struct InsertInto<A>(Query<A>);
 impl<A: HasEntityDef> HasInsert for InsertInto<A> {}
 
-pub trait ToValues {}
-impl<T1> ToValues for T1 where T1: HasEntityDef {}
-impl<T1, T2> ToValues for (T1, T2) {}
+pub trait ToValues {
+    fn to_vec(&self) -> Vec<String>;
+}
 
-pub struct InsertValues<A>(Query<A>);
-impl<A: HasEntityDef> HasInsert for InsertValues<A> {}
+impl<A, B: ToLiteral> ToValues for Rc<HasValue<A, B>> {
+    fn to_vec(&self) -> Vec<String> {
+        vec![
+            self.to_sql()
+        ]
+    }
+}
+
+impl<A, B, C: ToLiteral, D: ToLiteral> ToValues for (Rc<HasValue<A, C>>, Rc<HasValue<B, D>>) {
+    fn to_vec(&self) -> Vec<String> {
+        vec![
+            self.0.to_sql(),
+            self.1.to_sql(),
+        ]
+    }
+}
+
+pub struct BulkInsert<A>(Query<A>);
+impl<A: HasEntityDef> HasInsert for BulkInsert<A> {}
 
 pub struct InsertSelect<A, B: HasSelect>(Query<A>, B);
 impl<A: HasEntityDef, B: HasSelect> HasInsert for InsertSelect<A, B> {}
@@ -142,8 +159,8 @@ pub fn insert_into<A: HasEntityDef>(q: Query<A>) -> impl HasInsert {
     InsertInto(q)
 }
 
-pub fn insert_values<A: HasEntityDef>(q: Query<A>) -> impl HasInsert {
-    InsertValues(q)
+pub fn bulk_insert<A: HasEntityDef>(q: Query<A>) -> impl HasInsert {
+    BulkInsert(q)
 }
 
 pub fn insert_select<A: Column, B, F>(q: Query<A>, f: F) -> InsertSelect<B, impl HasSelect>

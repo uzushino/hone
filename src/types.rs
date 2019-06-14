@@ -438,12 +438,23 @@ pub trait HasValues {
     fn columns(&self) -> Vec<String> {
         vec![]
     }
-    
+
     fn values(&self) -> Vec<Vec<String>> {
         vec![]
     }
 }
 
-impl<A: ToValues, B: ToValues> HasValues for Values<A, B> {}
-
 pub struct Values<A: ToValues, B: ToValues>(pub A, pub Vec<B>);
+
+impl<A: ToValues, B: ToValues> HasValues for Values<A, B> {
+    fn columns(&self) -> Vec<String> {
+        self.0.to_vec()
+    }
+
+    fn values(&self) -> Vec<Vec<String>> {
+        self.1
+            .iter()
+            .map(|v| v.to_vec())
+            .collect::<Vec<_>>()
+    }
+}
