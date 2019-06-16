@@ -140,11 +140,22 @@ impl<A, B: ToLiteral> ToValues for Rc<HasValue<A, B>> {
     }
 }
 
-impl<A, B, C: ToLiteral, D: ToLiteral> ToValues for (Rc<HasValue<A, C>>, Rc<HasValue<B, D>>) {
+impl<A, B, T1: ToLiteral, T2: ToLiteral> ToValues for (Rc<HasValue<A, T1>>, Rc<HasValue<B, T2>>) {
     fn to_vec(&self) -> Vec<String> {
         vec![
             self.0.to_sql(),
             self.1.to_sql(),
+        ]
+    }
+}
+
+impl<A, B, C, T1: ToLiteral, T2: ToLiteral, T3: ToLiteral> ToValues for 
+    (Rc<HasValue<A, T1>>, Rc<HasValue<B, T2>>, Rc<HasValue<C, T3>>) {
+    fn to_vec(&self) -> Vec<String> {
+        vec![
+            self.0.to_sql(),
+            self.1.to_sql(),
+            self.2.to_sql(),
         ]
     }
 }
