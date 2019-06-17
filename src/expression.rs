@@ -5,13 +5,13 @@ use crate::entity::*;
 use crate::query::*;
 use crate::types::*;
 
-pub fn eq_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
+pub fn eq_<A, B: ToLiteral, C: ToLiteral>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=C>>) -> Rc<HasValue<bool, Output=bool>> {
     let a = lhs.to_sql();
     let b = rhs.to_sql();
 
-    Rc::new(Raw(NeedParens::Parens, a + " = " + &b))
+    Rc::new(Raw(NeedParens::Parens, a + " = " + &b, std::marker::PhantomData))
 }
-
+/*
 pub fn not_eq_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
     let a = lhs.to_string();
     let b = rhs.to_string();
@@ -33,11 +33,11 @@ pub fn not_in_<L: ToLiteral, DB1>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValueLis
     let res = if_not_empty_list(rhs, true, Rc::new(op));
     res
 }
-
-pub fn val_<A: fmt::Display + ToLiteral>(typ: A) -> Rc<HasValue<A, A>> {
-    Rc::new(Raw(NeedParens::Never, typ.to_string()))
+*/
+pub fn val_<A: fmt::Display + ToLiteral>(typ: A) -> Rc<HasValue<A, Output=A>> where A: 'static {
+    Rc::new(Raw(NeedParens::Never, typ.to_string(), std::marker::PhantomData))
 }
-
+/*
 pub fn val_list_<'a, A, DB>(vs: &[Rc<HasValue<A, DB>>]) -> Rc<'a + HasValueList<A>>
 where
     A: 'a + fmt::Display,
@@ -54,7 +54,8 @@ where
     Rc::new(List::NonEmpty(Box::new(v)) as List<A, DB>)
 }
 
-pub fn gt_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
+pub fn gt_<L>(lhs: Rc<L>, rhs: Rc<L>) -> Rc<HasValue<bool, Output=bool>> 
+    where L: HasValue<L>, L::Output: ToLiteral {
     Rc::new(binop_(" > ", lhs, rhs))
 }
 
@@ -76,22 +77,23 @@ fn if_not_empty_list<A>(v: Rc<HasValueList<A>>, b: bool, e: Rc<HasValue<bool, bo
         _ => e,
     }
 }
-
-pub fn and_<L, DB1: ToLiteral, DB2: ToLiteral>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<L, DB1>> {
+*/
+pub fn and_<L, DB: ToLiteral>(lhs: Rc<HasValue<L, Output=DB>>, rhs: Rc<HasValue<L, Output=DB>>) -> Rc<HasValue<L, Output=DB>> where DB: 'static {
     Rc::new(binop_(" AND ", lhs, rhs))
 }
 
-pub fn or_<L, DB1: ToLiteral, DB2: ToLiteral>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<L, DB1>> {
+pub fn or_<L, DB: ToLiteral>(lhs: Rc<HasValue<L, Output=DB>>, rhs: Rc<HasValue<L, Output=DB>>) -> Rc<HasValue<L, Output=DB>> where DB: 'static {
     Rc::new(binop_(" OR ", lhs, rhs))
 }
 
-pub fn binop_<L, DB1, DB2>(op: &str, lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Raw {
+pub fn binop_<L, DB: ToLiteral>(op: &str, lhs: Rc<HasValue<L, Output=DB>>, rhs: Rc<HasValue<L, Output=DB>>) -> Raw<DB> {
     let a = lhs.to_string();
     let b = rhs.to_string();
 
-    Raw(NeedParens::Parens, a + op + &b)
+    Raw(NeedParens::Parens, a + op + &b, std::marker::PhantomData)
 }
 
+/*
 pub fn between_<L, DB0: ToLiteral, DB1: ToLiteral, DB2: ToLiteral>(
     comp: Rc<HasValue<L, DB0>>,
     lhs: Rc<HasValue<L, DB1>>,
@@ -264,3 +266,4 @@ pub fn then_() -> () {
 pub fn else_<A, DB>(a: Rc<HasValue<A, DB>>) -> Rc<HasValue<A, DB>> {
     a
 }
+*/

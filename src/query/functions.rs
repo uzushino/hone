@@ -3,9 +3,9 @@ use std::rc::Rc;
 use crate::query::UnsafeSqlFunctionArgument;
 use crate::types::{HasValue, NeedParens, Raw};
 
-impl<A, DB> UnsafeSqlFunctionArgument for Rc<HasValue<A, DB>> {
-    fn to_arg_list(a: Rc<HasValue<A, DB>>) -> Vec<Rc<HasValue<(), bool>>> {
-        let a = Rc::new(Raw(NeedParens::Never, a.to_string()));
+impl<A, DB> UnsafeSqlFunctionArgument for Rc<HasValue<A, Output=DB>> {
+    fn to_arg_list(a: Rc<HasValue<A, Output=DB>>) -> Vec<Rc<HasValue<(), Output=bool>>> {
+        let a = Rc::new(Raw(NeedParens::Never, a.to_string(), std::marker::PhantomData));
         vec![a]
     }
 }
@@ -14,7 +14,7 @@ impl<A> UnsafeSqlFunctionArgument for Vec<A>
 where
     A: UnsafeSqlFunctionArgument + Clone,
 {
-    fn to_arg_list(a: Vec<A>) -> Vec<Rc<HasValue<(), bool>>> {
+    fn to_arg_list(a: Vec<A>) -> Vec<Rc<HasValue<(), Output=bool>>> {
         let mut result = vec![];
 
         for (_, i) in a.iter().enumerate() {
@@ -31,7 +31,7 @@ where
     A: UnsafeSqlFunctionArgument,
     B: UnsafeSqlFunctionArgument,
 {
-    fn to_arg_list(v: (A, B)) -> Vec<Rc<HasValue<(), bool>>> {
+    fn to_arg_list(v: (A, B)) -> Vec<Rc<HasValue<(), Output=bool>>> {
         let mut result = vec![];
 
         let mut a = UnsafeSqlFunctionArgument::to_arg_list(v.0);
@@ -50,7 +50,7 @@ where
     B: UnsafeSqlFunctionArgument,
     C: UnsafeSqlFunctionArgument,
 {
-    fn to_arg_list(v: (A, B, C)) -> Vec<Rc<HasValue<(), bool>>> {
+    fn to_arg_list(v: (A, B, C)) -> Vec<Rc<HasValue<(), Output=bool>>> {
         let mut result = vec![];
 
         let mut a = UnsafeSqlFunctionArgument::to_arg_list(v.0);
@@ -72,7 +72,7 @@ where
     C: UnsafeSqlFunctionArgument,
     D: UnsafeSqlFunctionArgument,
 {
-    fn to_arg_list(v: (A, B, C, D)) -> Vec<Rc<HasValue<(), bool>>> {
+    fn to_arg_list(v: (A, B, C, D)) -> Vec<Rc<HasValue<(), Output=bool>>> {
         let mut result = vec![];
 
         let mut a = UnsafeSqlFunctionArgument::to_arg_list(v.0);

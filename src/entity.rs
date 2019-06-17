@@ -8,29 +8,28 @@ use crate::types::*;
 pub struct Entity<T>(PhantomData<T>);
 
 #[derive(Clone, Default)]
-pub struct Column(String, Option<String>);
+pub struct Column<A>(String, Option<String>, std::marker::PhantomData<A>);
 
-impl Column {
-    pub fn new(name: &str) -> Column {
-        Column(name.to_string(), None)
+impl<B: ToLiteral> Column<B> {
+    pub fn new(name: &str) -> Column<B> {
+        Column(name.to_string(), None, std::marker::PhantomData)
     }
     pub fn name(&self) -> String {
         self.0.clone()
     }
 }
 
-impl fmt::Display for Column {
+impl<B: ToLiteral> fmt::Display for Column<B> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl<A, DB: ToLiteral> HasValue<A, DB> for Column {
-    fn to_sql(&self) -> String
-    where
-        Self: Sized,
-    {
-        DB::to_literal(self.0.clone())
+impl<A, B: ToLiteral> HasValue<A> for Column<B> {
+    type Output = B;
+
+    fn to_sql(&self) -> String where Self: Sized {
+        Self::Output::to_literal(self.0.clone())
     }
 }
 

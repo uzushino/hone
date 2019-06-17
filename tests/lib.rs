@@ -4,5 +4,5 @@ extern crate hone;
 extern crate diesel;
 extern crate diesel_migrations;
 
-mod orm;
+// mod orm;
 mod query;

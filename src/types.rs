@@ -3,7 +3,7 @@ use std::fmt;
 use std::ops::Add;
 use std::rc::Rc;
 
-use crate::entity::{Column, Entity};
+use crate::entity::{ Column, Entity };
 use crate::expression::and_;
 use crate::query::ToValues;
 
@@ -57,7 +57,7 @@ impl ToLiteral for u32 {
     }
 }
 
-impl ToLiteral for Column {
+impl<B: ToLiteral> ToLiteral for Column<B> {
     fn to_literal<A: fmt::Display>(v: A) -> String {
         format!("{}", v.to_string())
     }
@@ -77,9 +77,11 @@ pub enum NeedParens {
 }
 
 #[derive(Clone)]
-pub struct Raw(pub NeedParens, pub String);
+pub struct Raw<B>(pub NeedParens, pub String, pub std::marker::PhantomData<B>);
 
-impl<A> HasValue<A> for Raw {
+impl<A, B: ToLiteral> HasValue<A> for Raw<B> {
+    type Output = B;
+
     fn to_sql(&self) -> String where Self: Sized, <Self as HasValue<A>>::Output: ToLiteral {
         let s = Self::Output::to_literal(self.1.clone());
 
@@ -90,7 +92,7 @@ impl<A> HasValue<A> for Raw {
     }
 }
 
-impl fmt::Display for Raw {
+impl<B: ToLiteral> fmt::Display for Raw<B> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.0 {
             NeedParens::Never => write!(f, "{}", self.1),
@@ -99,15 +101,17 @@ impl fmt::Display for Raw {
     }
 }
 
-pub struct CompositKey<A>(pub A);
+pub struct CompositKey<A, B>(pub A, pub std::marker::PhantomData<B>);
 
-impl<A> HasValue<A> for CompositKey<A> {
-    fn to_sql(&self) -> String where Self: Sized, <Self as HasValue<A>>::Output: ToLiteral {
-        Self::Output::to_literal(self.0)
+impl<A: fmt::Display + Clone, B: ToLiteral> HasValue<A> for CompositKey<A, B> {
+    type Output = B;
+
+    fn to_sql(&self) -> String where Self: Sized {
+        Self::Output::to_literal(self.0.clone())
     }
 }
 
-impl<A: fmt::Display> fmt::Display for CompositKey<A> {
+impl<A: fmt::Display, B> fmt::Display for CompositKey<A, B> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.0)
     }
@@ -118,12 +122,12 @@ pub trait HasValueList<A> {
     fn is_empty(&self) -> bool;
 }
 
-pub enum List<A> {
-    NonEmpty(Box<dyn HasValue<A, Output=ToLiteral>>),
+pub enum List<A, B: ToLiteral> {
+    NonEmpty(Box<dyn HasValue<A, Output=Box<B>>>),
     Empty,
 }
 
-impl<A: fmt::Display> HasValueList<A> for List<A> {
+impl<A: fmt::Display, B: ToLiteral> HasValueList<A> for List<A, B> {
     fn is_empty(&self) -> bool {
         match self {
             List::NonEmpty(_) => false,
@@ -132,10 +136,10 @@ impl<A: fmt::Display> HasValueList<A> for List<A> {
     }
 }
 
-impl<A> fmt::Display for List<A> {
+impl<A, B: ToLiteral> fmt::Display for List<A, B> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            List::NonEmpty(a) => write!(f, "{}", a.to_string()),
+            List::NonEmpty(a) => write!(f, "{}", a),
             List::Empty => write!(f, "{}", String::default()),
         }
     }
@@ -144,11 +148,11 @@ impl<A> fmt::Display for List<A> {
 // Expr (OrderBy)
 pub trait HasOrder: fmt::Display {}
 
-pub struct OrderBy<A>(pub OrderByType, pub Rc<HasValue<A, Output=ToLiteral>>);
+pub struct OrderBy<A, B>(pub OrderByType, pub Rc<HasValue<A, Output=B>>);
 
-impl<A> HasOrder for OrderBy<A> {}
+impl<A, B: ToLiteral> HasOrder for OrderBy<A, B> {}
 
-impl<A> fmt::Display for OrderBy<A> {
+impl<A, B: ToLiteral> fmt::Display for OrderBy<A, B> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let typ = match self.0 {
             OrderByType::Asc => "ASC",
@@ -164,8 +168,8 @@ pub type OrderClause = Rc<HasOrder>;
 #[derive(Clone)]
 pub enum FromClause {
     Start(String),
-    Join(Rc<FromClause>, JoinKind, Rc<FromClause>, Option<Rc<HasValue<bool, bool>>>),
-    OnClause(Rc<HasValue<bool, bool>>),
+    Join(Rc<FromClause>, JoinKind, Rc<FromClause>, Option<Rc<HasValue<bool, Output=bool>>>),
+    OnClause(Rc<HasValue<bool, Output=bool>>),
 }
 
 impl fmt::Display for FromClause {
@@ -179,7 +183,7 @@ impl fmt::Display for FromClause {
 }
 
 impl FromClause {
-    pub fn on(self, on: Rc<HasValue<bool, bool>>) -> Option<FromClause> {
+    pub fn on(self, on: Rc<HasValue<bool, Output=bool>>) -> Option<FromClause> {
         match self {
             FromClause::Join(lhs, knd, rhs, None) => Some(FromClause::Join(lhs, knd, rhs, Some(on))),
             _ => None,
@@ -189,7 +193,7 @@ impl FromClause {
 
 #[derive(Clone)]
 pub enum WhereClause {
-    Where(Rc<HasValue<bool, bool>>),
+    Where(Rc<HasValue<bool, Output=bool>>),
     No,
 }
 
@@ -251,9 +255,12 @@ pub trait HasSet: fmt::Display {
     fn value(&self) -> String;
 }
 
-pub struct SetValue<A, DB>(pub Rc<HasValue<A, Column>>, pub Rc<HasValue<A, DB>>);
+pub struct SetValue<A, B>(
+    pub Rc<HasValue<A, Output=Column<B>>>, 
+    pub Rc<HasValue<A, Output=B>>
+);
 
-impl<A, DB> HasSet for SetValue<A, DB> {
+impl<A, B: ToLiteral> HasSet for SetValue<A, B> {
     fn column(&self) -> String {
         self.0.to_sql()
     }
@@ -263,7 +270,7 @@ impl<A, DB> HasSet for SetValue<A, DB> {
     }
 }
 
-impl<A, DB2> fmt::Display for SetValue<A, DB2> {
+impl<A, B: ToLiteral> fmt::Display for SetValue<A, B> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{} = {}", self.0, self.1.to_sql())
     }
@@ -323,13 +330,13 @@ impl fmt::Display for LimitClause {
 
 pub trait HasGroupBy: fmt::Display {}
 
-pub struct GroupBy<A, DB>(pub Rc<HasValue<A, DB>>);
+pub struct GroupBy<A, B>(pub Rc<HasValue<A, Output=B>>);
 
-impl<A, DB> HasGroupBy for GroupBy<A, DB> {}
+impl<A, B> HasGroupBy for GroupBy<A, B> {}
 
 pub type GroupByClause = Box<HasGroupBy>;
 
-impl<A, DB> fmt::Display for GroupBy<A, DB> {
+impl<A, B> fmt::Display for GroupBy<A, B> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.0)
     }
@@ -346,11 +353,7 @@ impl Clone for Box<HasDistinct> {
     }
 }
 
-impl<A, DB> HasDistinct for Rc<HasValue<A, DB>>
-where
-    A: 'static,
-    DB: 'static,
-{
+impl<A, B> HasDistinct for Rc<HasValue<A, Output=B>> where A: 'static, B: 'static {
     fn box_clone(&self) -> Box<HasDistinct> {
         Box::new((*self).clone())
     }
