@@ -144,6 +144,14 @@ where
     unsafe_sql_function("EXISTS ", sub_(q), NeedParens::Never)
 }
 
+pub fn not_exists_<A, DB>(q: Query<Rc<HasValue<A, DB>>>) -> Rc<'static + HasValue<bool, bool>>
+where
+    A: 'static + fmt::Display,
+    DB: 'static + ToLiteral,
+{
+    unsafe_sql_function("NOT EXISTS ", sub_(q), NeedParens::Never)
+}
+
 pub fn sub_<'a, A, DB>(q: Query<Rc<HasValue<A, DB>>>) -> Rc<'a + HasValue<A, DB>>
 where
     A: 'a + fmt::Display,
