@@ -13,8 +13,8 @@ pub fn eq_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) ->
 }
 
 pub fn not_eq_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
-    let a = lhs.to_string();
-    let b = rhs.to_string();
+    let a = lhs.to_sql();
+    let b = rhs.to_sql();
 
     Rc::new(Raw(NeedParens::Parens, a + " <> " + &b))
 }
