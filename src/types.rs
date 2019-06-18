@@ -57,7 +57,7 @@ impl ToLiteral for u32 {
     }
 }
 
-impl<B: ToLiteral> ToLiteral for Column<B> {
+impl ToLiteral for Column {
     fn to_literal<A: fmt::Display>(v: A) -> String {
         format!("{}", v.to_string())
     }
@@ -77,10 +77,10 @@ pub enum NeedParens {
 }
 
 #[derive(Clone)]
-pub struct Raw<B>(pub NeedParens, pub String, pub std::marker::PhantomData<B>);
+pub struct Raw(pub NeedParens, pub String);
 
-impl<A, B: ToLiteral> HasValue<A> for Raw<B> {
-    type Output = B;
+impl<A: ToLiteral> HasValue<A> for Raw where Self: Sized {
+    type Output = A;
 
     fn to_sql(&self) -> String where Self: Sized, <Self as HasValue<A>>::Output: ToLiteral {
         let s = Self::Output::to_literal(self.1.clone());
@@ -92,7 +92,7 @@ impl<A, B: ToLiteral> HasValue<A> for Raw<B> {
     }
 }
 
-impl<B: ToLiteral> fmt::Display for Raw<B> {
+impl fmt::Display for Raw {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.0 {
             NeedParens::Never => write!(f, "{}", self.1),
@@ -101,17 +101,17 @@ impl<B: ToLiteral> fmt::Display for Raw<B> {
     }
 }
 
-pub struct CompositKey<A, B>(pub A, pub std::marker::PhantomData<B>);
+pub struct CompositKey<A>(pub A);
 
-impl<A: fmt::Display + Clone, B: ToLiteral> HasValue<A> for CompositKey<A, B> {
-    type Output = B;
+impl<A: fmt::Display + Clone + ToLiteral> HasValue<A> for CompositKey<A> {
+    type Output = A;
 
     fn to_sql(&self) -> String where Self: Sized {
         Self::Output::to_literal(self.0.clone())
     }
 }
 
-impl<A: fmt::Display, B> fmt::Display for CompositKey<A, B> {
+impl<A: fmt::Display> fmt::Display for CompositKey<A> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.0)
     }
@@ -203,7 +203,7 @@ impl Add for WhereClause {
     fn add(self, other: Self) -> Self::Output {
         match self {
             WhereClause::Where(l) => match other {
-                WhereClause::Where(r) => WhereClause::Where(and_(l, r)),
+                WhereClause::Where(r) => WhereClause::Where(and_(l, r).clone()),
                 WhereClause::No => WhereClause::Where(l),
             },
             WhereClause::No => other,
@@ -256,7 +256,7 @@ pub trait HasSet: fmt::Display {
 }
 
 pub struct SetValue<A, B>(
-    pub Rc<HasValue<A, Output=Column<B>>>, 
+    pub Rc<HasValue<A, Output=Column>>, 
     pub Rc<HasValue<A, Output=B>>
 );
 

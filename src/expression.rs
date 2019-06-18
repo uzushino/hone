@@ -9,7 +9,7 @@ pub fn eq_<A, B: ToLiteral, C: ToLiteral>(lhs: Rc<HasValue<A, Output=B>>, rhs: R
     let a = lhs.to_sql();
     let b = rhs.to_sql();
 
-    Rc::new(Raw(NeedParens::Parens, a + " = " + &b, std::marker::PhantomData))
+    Rc::new(Raw(NeedParens::Parens, a + " = " + &b))
 }
 /*
 pub fn not_eq_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
@@ -34,8 +34,8 @@ pub fn not_in_<L: ToLiteral, DB1>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValueLis
     res
 }
 */
-pub fn val_<A: fmt::Display + ToLiteral>(typ: A) -> Rc<HasValue<A, Output=A>> where A: 'static {
-    Rc::new(Raw(NeedParens::Never, typ.to_string(), std::marker::PhantomData))
+pub fn val_<A: fmt::Display + ToLiteral>(typ: A) -> Rc<HasValue<A, Output=A>> {
+    Rc::new(Raw(NeedParens::Never, typ.to_string()))
 }
 /*
 pub fn val_list_<'a, A, DB>(vs: &[Rc<HasValue<A, DB>>]) -> Rc<'a + HasValueList<A>>
@@ -78,19 +78,22 @@ fn if_not_empty_list<A>(v: Rc<HasValueList<A>>, b: bool, e: Rc<HasValue<bool, bo
     }
 }
 */
-pub fn and_<L, DB: ToLiteral>(lhs: Rc<HasValue<L, Output=DB>>, rhs: Rc<HasValue<L, Output=DB>>) -> Rc<HasValue<L, Output=DB>> where DB: 'static {
+pub fn and_<L: ToLiteral, A, B>(lhs: Rc<HasValue<L, Output=A>>, rhs: Rc<HasValue<L, Output=B>>) -> Rc<HasValue<L, Output=L>>
+    where A: ToLiteral, B: ToLiteral {
     Rc::new(binop_(" AND ", lhs, rhs))
 }
 
-pub fn or_<L, DB: ToLiteral>(lhs: Rc<HasValue<L, Output=DB>>, rhs: Rc<HasValue<L, Output=DB>>) -> Rc<HasValue<L, Output=DB>> where DB: 'static {
+pub fn or_<L: ToLiteral, A, B>(lhs: Rc<HasValue<L, Output=A>>, rhs: Rc<HasValue<L, Output=B>>) -> Rc<HasValue<L, Output=L>> 
+    where A: ToLiteral, B: ToLiteral {
     Rc::new(binop_(" OR ", lhs, rhs))
 }
 
-pub fn binop_<L, DB: ToLiteral>(op: &str, lhs: Rc<HasValue<L, Output=DB>>, rhs: Rc<HasValue<L, Output=DB>>) -> Raw<DB> {
+pub fn binop_<L, A, B>(op: &str, lhs: Rc<HasValue<L, Output=A>>, rhs: Rc<HasValue<L, Output=B>>) -> Raw 
+    where A: ToLiteral, B: ToLiteral {
     let a = lhs.to_string();
     let b = rhs.to_string();
 
-    Raw(NeedParens::Parens, a + op + &b, std::marker::PhantomData)
+    Raw(NeedParens::Parens, a + op + &b)
 }
 
 /*
@@ -198,7 +201,7 @@ where
 
 pub fn sum_<'a, A>(a: A) -> Rc<'a + HasValue<u32, Column>>
 where
-    A: 'a + UnsafeSqlFunctionArgument,
+    A: 'a + ,
 {
     unsafe_sql_function("SUM", a, NeedParens::Parens)
 }

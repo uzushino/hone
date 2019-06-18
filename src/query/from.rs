@@ -63,7 +63,7 @@ impl<A> Query<A> {
         self
     }
 
-    pub fn value_<T, DB: ToLiteral>(self, a: Rc<HasValue<T, Output=CL<DB>>>, b: Rc<HasValue<T, Output=DB>>) -> Query<A>
+    pub fn value_<T, DB: ToLiteral>(self, a: Rc<HasValue<T, Output=CL>>, b: Rc<HasValue<T, Output=DB>>) -> Query<A>
     where
         T: 'static,
         DB: 'static,

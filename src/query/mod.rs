@@ -174,5 +174,5 @@ pub fn truncate<A: Column>(q: Query<A>) -> impl HasDelete {
 }
 
 pub trait UnsafeSqlFunctionArgument {
-    fn to_arg_list(arg: Self) -> Vec<Rc<HasValue<(), Output=bool>>>;
+    fn to_arg_list(arg: Self) -> Vec<Rc<HasValue<bool, Output=bool>>>;
 }
