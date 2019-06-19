@@ -21,17 +21,12 @@ pub fn not_eq_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>
 
 pub fn in_<L: fmt::Display, DB1>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValueList<L>>) -> Rc<HasValue<bool, bool>> {
     let comp: Rc<HasValue<L, i32>> = Rc::new(Raw(NeedParens::Parens, rhs.to_string()));
-    let op = binop_(" IN ", lhs, comp);
-
-    if_not_empty_list(rhs, false, Rc::new(op))
+    if_not_empty_list(rhs, false, binop_(" IN ", lhs, comp))
 }
 
 pub fn not_in_<L: ToLiteral, DB1>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValueList<L>>) -> Rc<HasValue<bool, bool>> {
     let comp: Rc<HasValue<L, i32>> = Rc::new(Raw(NeedParens::Parens, rhs.to_string()));
-    let op = binop_(" NOT IN ", lhs, comp);
-
-    let res = if_not_empty_list(rhs, true, Rc::new(op));
-    res
+    if_not_empty_list(rhs, true, binop_(" NOT IN ", lhs, comp))
 }
 
 pub fn val_<A: fmt::Display + ToLiteral>(typ: A) -> Rc<HasValue<A, A>> {
@@ -55,23 +50,23 @@ where
 }
 
 pub fn gt_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
-    Rc::new(binop_(" > ", lhs, rhs))
+    binop_(" > ", lhs, rhs)
 }
 
 pub fn gte_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
-    Rc::new(binop_(" >= ", lhs, rhs))
+    binop_(" >= ", lhs, rhs)
 }
 
 pub fn lt_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
-    Rc::new(binop_(" < ", lhs, rhs))
+    binop_(" < ", lhs, rhs)
 }
 
 pub fn lte_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
-    Rc::new(binop_(" <= ", lhs, rhs))
+    binop_(" <= ", lhs, rhs)
 }
 
 pub fn re_<L, DB1, DB2>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<bool, bool>> {
-    Rc::new(binop_(" ~ ", lhs, rhs))
+    binop_(" ~ ", lhs, rhs)
 }
 
 fn if_not_empty_list<A>(v: Rc<HasValueList<A>>, b: bool, e: Rc<HasValue<bool, bool>>) -> Rc<HasValue<bool, bool>> {
@@ -82,18 +77,18 @@ fn if_not_empty_list<A>(v: Rc<HasValueList<A>>, b: bool, e: Rc<HasValue<bool, bo
 }
 
 pub fn and_<L, DB1: ToLiteral, DB2: ToLiteral>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<L, DB1>> {
-    Rc::new(binop_(" AND ", lhs, rhs))
+    binop_(" AND ", lhs, rhs)
 }
 
 pub fn or_<L, DB1: ToLiteral, DB2: ToLiteral>(lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Rc<HasValue<L, DB1>> {
-    Rc::new(binop_(" OR ", lhs, rhs))
+    binop_(" OR ", lhs, rhs)
 }
 
-pub fn binop_<L, DB1, DB2>(op: &str, lhs: Rc<HasValue<L, DB1>>, rhs: Rc<HasValue<L, DB2>>) -> Raw {
+pub fn binop_<A, B, C, D, E>(op: &str, lhs: Rc<HasValue<A, B>>, rhs: Rc<HasValue<A, C>>) -> Rc<HasValue<D, E>> where E: ToLiteral {
     let a = lhs.to_string();
     let b = rhs.to_string();
 
-    Raw(NeedParens::Parens, a + op + &b)
+    Rc::new(Raw(NeedParens::Parens, a + op + &b))
 }
 
 pub fn between_<L, DB0: ToLiteral, DB1: ToLiteral, DB2: ToLiteral>(
