@@ -9,7 +9,7 @@ pub trait Column {
     fn col_count() -> usize;
 }
 
-impl<A: ToString, DB> Column for Rc<HasValue<A, DB>> {
+impl<A: ToString, DB: ToLiteral> Column for Rc<HasValue<A, Output=DB>> {
     fn cols(&self) -> String {
         self.to_string()
     }
@@ -19,10 +19,7 @@ impl<A: ToString, DB> Column for Rc<HasValue<A, DB>> {
     }
 }
 
-impl<A> Column for A
-where
-    A: HasEntityDef,
-{
+impl<A> Column for A where A: HasEntityDef {
     fn cols(&self) -> String {
         let ed = A::entity_def();
         let ordered = ed.columns.iter().collect::<BTreeMap<_, _>>();

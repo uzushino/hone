@@ -132,7 +132,7 @@ pub trait ToValues {
     fn to_vec(&self) -> Vec<String>;
 }
 
-impl<A, B: ToLiteral> ToValues for Rc<HasValue<A, B>> {
+impl<A, B: ToLiteral> ToValues for Rc<HasValue<A, Output=B>> {
     fn to_vec(&self) -> Vec<String> {
         vec![
             self.to_sql()
@@ -140,7 +140,7 @@ impl<A, B: ToLiteral> ToValues for Rc<HasValue<A, B>> {
     }
 }
 
-impl<A, B, T1: ToLiteral, T2: ToLiteral> ToValues for (Rc<HasValue<A, T1>>, Rc<HasValue<B, T2>>) {
+impl<A, B, T1: ToLiteral, T2: ToLiteral> ToValues for (Rc<HasValue<A, Output=T1>>, Rc<HasValue<B, Output=T2>>) {
     fn to_vec(&self) -> Vec<String> {
         vec![
             self.0.to_sql(),
@@ -150,7 +150,7 @@ impl<A, B, T1: ToLiteral, T2: ToLiteral> ToValues for (Rc<HasValue<A, T1>>, Rc<H
 }
 
 impl<A, B, C, T1: ToLiteral, T2: ToLiteral, T3: ToLiteral> ToValues for 
-    (Rc<HasValue<A, T1>>, Rc<HasValue<B, T2>>, Rc<HasValue<C, T3>>) {
+    (Rc<HasValue<A, Output=T1>>, Rc<HasValue<B, Output=T2>>, Rc<HasValue<C, Output=T3>>) {
     fn to_vec(&self) -> Vec<String> {
         vec![
             self.0.to_sql(),
@@ -202,5 +202,5 @@ pub fn truncate<A: Column>(q: Query<A>) -> impl HasDelete {
 }
 
 pub trait UnsafeSqlFunctionArgument {
-    fn to_arg_list(arg: Self) -> Vec<Rc<HasValue<(), bool>>>;
+    fn to_arg_list(arg: Self) -> Vec<Rc<HasValue<bool, Output=bool>>>;
 }

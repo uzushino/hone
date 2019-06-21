@@ -14,6 +14,7 @@ impl Column {
     pub fn new(name: &str) -> Column {
         Column(name.to_string(), None)
     }
+    
     pub fn name(&self) -> String {
         self.0.clone()
     }
@@ -25,12 +26,11 @@ impl fmt::Display for Column {
     }
 }
 
-impl<A, DB: ToLiteral> HasValue<A, DB> for Column {
-    fn to_sql(&self) -> String
-    where
-        Self: Sized,
-    {
-        DB::to_literal(self.0.clone())
+impl<A: ToLiteral> HasValue<A> for Column {
+    type Output = Column;
+
+    fn to_sql(&self) -> String where Self: Sized {
+        Self::Output::to_literal(self.0.clone())
     }
 }
 
