@@ -1,6 +1,4 @@
-use std::collections::BTreeMap;
 use std::rc::Rc;
-
 use crate::entity::HasEntityDef;
 use crate::types::*;
 
@@ -19,10 +17,9 @@ impl<A: ToString, DB: ToLiteral> Column for Rc<HasValue<A, Output=DB>> {
     }
 }
 
-impl<A> Column for A where A: HasEntityDef + Default {
+impl<A> Column for A where A: HasEntityDef {
     fn cols(&self) -> String {
-        let s = A::columns();
-        s.join(", ")
+        A::columns().join(", ")
     }
 
     fn col_count() -> usize {

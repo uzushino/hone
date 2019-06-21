@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fmt;
 use std::marker::PhantomData;
 
@@ -50,8 +49,3 @@ pub trait HasEntityDef {
     fn table_name() -> Table;
     fn columns() -> Vec<&'static str>;
 }
-
-/*
-impl<T: HasEntityDef> HasEntityDef for Option<T> {
-}
-*/
