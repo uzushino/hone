@@ -6,8 +6,7 @@ where
     A: HasEntityDef,
 {
     fn make_table(&self) -> Result<String, ()> {
-        let ed = A::entity_def();
-        Ok(ed.table_name.name())
+        Ok(A::table_name().name())
     }
 
     fn make_column(&self, clause: &Vec<SetClause>) -> Result<String, ()> {
@@ -48,8 +47,7 @@ where
     B: HasSelect
 {
     fn make_table(&self) -> Result<String, ()> {
-        let ed = A::entity_def();
-        Ok(ed.table_name.name())
+        Ok(A::table_name().name())
     }
 
     fn make_column(&self, clause: &Vec<SetClause>) -> Result<String, ()> {
@@ -80,8 +78,7 @@ where
     A: HasEntityDef
 {
     fn make_table(&self) -> Result<String, ()> {
-        let ed = A::entity_def();
-        Ok(ed.table_name.name())
+        Ok(A::table_name().name())
     }
     
     fn make_column(&self, values: &Box<HasValues>) -> Result<String, ()> {

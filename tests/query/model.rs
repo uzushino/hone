@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::rc::Rc;
 
 use hone::entity::*;
@@ -19,16 +18,15 @@ impl User {
 }
 
 impl HasEntityDef for User {
-    fn entity_def() -> EntityDef {
-        let mut m = HashMap::new();
+    fn table_name() -> Table {
+        Table::new("User", None)
+    }
 
-        m.insert("user_id".to_string(), "integer".to_string());
-        m.insert("email".to_string(), "text".to_string());
-
-        EntityDef {
-            table_name: Table::new("User", None),
-            columns: m,
-        }
+    fn columns() -> Vec<&'static str> {
+        vec![
+            "email",
+            "user_id",
+        ]
     }
 }
 
@@ -50,16 +48,15 @@ impl Library {
 }
 
 impl HasEntityDef for Library {
-    fn entity_def() -> EntityDef {
-        let mut m = HashMap::new();
+    fn table_name() -> Table {
+        Table::new("Library", None)
+    }
 
-        m.insert("library_id".to_string(), "integer".to_string());
-        m.insert("title".to_string(), "text".to_string());
-
-        EntityDef {
-            table_name: Table::new("Library", None),
-            columns: m,
-        }
+    fn columns() -> Vec<&'static str> {
+        vec![
+            "library_id",
+            "title"
+        ]
     }
 }
 

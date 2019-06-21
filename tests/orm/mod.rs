@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fs::File;
 use std::path::Path;
 use std::rc::Rc;
@@ -7,8 +6,7 @@ use diesel::prelude::*;
 use diesel::sql_query;
 use diesel_migrations;
 
-use hone::entity::Column;
-use hone::entity::{EntityDef, HasEntityDef, Table as tbl};
+use hone::entity::{Column, HasEntityDef, Table as Tbl};
 use hone::expression::*;
 use hone::query::*;
 use hone::types::*;
@@ -44,16 +42,15 @@ impl Download {
 }
 
 impl HasEntityDef for Download {
-    fn entity_def() -> EntityDef {
-        let mut m = HashMap::new();
+    fn table_name() -> Tbl {
+        Tbl::new("downloads", None)
+    }
 
-        m.insert("id".to_string(), "integer".to_string());
-        m.insert("version".to_string(), "text".to_string());
-
-        EntityDef {
-            table_name: tbl::new("downloads", None),
-            columns: m,
-        }
+    fn columns() -> Vec<&'static str> {
+        vec![
+            "id",
+            "version"
+        ]
     }
 }
 

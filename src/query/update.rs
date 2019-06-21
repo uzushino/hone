@@ -39,8 +39,7 @@ where
     B: HasSelect,
 {
     fn make_table(&self) -> Result<String, ()> {
-        let ed = A::entity_def();
-        Ok(ed.table_name.name())
+        Ok(A::table_name().name())
     }
 
     fn make_set(&self, clause: &Vec<SetClause>) -> Result<String, ()> {

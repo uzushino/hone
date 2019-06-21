@@ -19,17 +19,14 @@ impl<A: ToString, DB: ToLiteral> Column for Rc<HasValue<A, Output=DB>> {
     }
 }
 
-impl<A> Column for A where A: HasEntityDef {
+impl<A> Column for A where A: HasEntityDef + Default {
     fn cols(&self) -> String {
-        let ed = A::entity_def();
-        let ordered = ed.columns.iter().collect::<BTreeMap<_, _>>();
-        let s = ordered.keys().into_iter().map(|k| k.to_string()).collect::<Vec<_>>();
-
+        let s = A::columns();
         s.join(", ")
     }
 
     fn col_count() -> usize {
-        A::entity_def().columns.keys().count()
+        A::columns().len()
     }
 }
 

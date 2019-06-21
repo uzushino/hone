@@ -46,30 +46,12 @@ impl Table {
     }
 }
 
-#[derive(Clone, Default)]
-pub struct EntityDef {
-    pub table_name: Table,
-    pub columns: HashMap<String, String>,
-}
-
 pub trait HasEntityDef {
-    fn entity_def() -> EntityDef;
+    fn table_name() -> Table;
+    fn columns() -> Vec<&'static str>;
 }
 
-impl<T> Default for Entity<T> {
-    fn default() -> Entity<T> {
-        Entity(PhantomData)
-    }
-}
-
-impl<T: HasEntityDef> HasEntityDef for Entity<T> {
-    fn entity_def() -> EntityDef {
-        T::entity_def()
-    }
-}
-
+/*
 impl<T: HasEntityDef> HasEntityDef for Option<T> {
-    fn entity_def() -> EntityDef {
-        T::entity_def()
-    }
 }
+*/

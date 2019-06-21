@@ -117,7 +117,7 @@ impl<A> Query<A> {
     where
         A: Default + HasEntityDef,
     {
-        let from_ = FromClause::Start(A::entity_def().table_name.name());
+        let from_ = FromClause::Start(A::table_name().name());
         FromPreprocess(A::default(), from_)
     }
 
