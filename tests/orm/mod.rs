@@ -34,11 +34,12 @@ struct Download {
 }
 
 impl Download {
-    pub fn id(&self) -> Rc<HasValue<i32, Column>> {
-        Rc::new(Raw(NeedParens::Never, String::from("downloads.id")))
+    pub fn id(&self) -> Rc<HasValue<i32, Output=Column>> {
+        never_("downloads.id")
     }
-    pub fn version(&self) -> Rc<HasValue<String, Column>> {
-        Rc::new(Raw(NeedParens::Never, String::from("downloads.version")))
+
+    pub fn version(&self) -> Rc<HasValue<String, Output=Column>> {
+        never_("downloads.version")
     }
 }
 

@@ -75,7 +75,7 @@ impl<A: HasEntityDef, B: HasSelect> ToSql for InsertSelect<A, B> {
     }
 }
 
-impl<A> InsertValues<A>
+impl<A> BulkInsert<A>
 where
     A: HasEntityDef
 {
@@ -97,14 +97,14 @@ where
     fn make_values(&self, clause: &Box<HasValues>) -> Result<String, ()> {
         let values = clause.values()
             .iter()
-            .map(|v| v.join(""))
+            .map(|v| "(".to_string() + &v.join(", ") + ")")
             .collect::<Vec<String>>();
         
-        Ok(values.join(","))
+        Ok(values.join(" "))
     }
 }
 
-impl<A: HasEntityDef> ToSql for InsertValues<A> {
+impl<A: HasEntityDef> ToSql for BulkInsert<A> {
     fn to_sql(&self) -> String {
         let mut sql = String::from("INSERT INTO ");
         let state = self.0.state.borrow();
@@ -119,7 +119,7 @@ impl<A: HasEntityDef> ToSql for InsertValues<A> {
             }
         
             if let Ok(a) = self.make_values(&clause) {
-                sql = sql + " VALUES " + "(" + &a + ")";
+                sql = sql + " VALUES " + &a ;
             }
         }
 

@@ -6,7 +6,7 @@ use crate::types::{HasValue, NeedParens, Raw};
 
 impl<A, DB: ToLiteral> UnsafeSqlFunctionArgument for Rc<HasValue<A, Output=DB>> {
     fn to_arg_list(a: Rc<HasValue<A, Output=DB>>) -> Vec<Rc<HasValue<bool, Output=bool>>> {
-        let a = Rc::new(Raw(NeedParens::Never, a.to_string()));
+        let a = Rc::new(Raw(NeedParens::Never, a.to_string(), std::marker::PhantomData));
         vec![a]
     }
 }

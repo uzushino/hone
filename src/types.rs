@@ -77,10 +77,10 @@ pub enum NeedParens {
 }
 
 #[derive(Clone)]
-pub struct Raw(pub NeedParens, pub String);
+pub struct Raw<A>(pub NeedParens, pub String, pub std::marker::PhantomData<A>);
 
-impl<A: ToLiteral> HasValue<A> for Raw where Self: Sized {
-    type Output = A;
+impl<A, B> HasValue<A> for Raw<B> where Self: Sized, B: ToLiteral {
+    type Output = B;
 
     fn to_sql(&self) -> String where Self: Sized, <Self as HasValue<A>>::Output: ToLiteral {
         let s = Self::Output::to_literal(self.1.clone());
@@ -92,7 +92,7 @@ impl<A: ToLiteral> HasValue<A> for Raw where Self: Sized {
     }
 }
 
-impl fmt::Display for Raw {
+impl<A> fmt::Display for Raw<A> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.0 {
             NeedParens::Never => write!(f, "{}", self.1),
@@ -118,12 +118,12 @@ impl<A: fmt::Display> fmt::Display for CompositKey<A> {
 }
 
 // Expr (ValueList a)
-pub trait HasValueList<A> {
+pub trait HasValueList<A>: fmt::Display {
     fn is_empty(&self) -> bool;
 }
 
 pub enum List<A, B: ToLiteral> {
-    NonEmpty(Box<dyn HasValue<A, Output=Box<B>>>),
+    NonEmpty(Box<dyn HasValue<A, Output=B>>),
     Empty,
 }
 
@@ -438,12 +438,23 @@ pub trait HasValues {
     fn columns(&self) -> Vec<String> {
         vec![]
     }
-    
+
     fn values(&self) -> Vec<Vec<String>> {
         vec![]
     }
 }
 
-impl<A: ToValues, B: ToValues> HasValues for Values<A, B> {}
-
 pub struct Values<A: ToValues, B: ToValues>(pub A, pub Vec<B>);
+
+impl<A: ToValues, B: ToValues> HasValues for Values<A, B> {
+    fn columns(&self) -> Vec<String> {
+        self.0.to_vec()
+    }
+
+    fn values(&self) -> Vec<Vec<String>> {
+        self.1
+            .iter()
+            .map(|v| v.to_vec())
+            .collect::<Vec<_>>()
+    }
+}

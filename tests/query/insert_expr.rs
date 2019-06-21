@@ -48,17 +48,27 @@ fn test_insert_select() {
 }
 
 #[test]
-fn test_insert_values() {
+fn test_bulk_insert() {
     let a = Query::<User>::from_by(|q, a| {
         let one = val_(1);
+        let two = val_(2);
         let email1 = val_("a@b.c".to_string());
-        let q = q.values_((a.user_id(), a.email()), vec![(one, email1)]);
+        let email2 = val_("d@e.c".to_string());
+
+        let q = q.values_(
+            (a.user_id(), a.email()), 
+            vec![
+                (one, email1),
+                (two, email2),
+            ]
+        );
 
         q
     });
     
     assert_eq!(
-        insert_values(a.unwrap()).to_sql(),
-        "INSERT INTO User".to_string()
+        bulk_insert(a.unwrap()).to_sql(),
+        "INSERT INTO User(User.user_id, User.email) VALUES (1, 'a@b.c') (2, 'd@e.c')"
+        .to_string()
     );
 }

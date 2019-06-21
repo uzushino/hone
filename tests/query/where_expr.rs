@@ -12,7 +12,6 @@ fn test_eq() {
     assert_eq!("(User.email = 'a@b.c')", eq.to_string());
 }
 
-/*
 #[test]
 fn test_not_eq() {
     let u = User::default();
@@ -249,4 +248,3 @@ fn test_where() {
             .to_string()
     );
 }
-*/
