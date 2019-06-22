@@ -27,11 +27,7 @@ impl<A> Column for A where A: HasEntityDef {
     }
 }
 
-impl<A, B> Column for (A, B)
-where
-    A: Column,
-    B: Column,
-{
+impl<A, B> Column for (A, B) where A: Column, B: Column {
     fn cols(&self) -> String {
         let ca = self.0.cols();
         let cb = self.1.cols();
@@ -44,12 +40,7 @@ where
     }
 }
 
-impl<A, B, C> Column for (A, B, C)
-where
-    A: Column,
-    B: Column,
-    C: Column,
-{
+impl<A, B, C> Column for (A, B, C) where A: Column, B: Column, C: Column {
     fn cols(&self) -> String {
         let ca = self.0.cols();
         let cb = self.1.cols();

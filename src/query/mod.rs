@@ -88,6 +88,7 @@ pub trait FromQuery {
 pub trait HasSelect: ToSql {
     fn get_state(&self) -> Ref<QueryState>;
 }
+
 impl<A: Column> HasSelect for Select<A> {
     fn get_state(&self) -> Ref<QueryState> {
         self.0.state.borrow()

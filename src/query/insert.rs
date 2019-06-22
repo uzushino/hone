@@ -1,10 +1,7 @@
 use crate::entity::HasEntityDef;
 use crate::query::*;
 
-impl<A> InsertInto<A>
-where
-    A: HasEntityDef,
-{
+impl<A> InsertInto<A> where A: HasEntityDef {
     fn make_table(&self) -> Result<String, ()> {
         Ok(A::table_name().name())
     }
@@ -41,11 +38,7 @@ impl<A: HasEntityDef> ToSql for InsertInto<A> {
     }
 }
 
-impl<A, B> InsertSelect<A, B>
-where
-    A: HasEntityDef,
-    B: HasSelect
-{
+impl<A, B> InsertSelect<A, B> where A: HasEntityDef, B: HasSelect {
     fn make_table(&self) -> Result<String, ()> {
         Ok(A::table_name().name())
     }
@@ -73,10 +66,7 @@ impl<A: HasEntityDef, B: HasSelect> ToSql for InsertSelect<A, B> {
     }
 }
 
-impl<A> BulkInsert<A>
-where
-    A: HasEntityDef
-{
+impl<A> BulkInsert<A> where A: HasEntityDef {
     fn make_table(&self) -> Result<String, ()> {
         Ok(A::table_name().name())
     }

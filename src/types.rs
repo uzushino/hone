@@ -70,6 +70,8 @@ pub trait HasValue<A>: fmt::Display {
     fn to_sql(&self) -> String;
 }
 
+pub type SqlExpr<A, B> = Rc<HasValue<A, Output=B>>;
+
 #[derive(Clone)]
 pub enum NeedParens {
     Never,

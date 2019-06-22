@@ -29,15 +29,22 @@ pub fn not_eq_<A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Outp
     parens_(a + " <> " + &b)
 }
 
-pub fn in_<A, B>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValueList<A>>) -> Rc<HasValue<bool, Output=bool>> 
+fn if_not_empty_list<A>(v: impl HasValueList<A>, b: bool, e: Rc<HasValue<bool, Output=bool>>) -> Rc<HasValue<bool, Output=bool>> {
+    match v {
+        _ if v.is_empty() => val_(b),
+        _ => e,
+    }
+}
+
+pub fn in_<A, B>(lhs: Rc<HasValue<A, Output=B>>, rhs: impl HasValueList<A>) -> Rc<HasValue<bool, Output=bool>> 
     where A: ToLiteral {
-    let comp: Rc<HasValue<A, Output=i32>> = parens_(rhs.clone());
+    let comp: Rc<HasValue<A, Output=i32>> = parens_(rhs.to_string());
     if_not_empty_list(rhs, false, binop_(" IN ", lhs, comp))
 }
 
-pub fn not_in_<A, B>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValueList<A>>) -> Rc<HasValue<bool, Output=bool>> 
+pub fn not_in_<A, B>(lhs: Rc<HasValue<A, Output=B>>, rhs: impl HasValueList<A>) -> Rc<HasValue<bool, Output=bool>> 
     where A: ToLiteral {
-    let comp: Rc<HasValue<A, Output=i32>> = parens_(rhs.clone());
+    let comp: Rc<HasValue<A, Output=i32>> = parens_(rhs.to_string());
     if_not_empty_list(rhs, false, binop_(" NOT IN ", lhs, comp))
 }
 
@@ -45,17 +52,16 @@ pub fn val_<'a, A>(typ: A) -> Rc<'a + HasValue<A, Output=A>> where A: 'a + fmt::
     never_(typ)
 }
 
-pub fn val_list_<'a, A, B>(vs: &[Rc<'a + HasValue<A, Output=B>>]) -> Rc<'a + HasValueList<A>>
+pub fn val_list_<'a, A, B>(vs: &[Rc<'a + HasValue<A, Output=B>>]) -> impl HasValueList<A>
     where A: 'a + fmt::Display, B: 'static + ToLiteral {
     if vs.is_empty() {
-        let l: List<A, B> = List::Empty;
-        return Rc::new(l);
+        return List::Empty as List<A, B>;
     }
 
     let s = vs.to_vec().iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
     let v = Raw(NeedParens::Parens, s, std::marker::PhantomData);
 
-    Rc::new(List::NonEmpty(Box::new(v)) as List<A, B>)
+    List::NonEmpty(Box::new(v)) as List<A, B>
 }
 
 pub fn gt_<A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=C>>) -> Rc<HasValue<bool, Output=bool>> {
@@ -76,13 +82,6 @@ pub fn lte_<A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=
 
 pub fn re_<A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=C>>) -> Rc<HasValue<bool, Output=bool>> {
     binop_(" ~ ", lhs, rhs)
-}
-
-fn if_not_empty_list<A>(v: Rc<HasValueList<A>>, b: bool, e: Rc<HasValue<bool, Output=bool>>) -> Rc<HasValue<bool, Output=bool>> {
-    match v {
-        _ if v.is_empty() => val_(b),
-        _ => e,
-    }
 }
 
 pub fn and_<'a, A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=C>>) -> Rc<'a + HasValue<A, Output=C>> 
