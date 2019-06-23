@@ -28,8 +28,8 @@ impl fmt::Display for Column {
 impl<A: ToLiteral> HasValue<A> for Column {
     type Output = Column;
 
-    fn to_sql(&self) -> String where Self: Sized {
-        Self::Output::to_literal(self.0.clone())
+    fn to_sql(&self) -> String {
+        Self::Output::to_literal(&self.0)
     }
 }
 
@@ -40,6 +40,7 @@ impl Table {
     pub fn new(name: &str, alias: Option<String>) -> Table {
         Table(name.to_string(), alias)
     }
+
     pub fn name(&self) -> String {
         self.0.clone()
     }

@@ -30,35 +30,35 @@ pub struct FromPreprocess<A>(pub A, pub FromClause);
 impl<A> HasPreprocess for FromPreprocess<A> {}
 
 pub trait ToLiteral {
-    fn to_literal<A: fmt::Display>(v: A) -> String;
+    fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String;
 }
 
 impl ToLiteral for String {
-    fn to_literal<A: fmt::Display>(v: A) -> String {
+    fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
         format!("'{}'", v.to_string())
     }
 }
 
 impl ToLiteral for bool {
-    fn to_literal<A: fmt::Display>(v: A) -> String {
+    fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
         format!("{}", v.to_string())
     }
 }
 
 impl ToLiteral for i32 {
-    fn to_literal<A: fmt::Display>(v: A) -> String {
+    fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
         format!("{}", v.to_string())
     }
 }
 
 impl ToLiteral for u32 {
-    fn to_literal<A: fmt::Display>(v: A) -> String {
+    fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
         format!("{}", v.to_string())
     }
 }
 
 impl ToLiteral for Column {
-    fn to_literal<A: fmt::Display>(v: A) -> String {
+    fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
         format!("{}", v.to_string())
     }
 }
@@ -85,7 +85,7 @@ impl<A, B> HasValue<A> for Raw<B> where Self: Sized, B: ToLiteral {
     type Output = B;
 
     fn to_sql(&self) -> String where Self: Sized, <Self as HasValue<A>>::Output: ToLiteral {
-        let s = Self::Output::to_literal(self.1.clone());
+        let s = Self::Output::to_literal(&self.1);
 
         match self.0 {
             NeedParens::Never => s.to_string(),
@@ -109,7 +109,7 @@ impl<A: fmt::Display + Clone + ToLiteral> HasValue<A> for CompositKey<A> {
     type Output = A;
 
     fn to_sql(&self) -> String where Self: Sized {
-        Self::Output::to_literal(self.0.clone())
+        Self::Output::to_literal(&self.0)
     }
 }
 
