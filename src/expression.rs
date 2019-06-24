@@ -150,7 +150,7 @@ pub fn sub_<'a, A, B>(q: Query<Rc<HasValue<A, Output=B>>>) -> Rc<'a + HasValue<A
 
 fn unsafe_sql_function<'a, A, B, C>(name: &str, arg: A, parens: NeedParens) -> Rc<'a + HasValue<B, Output=C>>
     where A: UnsafeSqlFunctionArgument, C: 'a + ToLiteral {
-    let args = A::to_arg_list(arg);
+    let args = A::to_arg_list(&arg);
     let results = args.iter().map(|v| v.to_string()).collect::<Vec<_>>();
 
     let expr = match parens {
