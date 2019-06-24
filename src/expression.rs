@@ -2,25 +2,25 @@ use std::fmt;
 use std::rc::Rc;
 
 use crate::entity::*;
-use crate::query::*;
+//use crate::query::*;
 use crate::types::*;
 
-pub fn parens_<'a, A, B, C>(a: A) -> Rc<'a + HasValue<B, Output=C>> where A: ToString, C: 'a + ToLiteral {
-    Rc::new(Raw(NeedParens::Parens, a.to_string(), std::marker::PhantomData))
+pub fn parens_<'a, A, B, C>(a: A) -> Box<dyn 'a + HasValue<B, Output=C>> where A: ToString, C: 'a + ToLiteral {
+    Box::new(Raw(NeedParens::Parens, a.to_string(), std::marker::PhantomData))
 }
 
-pub fn never_<'a, A, B, C>(a: A) -> Rc<'a + HasValue<B, Output=C>> where A: ToString, C: 'a + ToLiteral {
-    Rc::new(Raw(NeedParens::Never, a.to_string(), std::marker::PhantomData))
+pub fn never_<'a, A, B, C>(a: A) -> Box<dyn 'a + HasValue<B, Output=C>> where A: ToString, C: 'a + ToLiteral {
+    Box::new(Raw(NeedParens::Never, a.to_string(), std::marker::PhantomData))
 }
 
-pub fn eq_<A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=C>>) -> Rc<HasValue<bool, Output=bool>> 
+pub fn eq_<'a, A, B, C>(lhs: &HasValue<A, Output=B>, rhs: &HasValue<A, Output=C>) -> Box<dyn HasValue<bool, Output=bool>>
     where A: ToLiteral, B: ToLiteral {
     let a = lhs.to_sql();
     let b = rhs.to_sql();
    
     parens_(a + " = " + &b)
 }
-
+/*
 pub fn not_eq_<A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=C>>) -> Rc<HasValue<bool, Output=bool>>  
     where A: ToLiteral, B: ToLiteral{
     let a = lhs.to_sql();
@@ -47,11 +47,11 @@ pub fn not_in_<A, B>(lhs: Rc<HasValue<A, Output=B>>, rhs: impl HasValueList<A>) 
     let comp: Rc<HasValue<A, Output=i32>> = parens_(rhs.to_string());
     if_not_empty_list(rhs, false, binop_(" NOT IN ", lhs, comp))
 }
-
-pub fn val_<'a, A>(typ: A) -> Rc<'a + HasValue<A, Output=A>> where A: 'a + fmt::Display + ToLiteral {
+*/
+pub fn val_<'a, A>(typ: A) -> Box<dyn 'a + HasValue<A, Output=A>> where A: 'a + fmt::Display + ToLiteral {
     never_(typ)
 }
-
+/*
 pub fn val_list_<'a, A, B>(vs: &[Rc<'a + HasValue<A, Output=B>>]) -> impl HasValueList<A>
     where A: 'a + fmt::Display, B: 'static + ToLiteral {
     if vs.is_empty() {
@@ -83,24 +83,24 @@ pub fn lte_<A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=
 pub fn re_<A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=C>>) -> Rc<HasValue<bool, Output=bool>> {
     binop_(" ~ ", lhs, rhs)
 }
-
-pub fn and_<'a, A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=C>>) -> Rc<'a + HasValue<A, Output=C>> 
+*/
+pub fn and_<'a, A, B, C>(lhs: &'a HasValue<A, Output=B>, rhs: &'a HasValue<A, Output=C>) -> Box<dyn 'a + HasValue<A, Output=C>>
     where B: ToLiteral, C: 'a + ToLiteral {
     binop_(" AND ", lhs, rhs)
 }
-
+/*
 pub fn or_<'a, A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=C>>) -> Rc<'a + HasValue<A, Output=C>> 
     where B: ToLiteral, C: 'a + ToLiteral {
     binop_(" OR ", lhs, rhs)
 }
-
-pub fn binop_<'a, A, B, C, D, E>(op: &str, lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=C>>) -> Rc<'a + HasValue<D, Output=E>> where E: 'a + ToLiteral {
+*/
+pub fn binop_<'a, A, B, C, D, E>(op: &str, lhs: &'a HasValue<A, Output=B>, rhs: &'a HasValue<A, Output=C>) -> Box<dyn 'a + HasValue<D, Output=E>>
+    where E: 'a + ToLiteral {
     let a = lhs.to_string();
     let b = rhs.to_string();
-
     parens_(a + op + &b)
 }
-
+/*
 pub fn between_<A, B, C, D>(
         comp: Rc<HasValue<A, Output=B>>, 
         lhs: Rc<HasValue<A, Output=C>>, 
@@ -236,3 +236,4 @@ pub fn then_() -> () {
 pub fn else_<A, B>(a: Rc<HasValue<A, Output=B>>) -> Rc<HasValue<A, Output=B>> {
     a
 }
+*/

@@ -5,12 +5,12 @@ use crate::entity::HasEntityDef;
 use crate::types::*;
 
 mod column;
-mod delete;
+//mod delete;
 mod from;
-mod functions;
-mod insert;
+//mod functions;
+//mod insert;
 mod select;
-mod update;
+//mod update;
 
 use self::column::*;
 use self::from::combine_joins;

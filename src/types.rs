@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use crate::entity::{ Column, Entity };
 use crate::expression::and_;
-use crate::query::ToValues;
+//use crate::query::ToValues;
 
 #[derive(Debug, Clone)]
 pub enum OrderByType {
@@ -64,7 +64,7 @@ impl ToLiteral for Column {
 }
 
 // Expr (Value a)
-pub trait HasValue<A>: fmt::Display {
+pub trait HasValue<A>: fmt::Display + Sized {
     type Output;
 
     fn to_sql(&self) -> String;
@@ -194,26 +194,26 @@ impl FromClause {
 }
 
 #[derive(Clone)]
-pub enum WhereClause {
-    Where(Rc<HasValue<bool, Output=bool>>),
+pub enum WhereClause<'a> {
+    Where(Box<'a + HasValue<bool, Output=bool>>),
     No,
 }
 
-impl Add for WhereClause {
+impl<'a> Add for WhereClause<'a> {
     type Output = Self;
 
     fn add(self, other: Self) -> Self::Output {
         match self {
-            WhereClause::Where(l) => match other {
-                WhereClause::Where(r) => WhereClause::Where(and_(l, r).clone()),
-                WhereClause::No => WhereClause::Where(l),
+            WhereClause::Where(ref l) => match other {
+                WhereClause::Where(ref r) => WhereClause::Where(and_(l.as_ref(), r.as_ref())),
+                WhereClause::No => WhereClause::Where(*l),
             },
             WhereClause::No => other,
         }
     }
 }
 
-impl fmt::Display for WhereClause {
+impl<'a> fmt::Display for WhereClause<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             WhereClause::No => Ok(()),
@@ -398,19 +398,19 @@ pub type DistinctClause = Distinct;
 
 pub type ValuesClause = Box<HasValues>;
 
-pub struct QueryState {
+pub struct QueryState<'a> {
     pub distinct_clause: DistinctClause,
     pub from_clause: Vec<FromClause>,
-    pub where_clause: WhereClause,
+    pub where_clause: WhereClause<'a>,
     pub order_clause: Vec<OrderClause>,
     pub set_clause: Vec<SetClause>,
     pub values_clause: Option<ValuesClause>,
     pub limit_clause: LimitClause,
     pub groupby_clause: Vec<GroupByClause>,
-    pub having_clause: WhereClause,
+    pub having_clause: WhereClause<'a>,
 }
 
-impl Default for QueryState {
+impl<'a> Default for QueryState<'a> {
     fn default() -> Self {
         QueryState {
             distinct_clause: DistinctClause::default(),
@@ -426,7 +426,7 @@ impl Default for QueryState {
     }
 }
 
-impl Add for QueryState {
+impl<'a> Add for QueryState<'a> {
     type Output = Self;
 
     fn add(mut self, other: Self) -> Self::Output {
@@ -445,7 +445,7 @@ pub trait HasValues {
         vec![]
     }
 }
-
+/*
 pub struct Values<A: ToValues, B: ToValues>(pub A, pub Vec<B>);
 
 impl<A: ToValues, B: ToValues> HasValues for Values<A, B> {
@@ -460,3 +460,4 @@ impl<A: ToValues, B: ToValues> HasValues for Values<A, B> {
             .collect::<Vec<_>>()
     }
 }
+*/
