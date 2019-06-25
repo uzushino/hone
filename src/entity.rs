@@ -1,4 +1,5 @@
 use std::fmt;
+use std::rc::Rc;
 use std::marker::PhantomData;
 
 use crate::types::*;
@@ -47,6 +48,11 @@ impl Table {
 }
 
 pub trait HasEntityDef {
+    fn star() -> Rc<HasValue<String, Output=Column>> {
+        let t = Self::table_name();
+        Rc::new(Column::new(format!("{}.{}", t.name(), "*").as_str()))
+    }
+
     fn table_name() -> Table;
     fn columns() -> Vec<&'static str>;
 }
