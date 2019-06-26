@@ -3,7 +3,7 @@ use std::fmt;
 use std::ops::Add;
 use std::rc::Rc;
 
-use crate::entity::{ Column, Entity };
+use crate::entity::{ Column, Star, Entity };
 use crate::expression::and_;
 use crate::query::ToValues;
 
@@ -58,6 +58,12 @@ impl ToLiteral for u32 {
 }
 
 impl ToLiteral for Column {
+    fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
+        format!("{}", v.to_string())
+    }
+}
+
+impl ToLiteral for Star {
     fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
         format!("{}", v.to_string())
     }

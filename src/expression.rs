@@ -13,6 +13,11 @@ pub fn never_<'a, A, B, C>(a: A) -> Rc<'a + HasValue<B, Output=C>> where A: ToSt
     Rc::new(Raw(NeedParens::Never, a.to_string(), std::marker::PhantomData))
 }
 
+pub fn star_<A: HasEntityDef>() -> Rc<HasValue<Star, Output=Column>> {
+    let t = A::table_name();
+    Rc::new(Column::new(format!("{}.{}", t.name(), "*").as_str()))
+}
+
 pub fn eq_<A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=C>>) -> Rc<HasValue<bool, Output=bool>> 
     where A: ToLiteral, B: ToLiteral {
     let a = lhs.to_sql();

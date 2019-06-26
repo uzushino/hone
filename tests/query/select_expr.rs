@@ -20,6 +20,22 @@ fn test_select() {
 }
 
 #[test]
+fn test_star() {
+    let a = Query::<User>::from_by(|q, a| {
+        let one = val_(1);
+        let eq = eq_(a.user_id(), one);
+        let q = q.where_(eq);
+
+        q.return_(star_::<User>())
+    });
+
+    assert_eq!(
+        select(a.unwrap()).to_sql(),
+        "SELECT User.* FROM User WHERE (User.user_id = 1)".to_string()
+    );
+}
+
+#[test]
 fn test_distinct() {
     let a = Query::<User>::from_by(|q, a| {
         let q = q.distinct_on_(vec![don_(a.user_id()), don_(a.email())]);
@@ -58,7 +74,6 @@ fn test_functions() {
 fn test_exists() {
     let a = Query::<User>::from_by(|q, _| {
         let sub = Query::<User>::from_by(|q, u| q.return_(u.user_id())).unwrap();
-
         let q = q.where_(exists_(sub));
 
         q
@@ -71,7 +86,6 @@ fn test_exists() {
 
     let a = Query::<User>::from_by(|q, _| {
         let sub = Query::<User>::from_by(|q, u| q.return_(u.user_id())).unwrap();
-
         let q = q.where_(not_(exists_(sub)));
 
         q
