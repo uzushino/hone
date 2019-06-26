@@ -64,7 +64,7 @@ impl ToLiteral for Column {
 }
 
 // Expr (Value a)
-pub trait HasValue<A>: fmt::Display + Sized {
+pub trait HasValue<A>: fmt::Display {
     type Output;
 
     fn to_sql(&self) -> String;
@@ -193,7 +193,6 @@ impl FromClause {
     }
 }
 
-#[derive(Clone)]
 pub enum WhereClause<'a> {
     Where(Box<'a + HasValue<bool, Output=bool>>),
     No,
@@ -206,7 +205,7 @@ impl<'a> Add for WhereClause<'a> {
         match self {
             WhereClause::Where(ref l) => match other {
                 WhereClause::Where(ref r) => WhereClause::Where(and_(l.as_ref(), r.as_ref())),
-                WhereClause::No => WhereClause::Where(*l),
+                _ => unimplemented!()
             },
             WhereClause::No => other,
         }
@@ -445,6 +444,7 @@ pub trait HasValues {
         vec![]
     }
 }
+
 /*
 pub struct Values<A: ToValues, B: ToValues>(pub A, pub Vec<B>);
 

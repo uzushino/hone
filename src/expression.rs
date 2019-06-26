@@ -84,8 +84,8 @@ pub fn re_<A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=C
     binop_(" ~ ", lhs, rhs)
 }
 */
-pub fn and_<'a, A, B, C>(lhs: &'a HasValue<A, Output=B>, rhs: &'a HasValue<A, Output=C>) -> Box<dyn 'a + HasValue<A, Output=C>>
-    where B: ToLiteral, C: 'a + ToLiteral {
+pub fn and_<'a, 'b, A, B, C>(lhs: &'a HasValue<A, Output=B>, rhs: &'a HasValue<A, Output=C>) -> Box<dyn 'b + HasValue<A, Output=C>>
+    where B: ToLiteral, C: 'b + ToLiteral {
     binop_(" AND ", lhs, rhs)
 }
 /*
@@ -94,10 +94,11 @@ pub fn or_<'a, A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Outp
     binop_(" OR ", lhs, rhs)
 }
 */
-pub fn binop_<'a, A, B, C, D, E>(op: &str, lhs: &'a HasValue<A, Output=B>, rhs: &'a HasValue<A, Output=C>) -> Box<dyn 'a + HasValue<D, Output=E>>
-    where E: 'a + ToLiteral {
+pub fn binop_<'a, 'b, A, B, C, D, E>(op: &str, lhs: &'a HasValue<A, Output=B>, rhs: &'a HasValue<A, Output=C>) -> Box<dyn 'b + HasValue<D, Output=E>>
+    where E: 'b + ToLiteral {
     let a = lhs.to_string();
     let b = rhs.to_string();
+
     parens_(a + op + &b)
 }
 /*

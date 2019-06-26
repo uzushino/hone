@@ -5,9 +5,9 @@ use std::rc::Rc;
 use crate::entity::Column as CL;
 use crate::entity::*;
 use crate::query::*;
-use crate::types::Values;
+//use crate::types::Values;
 
-impl<A> Query<A> {
+impl<'a, A> Query<'a, A> {
     pub fn new(e: A) -> Self {
         Query {
             state: Rc::new(RefCell::new(QueryState::default())),
@@ -15,28 +15,28 @@ impl<A> Query<A> {
         }
     }
 
-    pub fn return_<B>(self, ret: B) -> Query<B> {
+    pub fn return_<B>(self, ret: B) -> Query<'a, B> {
         let mut q = Query::new(ret);
         q.state = self.state;
         q
     }
-
+/*
     pub fn on_(self, b: Rc<HasValue<bool, Output=bool>>) -> Query<A> {
         self.state.borrow_mut().from_clause.push(FromClause::OnClause(b));
         self
     }
-
-    pub fn where_(self, b: Rc<HasValue<bool, Output=bool>>) -> Query<A> {
+*/
+    pub fn where_(self, b: Box<dyn HasValue<bool, Output=bool>>) -> Query<'a, A> {
         let w = WhereClause::Where(b);
-        let n = self.state.borrow_mut().where_clause.clone();
-
+        //let n = self.state.borrow_mut().where_clause;
         {
-            (*self.state.borrow_mut()).where_clause = n + w;
+            //(*self.state.borrow_mut()).where_clause = *n + w;
+            (*self.state.borrow_mut()).where_clause = w;
         }
 
         self
     }
-
+/*
     pub fn order_(self, b: Vec<Rc<HasOrder>>) -> Query<A> {
         self.state.borrow_mut().order_clause = b;
         self
@@ -52,9 +52,9 @@ impl<A> Query<A> {
         self
     }
 
-    pub fn having_(self, b: Rc<HasValue<bool, Output=bool>>) -> Query<A> {
+    pub fn having_(self, b: Box<dyn HasValue<bool, Output=bool>>) -> Query<A> {
         let w = WhereClause::Where(b);
-        let n = self.state.borrow_mut().having_clause.clone();
+        let n = self.state.borrow_mut().having_clause;
 
         {
             (*self.state.borrow_mut()).having_clause = n + w;
@@ -112,7 +112,7 @@ impl<A> Query<A> {
 
         self
     }
-
+*/
     fn from_start() -> FromPreprocess<A>
     where
         A: Default + HasEntityDef,
@@ -197,7 +197,7 @@ impl<A, B> IsJoin<A, B> for RightJoin<A, B> {
         Ok(FromPreprocess(join_, from_))
     }
 }
-
+/*
 impl<A> Query<Option<A>> {
     fn from_option() -> FromPreprocess<Option<A>>
     where
@@ -207,14 +207,13 @@ impl<A> Query<Option<A>> {
         FromPreprocess(Some(a.0), a.1)
     }
 }
-
-impl<A> FromQuery for Query<A>
-where
-    A: Default + HasQuery<T = A> + FromProcess<Item = A>,
+*/
+impl<'a, A> FromQuery<'a> for Query<'a, A>
+where A: Default + HasQuery<T = A> + FromProcess<Item = A>,
 {
     type Kind = A;
 
-    fn from_() -> Result<Query<A>, ()> {
+    fn from_() -> Result<Query<'a, A>, ()> {
         let mut qs = Query::new(A::default());
         let s = A::from_process()?;
         let _ = Query::<A>::from_finish(&mut qs, s);
@@ -222,16 +221,14 @@ where
         Ok(qs)
     }
 
-    fn from_by<F, R>(f: F) -> Result<Query<R>, ()>
-    where
-        F: Fn(Query<Self::Kind>, Self::Kind) -> Query<R>,
-    {
+    fn from_by<F, R>(f: F) -> Result<Query<'a, R>, ()>
+    where F: Fn(Query<'a, Self::Kind>, Self::Kind) -> Query<'a, R> {
         let qs = Query::<Self::Kind>::from_()?;
 
         Ok(f(qs, Self::Kind::default()))
     }
 }
-
+/*
 impl<A> FromQuery for Query<Option<A>>
 where
     A: Default + HasEntityDef + HasQuery<T = A>,
@@ -275,7 +272,7 @@ where
 
             let s = QueryState {
                 from_clause: sa.from_clause.clone(),
-                where_clause: sa.where_clause.clone() + sb.where_clause.clone(),
+                where_clause: sa.where_clause + sb.where_clause,
                 ..Default::default()
             };
 
@@ -336,7 +333,7 @@ where
 impl<A, B> HasQuery for RightJoin<A, B> {
     type T = RightJoin<A, B>;
 }
-
+*/
 pub trait FromProcess {
     type Item;
 
@@ -353,7 +350,7 @@ where
         Ok(Query::<Self::Item>::from_start())
     }
 }
-
+/*
 impl<A> FromProcess for Option<A>
 where
     A: Default + HasEntityDef + HasQuery<T = A>,
@@ -409,6 +406,7 @@ where
         RightJoin::<A, B>::from_join(lhs, rhs)
     }
 }
+*/
 
 pub fn set_on(join: &FromClause, on: &Rc<HasValue<bool, Output=bool>>) -> Option<FromClause> {
     match join.clone() {

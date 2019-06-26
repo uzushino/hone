@@ -1,13 +1,13 @@
 use crate::query::*;
 
-impl<A: Column> Select<A> {
+impl<'a, A: Column> Select<'a, A> {
     fn make_select(&self, distinct: &DistinctClause) -> Result<String, ()> {
         let kind = distinct.to_string();
         Ok(kind + &self.0.value.cols())
     }
 }
 
-impl<A: Column> ToSql for Select<A> {
+impl<'a, A: Column> ToSql for Select<'a, A> {
     fn to_sql(&self) -> String {
         let mut sql = String::default();
         let state = self.get_state();

@@ -19,8 +19,8 @@ pub trait HasQuery {
     type T;
 }
 
-pub struct Query<A> {
-    pub state: Rc<RefCell<QueryState>>,
+pub struct Query<'a, A> {
+    pub state: Rc<RefCell<QueryState<'a>>>,
     pub value: A,
 }
 
@@ -76,11 +76,11 @@ pub trait ToSql {
     }
 }
 
-pub trait FromQuery {
+pub trait FromQuery<'a> {
     type Kind;
 
-    fn from_() -> Result<Query<Self::Kind>, ()>;
-    fn from_by<F, R>(f: F) -> Result<Query<R>, ()>
+    fn from_() -> Result<Query<'a, Self::Kind>, ()>;
+    fn from_by<F, R>(f: F) -> Result<Query<'a, R>, ()>
     where
         F: Fn(Query<Self::Kind>, Self::Kind) -> Query<R>;
 }
@@ -89,18 +89,19 @@ pub trait HasSelect: ToSql {
     fn get_state(&self) -> Ref<QueryState>;
 }
 
-impl<A: Column> HasSelect for Select<A> {
+impl<'a, A: Column> HasSelect for Select<'a, A> {
     fn get_state(&self) -> Ref<QueryState> {
         self.0.state.borrow()
     }
 }
 
-pub struct Select<A>(Query<A>);
+pub struct Select<'a, A>(Query<'a, A>);
 
-pub fn select<A: Column>(q: Query<A>) -> impl HasSelect {
+pub fn select<A: Column>(q: Query<'static, A>) -> impl HasSelect {
     Select(q)
 }
 
+/*
 pub trait HasUpdate: ToSql {}
 
 pub struct Update<A>(Query<A>);
@@ -205,3 +206,4 @@ pub fn truncate<A: Column>(q: Query<A>) -> impl HasDelete {
 pub trait UnsafeSqlFunctionArgument {
     fn to_arg_list(arg: Self) -> Vec<Rc<HasValue<bool, Output=bool>>>;
 }
+*/
