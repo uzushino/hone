@@ -17,11 +17,19 @@ impl Column {
     pub fn name(&self) -> String {
         self.0.clone()
     }
+
+    pub fn as_(&mut self, name: &str) -> Column {
+        Column(self.0.to_string(), Some(name.to_string()))
+    }
 }
 
 impl fmt::Display for Column {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)
+        match &self.1 {
+            Some(ref s) => write!(f, "{}", s),
+            _ => write!(f, "{}", self.0),
+        }
+        
     }
 }
 
