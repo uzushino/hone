@@ -1,4 +1,5 @@
 use std::fmt;
+use std::rc::Rc;
 use std::marker::PhantomData;
 
 use crate::types::*;
@@ -33,7 +34,7 @@ impl fmt::Display for Column {
     }
 }
 
-impl<A: ToLiteral> HasValue<A> for Column {
+impl<A: ToString + ToLiteral> HasValue<A> for Column {
     type Output = Column;
 
     fn to_sql(&self) -> String {
@@ -41,7 +42,7 @@ impl<A: ToLiteral> HasValue<A> for Column {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct Star;
 
 impl fmt::Display for Star {
@@ -50,7 +51,7 @@ impl fmt::Display for Star {
     }
 }
 
-impl<A: ToLiteral> HasValue<A> for Star {
+impl<A: ToString + ToLiteral> HasValue<A> for Star {
     type Output = Column;
 
     fn to_sql(&self) -> String {

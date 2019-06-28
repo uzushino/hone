@@ -36,6 +36,36 @@ fn test_star() {
 }
 
 #[test]
+fn test_alias_column() {
+    let a = Query::<User>::from_by(|q, a| {
+        let u = a.user_id();
+        let one = val_("a@b.c".to_string());
+        q.return_((u.as_("uid".to_string()), one.as_("email".to_string())))
+    });
+
+    assert_eq!(
+        select(a.unwrap()).to_sql(),
+        "SELECT User.user_id AS uid, 'a@b.c' AS email FROM User".to_string()
+    );
+    
+    let b = Query::<User>::from_by(|q, a| {
+        let sub = Query::<User>::from_by(|q, u| {
+            let one = val_(1);
+            let eq = eq_(a.user_id(), one);
+            let q = q.where_(eq);
+            q.return_(u.user_id())
+        }).unwrap();
+
+        q.return_(sub_(sub).as_("user_id".to_string()))
+    });
+
+    assert_eq!(
+        select(b.unwrap()).to_sql(),
+        "SELECT (SELECT User.user_id FROM User WHERE (User.user_id = 1)) AS user_id FROM User".to_string()
+    );
+}
+
+#[test]
 fn test_distinct() {
     let a = Query::<User>::from_by(|q, a| {
         let q = q.distinct_on_(vec![don_(a.user_id()), don_(a.email())]);

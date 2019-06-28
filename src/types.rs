@@ -69,11 +69,38 @@ impl ToLiteral for Star {
     }
 }
 
+impl<S> ToLiteral for Alias<S> {
+    fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
+        format!("{}", v.to_string())
+    }
+}
+
+#[derive(Clone)]
+pub struct Alias<A>(pub String, pub String, std::marker::PhantomData<A>);
+
+impl<A> fmt::Display for Alias<A> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} AS {}", self.0, self.1)
+    }
+}
+
+impl<A> HasValue<A> for Alias<A> {
+    type Output = Column;
+
+    fn to_sql(&self) -> String {
+        format!("{} AS {}", self.0, self.1)
+    }
+}
+
 // Expr (Value a)
 pub trait HasValue<A>: fmt::Display {
     type Output;
 
     fn to_sql(&self) -> String;
+
+    fn as_(&self, alias: String) -> Alias<A> {
+        Alias(self.to_sql(), alias, std::marker::PhantomData)
+    }
 }
 
 pub type SqlExpr<A, B> = Rc<HasValue<A, Output=B>>;
@@ -87,7 +114,7 @@ pub enum NeedParens {
 #[derive(Clone)]
 pub struct Raw<A>(pub NeedParens, pub String, pub std::marker::PhantomData<A>);
 
-impl<A, B> HasValue<A> for Raw<B> where Self: Sized, B: ToLiteral {
+impl<'a, A, B> HasValue<A> for Raw<B> where Self: Sized, B: 'a + ToLiteral {
     type Output = B;
 
     fn to_sql(&self) -> String where Self: Sized, <Self as HasValue<A>>::Output: ToLiteral {
@@ -98,6 +125,12 @@ impl<A, B> HasValue<A> for Raw<B> where Self: Sized, B: ToLiteral {
             NeedParens::Parens => "(".to_owned() + s.as_str() + ")",
         }
     }
+   /* 
+    fn as_(&self, alias: String) -> Alias<A> {
+        let a = Raw(self.0.clone(), self.1.clone(), std::marker::PhantomData);
+        Alias(Rc::new(a), alias)
+    }
+    */
 }
 
 impl<A> fmt::Display for Raw<A> {
@@ -117,6 +150,13 @@ impl<A: fmt::Display + Clone + ToLiteral> HasValue<A> for CompositKey<A> {
     fn to_sql(&self) -> String where Self: Sized {
         Self::Output::to_literal(&self.0)
     }
+    
+    /*
+    fn as_(&self, alias: String) -> Alias<A> {
+        let a = CompositKey(self.0.clone());
+        Alias(Rc::new(a), alias)
+    }
+    */
 }
 
 impl<A: fmt::Display> fmt::Display for CompositKey<A> {
