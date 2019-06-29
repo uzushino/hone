@@ -88,7 +88,7 @@ impl<A> HasValue<A> for Alias<A> {
     type Output = Column;
 
     fn to_sql(&self) -> String {
-        format!("{} AS {}", self.0, self.1)
+        self.to_string()
     }
 }
 
