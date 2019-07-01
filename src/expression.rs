@@ -100,8 +100,8 @@ pub fn or_<'a, A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Outp
 }
 
 pub fn binop_<'a, A, B, C, D, E>(op: &str, lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=C>>) -> Rc<'a + HasValue<D, Output=E>> where E: 'a + ToLiteral {
-    let a = lhs.to_string();
-    let b = rhs.to_string();
+    let a = lhs.to_sql();
+    let b = rhs.to_sql();
 
     parens_(a + op + &b)
 }
@@ -111,9 +111,9 @@ pub fn between_<A, B, C, D>(
         lhs: Rc<HasValue<A, Output=C>>, 
         rhs: Rc<HasValue<A, Output=D>>) -> Rc<HasValue<bool, Output=bool>> 
     where B: ToLiteral, C: ToLiteral, D: ToLiteral {
-    let e = (*comp).to_string();
-    let a = (*lhs).to_string();
-    let b = (*rhs).to_string();
+    let e = (*comp).to_sql();
+    let a = (*lhs).to_sql();
+    let b = (*rhs).to_sql();
 
     parens_(e + " BETWEEN " + &a + " TO " + &b)
 }
@@ -205,12 +205,12 @@ pub fn round_<'a, A>(a: A) -> Rc<'a + HasValue<f32, Output=Column>> where A: 'a 
 
 pub fn like_<'a, A, B>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<String, Output=String>>) -> Rc<'a + HasValue<bool, Output=String>> where B: ToLiteral {
     let op: Rc<HasValue<A, Output=B>> = never_(lhs.to_sql());
-    parens_(op.to_sql() + " LIKE " + &(*rhs).to_sql())
+    parens_(op.to_sql() + " LIKE " + &rhs.to_sql())
 }
 
 pub fn ilike_<'a, A, B>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<String, Output=String>>) -> Rc<'a + HasValue<bool, Output=String>> where B: ToLiteral {
     let op: Rc<HasValue<A, Output=B>> = never_(lhs.to_sql());
-    parens_(op.to_sql() + " ILIKE " + &(*rhs).to_sql())
+    parens_(op.to_sql() + " ILIKE " + &rhs.to_sql())
 }
 
 pub fn don_<A, B>(a: Rc<HasValue<A, Output=B>>) -> Box<HasDistinct> where A: 'static, B: 'static {
