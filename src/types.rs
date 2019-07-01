@@ -125,12 +125,6 @@ impl<'a, A, B> HasValue<A> for Raw<B> where Self: Sized, B: 'a + ToLiteral {
             NeedParens::Parens => "(".to_owned() + s.as_str() + ")",
         }
     }
-   /* 
-    fn as_(&self, alias: String) -> Alias<A> {
-        let a = Raw(self.0.clone(), self.1.clone(), std::marker::PhantomData);
-        Alias(Rc::new(a), alias)
-    }
-    */
 }
 
 impl<A> fmt::Display for Raw<A> {
@@ -150,13 +144,6 @@ impl<A: fmt::Display + Clone + ToLiteral> HasValue<A> for CompositKey<A> {
     fn to_sql(&self) -> String where Self: Sized {
         Self::Output::to_literal(&self.0)
     }
-    
-    /*
-    fn as_(&self, alias: String) -> Alias<A> {
-        let a = CompositKey(self.0.clone());
-        Alias(Rc::new(a), alias)
-    }
-    */
 }
 
 impl<A: fmt::Display> fmt::Display for CompositKey<A> {

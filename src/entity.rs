@@ -69,6 +69,10 @@ impl Table {
     pub fn name(&self) -> String {
         self.0.clone()
     }
+    
+    pub fn as_(&mut self, name: &str) -> Table {
+        Table(self.0.to_string(), Some(name.to_string()))
+    }
 }
 
 pub trait HasEntityDef {
