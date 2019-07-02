@@ -118,14 +118,12 @@ pub fn between_<A, B, C, D>(
     parens_(e + " BETWEEN " + &a + " TO " + &b)
 }
 
-pub fn is_null_<A, B>(a: Rc<HasValue<A, Output=B>>) -> Rc<HasValue<bool, Output=bool>>
-    where A: fmt::Display, B: ToLiteral {
-    parens_(a.to_string() + " IS NULL")
+pub fn is_null_<A, B>(a: Rc<HasValue<A, Output=B>>) -> Rc<HasValue<bool, Output=bool>> where B: ToLiteral {
+    parens_(a.to_sql() + " IS NULL")
 }
 
-pub fn is_not_null_<A, B>(a: Rc<HasValue<A, Output=B>>) -> Rc<HasValue<bool, Output=bool>>
-    where A: fmt::Display, B: ToLiteral {
-    parens_(a.to_string() + " IS NOT NULL")
+pub fn is_not_null_<A, B>(a: Rc<HasValue<A, Output=B>>) -> Rc<HasValue<bool, Output=bool>> where B: ToLiteral {
+    parens_(a.to_sql() + " IS NOT NULL")
 }
 
 pub fn asc_<'a, A, B>(exp: Rc<HasValue<A, Output=B>>) -> Rc<'a + HasOrder>

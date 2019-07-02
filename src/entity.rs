@@ -15,7 +15,10 @@ impl Column {
     }
     
     pub fn name(&self) -> String {
-        self.0.clone()
+        match &self.1 {
+            &Some(ref n) => n.clone(),
+            None => self.0.clone(),
+        }
     }
 
     pub fn as_(&mut self, name: &str) -> Column {
