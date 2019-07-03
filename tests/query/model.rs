@@ -7,59 +7,45 @@ use hone::types::*;
 #[derive(Debug, Default, Clone)]
 pub struct User {}
 
-impl User {
-    pub fn user_id(&self) -> Rc<HasValue<u32, Output=Column>> {
-        Rc::new(Column::new("User.user_id"))
-    }
+macro_rules! hone_model {
+    ($model:ident, $table:ident, $($column:ident => $type:ty),+ ) => {
+        impl $model {
+            $(
+                pub fn $column(&self) -> Rc<HasValue<$type, Output=Column>> {
+                    Rc::new(Column::new(format!("{}.{}", stringify!($table), stringify!($column)).as_str()))
+                }
+            )*
+        }
 
-    pub fn email(&self) -> Rc<HasValue<String, Output=Column>> {
-        Rc::new(Column::new("User.email"))
-    }
-}
-
-impl HasEntityDef for User {
-    fn table_name() -> Table {
-        Table::new("User", None)
-    }
-
-    fn columns() -> Vec<&'static str> {
-        vec![
-            "email",
-            "user_id",
-        ]
+        impl HasQuery for $model {
+            type T = $model;
+        }
     }
 }
 
-impl HasQuery for User {
-    type T = User;
+macro_rules! hone_entity {
+    ($model:ident, $table:ident, $($col:tt),* ) => {
+        impl HasEntityDef for $model {
+            fn table_name() -> Table {
+                Table::new(stringify!($table), None)
+            }
+
+            fn columns() -> Vec<&'static str> {
+                let mut result = vec![];
+                $(
+                    result.push(stringify!($col));
+                )*
+                result
+            }
+        }
+    };
 }
+
+hone_model!(User, User, user_id => u32, email => String);
+hone_entity!(User, User, email, user_id);
 
 #[derive(Debug, Default, Clone)]
 pub struct Library();
 
-impl Library {
-    pub fn library_id(&self) -> Rc<HasValue<u32, Output=Column>> {
-        Rc::new(Column::new("Library.library_id"))
-    }
-
-    pub fn title(&self) -> Rc<HasValue<String, Output=Column>> {
-        Rc::new(Column::new("Library.title"))
-    }
-}
-
-impl HasEntityDef for Library {
-    fn table_name() -> Table {
-        Table::new("Library", None)
-    }
-
-    fn columns() -> Vec<&'static str> {
-        vec![
-            "library_id",
-            "title"
-        ]
-    }
-}
-
-impl HasQuery for Library {
-    type T = Library;
-}
+hone_model!(Library, Library, library_id => u32, title => String);
+hone_entity!(Library, Library, title, library_id);
