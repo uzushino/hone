@@ -89,6 +89,10 @@ impl<A> BulkInsert<A> where A: HasEntityDef {
         
         Ok(values.join(" "))
     }
+
+    fn make_duplicate(&self, clause: &Box<HasDuplicateKey>) -> Result<String, ()> {
+        Ok("".to_owned())
+    }
 }
 
 impl<A: HasEntityDef> ToSql for BulkInsert<A> {

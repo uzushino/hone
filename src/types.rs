@@ -431,6 +431,8 @@ pub type DistinctClause = Distinct;
 
 pub type ValuesClause = Box<HasValues>;
 
+pub type DuplicateClause = Box<HasDuplicateKey>;
+
 pub struct QueryState {
     pub distinct_clause: DistinctClause,
     pub from_clause: Vec<FromClause>,
@@ -441,6 +443,7 @@ pub struct QueryState {
     pub limit_clause: LimitClause,
     pub groupby_clause: Vec<GroupByClause>,
     pub having_clause: WhereClause,
+    pub duplicate_clause: Option<DuplicateClause>,
 }
 
 impl Default for QueryState {
@@ -455,6 +458,7 @@ impl Default for QueryState {
             limit_clause: LimitClause::default(),
             groupby_clause: vec![],
             having_clause: WhereClause::No,
+            duplicate_clause: None,
         }
     }
 }
@@ -473,7 +477,6 @@ pub trait HasValues {
     fn columns(&self) -> Vec<String> {
         vec![]
     }
-
     fn values(&self) -> Vec<Vec<String>> {
         vec![]
     }
@@ -493,3 +496,9 @@ impl<A: ToValues, B: ToValues> HasValues for Values<A, B> {
             .collect::<Vec<_>>()
     }
 }
+
+pub trait HasDuplicateKey {}
+
+pub struct DuplicateKey<A, B>(pub Rc<HasValue<A, Output=Column>>, pub Rc<HasValue<A, Output=B>>);
+
+impl<A, B> HasDuplicateKey for DuplicateKey<A, B> {}
