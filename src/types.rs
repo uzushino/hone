@@ -443,7 +443,7 @@ pub struct QueryState {
     pub limit_clause: LimitClause,
     pub groupby_clause: Vec<GroupByClause>,
     pub having_clause: WhereClause,
-    pub duplicate_clause: Option<DuplicateClause>,
+    pub duplicate_clause: Vec<DuplicateClause>,
 }
 
 impl Default for QueryState {
@@ -458,7 +458,7 @@ impl Default for QueryState {
             limit_clause: LimitClause::default(),
             groupby_clause: vec![],
             having_clause: WhereClause::No,
-            duplicate_clause: None,
+            duplicate_clause: vec![],
         }
     }
 }
@@ -497,8 +497,17 @@ impl<A: ToValues, B: ToValues> HasValues for Values<A, B> {
     }
 }
 
-pub trait HasDuplicateKey {}
+pub trait HasDuplicateKey {
+    fn dup_keys(&self) -> (String, String);
+}
 
-pub struct DuplicateKey<A, B>(pub Rc<HasValue<A, Output=Column>>, pub Rc<HasValue<A, Output=B>>);
+pub struct DuplicateKey<A, B>(
+    pub Rc<HasValue<A, Output=Column>>, 
+    pub Rc<HasValue<A, Output=B>>
+);
 
-impl<A, B> HasDuplicateKey for DuplicateKey<A, B> {}
+impl<A, B> HasDuplicateKey for DuplicateKey<A, B> {
+    fn dup_keys(&self) -> (String, String) {
+        (self.0.to_sql(), self.1.to_sql())
+    }
+}

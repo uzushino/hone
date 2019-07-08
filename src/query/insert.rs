@@ -1,5 +1,6 @@
 use crate::entity::HasEntityDef;
 use crate::query::*;
+use crate::types::*;
 
 impl<A> InsertInto<A> where A: HasEntityDef {
     fn make_table(&self) -> Result<String, ()> {
@@ -90,8 +91,14 @@ impl<A> BulkInsert<A> where A: HasEntityDef {
         Ok(values.join(" "))
     }
 
-    fn make_duplicate(&self, clause: &Box<HasDuplicateKey>) -> Result<String, ()> {
-        Ok("".to_owned())
+    fn make_duplicate(&self, clause: &Vec<DuplicateClause>) -> Result<String, ()> {
+        let values = clause
+            .iter()
+            .map(|clause| clause.dup_keys())
+            .map(|(column, expr)| format!("{} = {}", column, expr))
+            .collect::<Vec<String>>();
+        
+        Ok(values.join(", "))
     }
 }
 
@@ -108,10 +115,14 @@ impl<A: HasEntityDef> ToSql for BulkInsert<A> {
             if let Ok(a) = self.make_column(clause) {
                 sql = sql + "(" + &a + ")";
             }
-        
+
             if let Ok(a) = self.make_values(&clause) {
                 sql = sql + " VALUES " + &a ;
             }
+        }
+
+        if let Ok(a) = self.make_duplicate(&state.duplicate_clause) {
+            sql = sql + " ON DUPLICATE KEY UPDATE " + &a ;
         }
 
         sql
