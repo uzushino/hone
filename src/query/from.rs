@@ -113,6 +113,15 @@ impl<A> Query<A> {
         self
     }
 
+    pub fn dup_key_<S, T>(self, column: Rc<HasValue<S, Output=CL>>, value: Rc<HasValue<S, Output=T>>) -> Query<A> 
+        where S: 'static, T: 'static {
+        {
+            let a = DuplicateKey(column, value);
+            self.state.borrow_mut().duplicate_clause.push(Box::new(a));
+        }
+        self
+    }
+
     fn from_start() -> FromPreprocess<A>
     where
         A: Default + HasEntityDef,
