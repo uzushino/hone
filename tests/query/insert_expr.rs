@@ -72,3 +72,25 @@ fn test_bulk_insert() {
         .to_string()
     );
 }
+
+#[test]
+fn test_duplicate() {
+    let a = Query::<User>::from_by(|q, a| {
+        let one = val_(1);
+        let email1 = val_("a@b.c".to_string());
+
+        let q = q.value_(a.user_id(), one);
+        let q = q.value_(a.email(), email1);
+
+        let two = val_(2);
+        let q = q.dup_key_(a.user_id(), two);
+
+        q
+    });
+
+    assert_eq!(
+        insert_into(a.unwrap()).to_sql(),
+        "INSERT INTO User(User.user_id, User.email) VALUES (1, 'a@b.c') \
+        ON DUPLICATE KEY UPDATE User.user_id = 2".to_string()
+    );
+}
