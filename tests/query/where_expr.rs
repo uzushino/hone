@@ -47,15 +47,15 @@ fn test_relational_operator() {
 
     let q = gt_(u.user_id(), one);
     assert_eq!("(User.user_id > 1)", q.to_string());
-    
+
     let one = val_(1);
     let q = gte_(u.user_id(), one);
     assert_eq!("(User.user_id >= 1)", q.to_string());
-    
+
     let one = val_(1);
     let q = lt_(u.user_id(), one);
     assert_eq!("(User.user_id < 1)", q.to_string());
-    
+
     let one = val_(1);
     let q = lte_(u.user_id(), one);
     assert_eq!("(User.user_id <= 1)", q.to_string());

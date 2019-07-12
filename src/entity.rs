@@ -13,7 +13,7 @@ impl Column {
     pub fn new(name: &str) -> Column {
         Column(name.to_string(), None)
     }
-    
+
     pub fn name(&self) -> String {
         match &self.1 {
             &Some(ref n) => n.clone(),
@@ -32,7 +32,6 @@ impl fmt::Display for Column {
             Some(ref s) => write!(f, "{}", s),
             _ => write!(f, "{}", self.0),
         }
-        
     }
 }
 
@@ -72,7 +71,7 @@ impl Table {
     pub fn name(&self) -> String {
         self.0.clone()
     }
-    
+
     pub fn as_(&mut self, name: &str) -> Table {
         Table(self.0.to_string(), Some(name.to_string()))
     }
@@ -80,5 +79,6 @@ impl Table {
 
 pub trait HasEntityDef {
     fn table_name() -> Table;
+
     fn columns() -> Vec<&'static str>;
 }

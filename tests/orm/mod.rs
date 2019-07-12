@@ -32,11 +32,11 @@ struct Download {
 }
 
 impl Download {
-    pub fn id(&self) -> Rc<HasValue<i32, Output=Column>> {
+    pub fn id(&self) -> Rc<HasValue<i32, Output = Column>> {
         never_("downloads.id")
     }
 
-    pub fn version(&self) -> Rc<HasValue<String, Output=Column>> {
+    pub fn version(&self) -> Rc<HasValue<String, Output = Column>> {
         never_("downloads.version")
     }
 }
@@ -47,10 +47,7 @@ impl HasEntityDef for Download {
     }
 
     fn columns() -> Vec<&'static str> {
-        vec![
-            "id",
-            "version"
-        ]
+        vec!["id", "version"]
     }
 }
 

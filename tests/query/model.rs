@@ -3,7 +3,7 @@ use std::rc::Rc;
 use hone::entity::*;
 use hone::query::*;
 use hone::types::*;
-use hone::{hone_model, hone_entity};
+use hone::{hone_entity, hone_model};
 
 #[derive(Debug, Default, Clone)]
 pub struct User {}

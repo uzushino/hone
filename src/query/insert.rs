@@ -1,7 +1,10 @@
 use crate::entity::HasEntityDef;
 use crate::query::*;
 
-impl<A> InsertInto<A> where A: HasEntityDef {
+impl<A> InsertInto<A>
+where
+    A: HasEntityDef,
+{
     fn make_table(&self) -> Result<String, ()> {
         Ok(A::table_name().name())
     }
@@ -18,7 +21,7 @@ impl<A> InsertInto<A> where A: HasEntityDef {
 
     fn make_duplicate(&self, clause: &Vec<DuplicateClause>) -> Result<String, ()> {
         if clause.is_empty() {
-            return Err(())
+            return Err(());
         }
 
         let values = clause
@@ -26,7 +29,7 @@ impl<A> InsertInto<A> where A: HasEntityDef {
             .map(|clause| clause.dup_keys())
             .map(|(column, expr)| format!("{} = {}", column, expr))
             .collect::<Vec<String>>();
-        
+
         Ok(values.join(", "))
     }
 }
@@ -47,16 +50,20 @@ impl<A: HasEntityDef> ToSql for InsertInto<A> {
         if let Ok(a) = self.make_values(&state.set_clause) {
             sql = sql + " VALUES " + "(" + &a + ")";
         }
-        
+
         if let Ok(a) = self.make_duplicate(&state.duplicate_clause) {
-            sql = sql + " ON DUPLICATE KEY UPDATE " + &a ;
+            sql = sql + " ON DUPLICATE KEY UPDATE " + &a;
         }
 
         sql
     }
 }
 
-impl<A, B> InsertSelect<A, B> where A: HasEntityDef, B: HasSelect {
+impl<A, B> InsertSelect<A, B>
+where
+    A: HasEntityDef,
+    B: HasSelect,
+{
     fn make_table(&self) -> Result<String, ()> {
         Ok(A::table_name().name())
     }
@@ -84,11 +91,14 @@ impl<A: HasEntityDef, B: HasSelect> ToSql for InsertSelect<A, B> {
     }
 }
 
-impl<A> BulkInsert<A> where A: HasEntityDef {
+impl<A> BulkInsert<A>
+where
+    A: HasEntityDef,
+{
     fn make_table(&self) -> Result<String, ()> {
         Ok(A::table_name().name())
     }
-    
+
     fn make_column(&self, values: &Box<HasValues>) -> Result<String, ()> {
         let c = values.columns();
 
@@ -100,17 +110,18 @@ impl<A> BulkInsert<A> where A: HasEntityDef {
     }
 
     fn make_values(&self, clause: &Box<HasValues>) -> Result<String, ()> {
-        let values = clause.values()
+        let values = clause
+            .values()
             .iter()
             .map(|v| "(".to_string() + &v.join(", ") + ")")
             .collect::<Vec<String>>();
-        
+
         Ok(values.join(" "))
     }
 
     fn make_duplicate(&self, clause: &Vec<DuplicateClause>) -> Result<String, ()> {
         if clause.is_empty() {
-            return Err(())
+            return Err(());
         }
 
         let values = clause
@@ -118,7 +129,7 @@ impl<A> BulkInsert<A> where A: HasEntityDef {
             .map(|clause| clause.dup_keys())
             .map(|(column, expr)| format!("{} = {}", column, expr))
             .collect::<Vec<String>>();
-        
+
         Ok(values.join(", "))
     }
 }
@@ -138,12 +149,12 @@ impl<A: HasEntityDef> ToSql for BulkInsert<A> {
             }
 
             if let Ok(a) = self.make_values(&clause) {
-                sql = sql + " VALUES " + &a ;
+                sql = sql + " VALUES " + &a;
             }
         }
 
         if let Ok(a) = self.make_duplicate(&state.duplicate_clause) {
-            sql = sql + " ON DUPLICATE KEY UPDATE " + &a ;
+            sql = sql + " ON DUPLICATE KEY UPDATE " + &a;
         }
 
         sql

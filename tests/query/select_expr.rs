@@ -47,14 +47,15 @@ fn test_alias_column() {
         select(a.unwrap()).to_sql(),
         "SELECT User.user_id AS uid, 'a@b.c' AS email FROM User".to_string()
     );
-    
+
     let b = Query::<User>::from_by(|q, a| {
         let sub = Query::<User>::from_by(|q, u| {
             let one = val_(1);
             let eq = eq_(a.user_id(), one);
             let q = q.where_(eq);
             q.return_(u.user_id())
-        }).unwrap();
+        })
+        .unwrap();
 
         q.return_(sub_(sub).as_("user_id".to_string()))
     });
@@ -135,8 +136,9 @@ fn test_case() {
             let eq = eq_(a.user_id(), one);
             let q = q.where_(eq);
             q.return_(u.email())
-        }).unwrap();
-        
+        })
+        .unwrap();
+
         let sub2 = Query::<User>::from_by(|q, u| {
             let one = val_(1);
             let eq = eq_(a.user_id(), one);
@@ -144,12 +146,11 @@ fn test_case() {
             let q = q.limit_(1);
 
             q.return_(u.user_id())
-        }).unwrap();
+        })
+        .unwrap();
 
         let one = val_(1u32);
-        let case = case_(&[
-            when_(exists_(sub1), then_(), sub_(sub2)), 
-        ], one);
+        let case = case_(&[when_(exists_(sub1), then_(), sub_(sub2))], one);
 
         q.return_(case)
     });
@@ -157,9 +158,10 @@ fn test_case() {
     assert_eq!(
         select(a.unwrap()).to_sql(),
         "SELECT (CASE \
-        WHEN EXISTS (SELECT User.email FROM User WHERE (User.user_id = 1)) \
-        THEN (SELECT User.user_id FROM User WHERE (User.user_id = 1) LIMIT 1) \
-        ELSE 1 \
-        END) FROM User".to_string()
+         WHEN EXISTS (SELECT User.email FROM User WHERE (User.user_id = 1)) \
+         THEN (SELECT User.user_id FROM User WHERE (User.user_id = 1) LIMIT 1) \
+         ELSE 1 \
+         END) FROM User"
+            .to_string()
     );
 }

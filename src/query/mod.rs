@@ -38,7 +38,8 @@ pub trait ToSql {
         match clause.as_slice() {
             [] => Err(()),
             _ => {
-                let s = clause.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
+                let s = clause.iter().map(ToString::to_string).collect::<Vec<_>>().join(", ");
+
                 Ok(s)
             }
         }
@@ -63,7 +64,7 @@ pub trait ToSql {
             return Err(());
         };
 
-        let c = clause.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(", ");
+        let c = clause.iter().map(ToString::to_string).collect::<Vec<_>>().join(", ");
 
         Ok(c)
     }
@@ -133,31 +134,23 @@ pub trait ToValues {
     fn to_vec(&self) -> Vec<String>;
 }
 
-impl<A, B: ToLiteral> ToValues for Rc<HasValue<A, Output=B>> {
+impl<A, B: ToLiteral> ToValues for Rc<HasValue<A, Output = B>> {
     fn to_vec(&self) -> Vec<String> {
-        vec![
-            self.to_sql()
-        ]
+        vec![self.to_sql()]
     }
 }
 
-impl<A, B, T1: ToLiteral, T2: ToLiteral> ToValues for (Rc<HasValue<A, Output=T1>>, Rc<HasValue<B, Output=T2>>) {
+impl<A, B, T1: ToLiteral, T2: ToLiteral> ToValues for (Rc<HasValue<A, Output = T1>>, Rc<HasValue<B, Output = T2>>) {
     fn to_vec(&self) -> Vec<String> {
-        vec![
-            self.0.to_sql(),
-            self.1.to_sql(),
-        ]
+        vec![self.0.to_sql(), self.1.to_sql()]
     }
 }
 
-impl<A, B, C, T1: ToLiteral, T2: ToLiteral, T3: ToLiteral> ToValues for 
-    (Rc<HasValue<A, Output=T1>>, Rc<HasValue<B, Output=T2>>, Rc<HasValue<C, Output=T3>>) {
+impl<A, B, C, T1: ToLiteral, T2: ToLiteral, T3: ToLiteral> ToValues
+    for (Rc<HasValue<A, Output = T1>>, Rc<HasValue<B, Output = T2>>, Rc<HasValue<C, Output = T3>>)
+{
     fn to_vec(&self) -> Vec<String> {
-        vec![
-            self.0.to_sql(),
-            self.1.to_sql(),
-            self.2.to_sql(),
-        ]
+        vec![self.0.to_sql(), self.1.to_sql(), self.2.to_sql()]
     }
 }
 
@@ -196,12 +189,12 @@ pub fn delete<A: Column>(q: Query<A>) -> impl HasDelete {
 }
 
 pub struct Truncate<A>(Query<A>);
-impl<A: Column> HasDelete for Truncate <A> {}
+impl<A: Column> HasDelete for Truncate<A> {}
 
 pub fn truncate<A: Column>(q: Query<A>) -> impl HasDelete {
     Truncate(q)
 }
 
 pub trait UnsafeSqlFunctionArgument {
-    fn to_arg_list(arg: &Self) -> Vec<Rc<HasValue<bool, Output=bool>>>;
+    fn to_arg_list(arg: &Self) -> Vec<Rc<HasValue<bool, Output = bool>>>;
 }

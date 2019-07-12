@@ -1,13 +1,13 @@
-use std::rc::Rc;
 use crate::entity::HasEntityDef;
 use crate::types::*;
+use std::rc::Rc;
 
 pub trait Column {
     fn cols(&self) -> String;
     fn col_count() -> usize;
 }
 
-impl<A, B: ToLiteral> Column for Rc<HasValue<A, Output=B>> {
+impl<A, B: ToLiteral> Column for Rc<HasValue<A, Output = B>> {
     fn cols(&self) -> String {
         self.to_sql()
     }
@@ -27,7 +27,10 @@ impl<A> Column for Alias<A> {
     }
 }
 
-impl<A> Column for A where A: HasEntityDef {
+impl<A> Column for A
+where
+    A: HasEntityDef,
+{
     fn cols(&self) -> String {
         A::columns().join(", ")
     }
@@ -37,7 +40,11 @@ impl<A> Column for A where A: HasEntityDef {
     }
 }
 
-impl<A, B> Column for (A, B) where A: Column, B: Column {
+impl<A, B> Column for (A, B)
+where
+    A: Column,
+    B: Column,
+{
     fn cols(&self) -> String {
         let ca = self.0.cols();
         let cb = self.1.cols();
@@ -50,7 +57,12 @@ impl<A, B> Column for (A, B) where A: Column, B: Column {
     }
 }
 
-impl<A, B, C> Column for (A, B, C) where A: Column, B: Column, C: Column {
+impl<A, B, C> Column for (A, B, C)
+where
+    A: Column,
+    B: Column,
+    C: Column,
+{
     fn cols(&self) -> String {
         let ca = self.0.cols();
         let cb = self.1.cols();

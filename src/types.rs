@@ -3,7 +3,7 @@ use std::fmt;
 use std::ops::Add;
 use std::rc::Rc;
 
-use crate::entity::{ Column, Star, Entity };
+use crate::entity::{Column, Entity, Star};
 use crate::expression::and_;
 use crate::query::ToValues;
 
@@ -103,7 +103,7 @@ pub trait HasValue<A>: fmt::Display {
     }
 }
 
-pub type SqlExpr<A, B> = Rc<HasValue<A, Output=B>>;
+pub type SqlExpr<A, B> = Rc<HasValue<A, Output = B>>;
 
 #[derive(Clone)]
 pub enum NeedParens {
@@ -114,10 +114,18 @@ pub enum NeedParens {
 #[derive(Clone)]
 pub struct Raw<A>(pub NeedParens, pub String, pub std::marker::PhantomData<A>);
 
-impl<'a, A, B> HasValue<A> for Raw<B> where Self: Sized, B: 'a + ToLiteral {
+impl<'a, A, B> HasValue<A> for Raw<B>
+where
+    Self: Sized,
+    B: 'a + ToLiteral,
+{
     type Output = B;
 
-    fn to_sql(&self) -> String where Self: Sized, <Self as HasValue<A>>::Output: ToLiteral {
+    fn to_sql(&self) -> String
+    where
+        Self: Sized,
+        <Self as HasValue<A>>::Output: ToLiteral,
+    {
         let s = Self::Output::to_literal(&self.1);
 
         match self.0 {
@@ -141,7 +149,10 @@ pub struct CompositKey<A>(pub A);
 impl<A: fmt::Display + Clone + ToLiteral> HasValue<A> for CompositKey<A> {
     type Output = A;
 
-    fn to_sql(&self) -> String where Self: Sized {
+    fn to_sql(&self) -> String
+    where
+        Self: Sized,
+    {
         Self::Output::to_literal(&self.0)
     }
 }
@@ -158,7 +169,7 @@ pub trait HasValueList<A>: fmt::Display {
 }
 
 pub enum List<A, B: ToLiteral> {
-    NonEmpty(Box<dyn HasValue<A, Output=B>>),
+    NonEmpty(Box<dyn HasValue<A, Output = B>>),
     Empty,
 }
 
@@ -183,7 +194,7 @@ impl<A, B: ToLiteral> fmt::Display for List<A, B> {
 // Expr (OrderBy)
 pub trait HasOrder: fmt::Display {}
 
-pub struct OrderBy<A, B>(pub OrderByType, pub Rc<HasValue<A, Output=B>>);
+pub struct OrderBy<A, B>(pub OrderByType, pub Rc<HasValue<A, Output = B>>);
 
 impl<A, B: ToLiteral> HasOrder for OrderBy<A, B> {}
 
@@ -203,8 +214,8 @@ pub type OrderClause = Rc<HasOrder>;
 #[derive(Clone)]
 pub enum FromClause {
     Start(String),
-    Join(Rc<FromClause>, JoinKind, Rc<FromClause>, Option<Rc<HasValue<bool, Output=bool>>>),
-    OnClause(Rc<HasValue<bool, Output=bool>>),
+    Join(Rc<FromClause>, JoinKind, Rc<FromClause>, Option<Rc<HasValue<bool, Output = bool>>>),
+    OnClause(Rc<HasValue<bool, Output = bool>>),
 }
 
 impl fmt::Display for FromClause {
@@ -218,7 +229,7 @@ impl fmt::Display for FromClause {
 }
 
 impl FromClause {
-    pub fn on(self, on: Rc<HasValue<bool, Output=bool>>) -> Option<FromClause> {
+    pub fn on(self, on: Rc<HasValue<bool, Output = bool>>) -> Option<FromClause> {
         match self {
             FromClause::Join(lhs, knd, rhs, None) => Some(FromClause::Join(lhs, knd, rhs, Some(on))),
             _ => None,
@@ -228,7 +239,7 @@ impl FromClause {
 
 #[derive(Clone)]
 pub enum WhereClause {
-    Where(Rc<HasValue<bool, Output=bool>>),
+    Where(Rc<HasValue<bool, Output = bool>>),
     No,
 }
 
@@ -290,10 +301,7 @@ pub trait HasSet: fmt::Display {
     fn value(&self) -> String;
 }
 
-pub struct SetValue<A, B>(
-    pub Rc<HasValue<A, Output=Column>>, 
-    pub Rc<HasValue<A, Output=B>>
-);
+pub struct SetValue<A, B>(pub Rc<HasValue<A, Output = Column>>, pub Rc<HasValue<A, Output = B>>);
 
 impl<A, B: ToLiteral> HasSet for SetValue<A, B> {
     fn column(&self) -> String {
@@ -365,7 +373,7 @@ impl fmt::Display for LimitClause {
 
 pub trait HasGroupBy: fmt::Display {}
 
-pub struct GroupBy<A, B>(pub Rc<HasValue<A, Output=B>>);
+pub struct GroupBy<A, B>(pub Rc<HasValue<A, Output = B>>);
 
 impl<A, B> HasGroupBy for GroupBy<A, B> {}
 
@@ -388,7 +396,11 @@ impl Clone for Box<HasDistinct> {
     }
 }
 
-impl<A, B> HasDistinct for Rc<HasValue<A, Output=B>> where A: 'static, B: 'static {
+impl<A, B> HasDistinct for Rc<HasValue<A, Output = B>>
+where
+    A: 'static,
+    B: 'static,
+{
     fn box_clone(&self) -> Box<HasDistinct> {
         Box::new((*self).clone())
     }
@@ -490,10 +502,7 @@ impl<A: ToValues, B: ToValues> HasValues for Values<A, B> {
     }
 
     fn values(&self) -> Vec<Vec<String>> {
-        self.1
-            .iter()
-            .map(|v| v.to_vec())
-            .collect::<Vec<_>>()
+        self.1.iter().map(|v| v.to_vec()).collect::<Vec<_>>()
     }
 }
 
@@ -501,10 +510,7 @@ pub trait HasDuplicateKey {
     fn dup_keys(&self) -> (String, String);
 }
 
-pub struct DuplicateKey<A, B>(
-    pub Rc<HasValue<A, Output=Column>>, 
-    pub Rc<HasValue<A, Output=B>>
-);
+pub struct DuplicateKey<A, B>(pub Rc<HasValue<A, Output = Column>>, pub Rc<HasValue<A, Output = B>>);
 
 impl<A, B> HasDuplicateKey for DuplicateKey<A, B> {
     fn dup_keys(&self) -> (String, String) {

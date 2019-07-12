@@ -5,7 +5,8 @@ impl<A: Column> Update<A> {
         match clause.as_slice() {
             [] => Err(()),
             _ => {
-                let a = clause.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
+                let a = clause.iter().map(ToString::to_string).collect::<Vec<_>>().join(", ");
+
                 Ok(a)
             }
         }
