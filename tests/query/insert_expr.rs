@@ -93,4 +93,30 @@ fn test_duplicate() {
         "INSERT INTO User(User.user_id, User.email) VALUES (1, 'a@b.c') \
         ON DUPLICATE KEY UPDATE User.user_id = 2".to_string()
     );
+    
+    let a = Query::<User>::from_by(|q, a| {
+        let one = val_(1);
+        let two = val_(2);
+        let email1 = val_("a@b.c".to_string());
+        let email2 = val_("d@e.c".to_string());
+
+        let q = q.values_(
+            (a.user_id(), a.email()), 
+            vec![
+                (one, email1),
+                (two, email2),
+            ]
+        );
+        let two = val_(2);
+        let q = q.dup_key_(a.user_id(), two);
+
+        q
+    });
+    
+    assert_eq!(
+        bulk_insert(a.unwrap()).to_sql(),
+        "INSERT INTO User(User.user_id, User.email) VALUES (1, 'a@b.c') (2, 'd@e.c') \
+        ON DUPLICATE KEY UPDATE User.user_id = 2"
+        .to_string()
+    );
 }
