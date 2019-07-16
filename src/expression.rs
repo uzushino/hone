@@ -341,3 +341,17 @@ pub fn then_() -> () {
 pub fn else_<A, B>(a: Rc<HasValue<A, Output = B>>) -> Rc<HasValue<A, Output = B>> {
     a
 }
+
+pub fn if_<'a, A, B, C>(
+    cond: Rc<HasValue<bool, Output = bool>>,
+    expr: Rc<HasValue<A, Output = B>>,
+    _else: Rc<HasValue<bool, Output = bool>>,
+) -> Rc<'a + HasValue<A, Output = B>>
+where
+    A: 'a + fmt::Display,
+    B: 'a + ToLiteral,
+{
+    let s = "IF(".to_string() + &cond.to_sql() + ", " + &expr.to_sql() + ", " + &_else.to_sql() + ")";
+    parens_(s)
+}
+
