@@ -40,7 +40,7 @@ fn test_alias_column() {
     let a = Query::<User>::from_by(|q, a| {
         let u = a.user_id();
         let one = val_("a@b.c".to_string());
-        q.return_((u.as_("uid".to_string()), one.as_("email".to_string())))
+        q.return_((u.as_("uid"), one.as_("email")))
     });
 
     assert_eq!(
@@ -57,7 +57,7 @@ fn test_alias_column() {
         })
         .unwrap();
 
-        q.return_(sub_(sub).as_("user_id".to_string()))
+        q.return_(sub_(sub).as_("user_id"))
     });
 
     assert_eq!(
@@ -174,7 +174,7 @@ fn test_if() {
         let three = val_(3);
         let a = if_(eq_(a.user_id(), one), two, three);
 
-        q.return_(a.as_("number".to_string()))
+        q.return_(a.as_("number"))
     });
 
     assert_eq!(

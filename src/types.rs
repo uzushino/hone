@@ -98,8 +98,8 @@ pub trait HasValue<A>: fmt::Display {
 
     fn to_sql(&self) -> String;
 
-    fn as_(&self, alias: String) -> Alias<A> {
-        Alias(self.to_sql(), alias, std::marker::PhantomData)
+    fn as_(&self, alias: &str) -> Alias<A> {
+        Alias(self.to_sql(), alias.to_string(), std::marker::PhantomData)
     }
 }
 
