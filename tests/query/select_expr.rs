@@ -165,3 +165,20 @@ fn test_case() {
             .to_string()
     );
 }
+
+#[test]
+fn test_if() {
+    let a = Query::<User>::from_by(|q, a| {
+        let one = val_(1);
+        let two = val_(2);
+        let three = val_(3);
+        let a = if_(eq_(a.user_id(), one), two, three);
+
+        q.return_(a.as_("number".to_string()))
+    });
+
+    assert_eq!(
+        select(a.unwrap()).to_sql(),
+        "SELECT (IF((User.user_id = 1), 2, 3)) AS number FROM User".to_string()
+    );
+}
