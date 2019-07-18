@@ -342,10 +342,10 @@ pub fn else_<A, B>(a: Rc<HasValue<A, Output = B>>) -> Rc<HasValue<A, Output = B>
     a
 }
 
-pub fn if_<'a, A, B>(
+pub fn if_<'a, A, B, C>(
     cond: Rc<HasValue<bool, Output = bool>>,
     expr: Rc<HasValue<A, Output = B>>,
-    _else: Rc<HasValue<A, Output = B>>,
+    _else: Rc<HasValue<A, Output = C>>,
 ) -> Rc<'a + HasValue<A, Output = B>>
 where
     A: 'a + fmt::Display,
