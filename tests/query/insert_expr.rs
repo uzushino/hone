@@ -9,15 +9,15 @@ fn test_insert_into() {
         let one = val_(1);
         let email1 = val_("a@b.c".to_string());
 
-        let q = q.value_(a.user_id(), one);
-        let q = q.value_(a.email(), email1);
+        let q = q.value_(a.user_id_(), one);
+        let q = q.value_(a.email_(), email1);
 
         q
     });
 
     assert_eq!(
         insert_into(a.unwrap()).to_sql(),
-        "INSERT INTO User(User.user_id, User.email) VALUES (1, 'a@b.c')".to_string()
+        "INSERT INTO User(user_id, email) VALUES (1, 'a@b.c')".to_string()
     );
 }
 
@@ -55,14 +55,14 @@ fn test_bulk_insert() {
         let email1 = val_("a@b.c".to_string());
         let email2 = val_("d@e.c".to_string());
 
-        let q = q.values_((a.user_id(), a.email()), vec![(one, email1), (two, email2)]);
+        let q = q.values_((a.user_id_(), a.email_()), vec![(one, email1), (two, email2)]);
 
         q
     });
 
     assert_eq!(
         bulk_insert(a.unwrap()).to_sql(),
-        "INSERT INTO User(User.user_id, User.email) VALUES (1, 'a@b.c') (2, 'd@e.c')".to_string()
+        "INSERT INTO User(user_id, email) VALUES (1, 'a@b.c') (2, 'd@e.c')".to_string()
     );
 }
 
@@ -72,19 +72,19 @@ fn test_duplicate() {
         let one = val_(1);
         let email1 = val_("a@b.c".to_string());
 
-        let q = q.value_(a.user_id(), one);
-        let q = q.value_(a.email(), email1);
+        let q = q.value_(a.user_id_(), one);
+        let q = q.value_(a.email_(), email1);
 
         let two = val_(2);
-        let q = q.dup_key_(a.user_id(), two);
+        let q = q.dup_key_(a.user_id_(), two);
 
         q
     });
 
     assert_eq!(
         insert_into(a.unwrap()).to_sql(),
-        "INSERT INTO User(User.user_id, User.email) VALUES (1, 'a@b.c') \
-         ON DUPLICATE KEY UPDATE User.user_id = 2"
+        "INSERT INTO User(user_id, email) VALUES (1, 'a@b.c') \
+         ON DUPLICATE KEY UPDATE user_id = 2"
             .to_string()
     );
 
@@ -94,17 +94,17 @@ fn test_duplicate() {
         let email1 = val_("a@b.c".to_string());
         let email2 = val_("d@e.c".to_string());
 
-        let q = q.values_((a.user_id(), a.email()), vec![(one, email1), (two, email2)]);
+        let q = q.values_((a.user_id_(), a.email_()), vec![(one, email1), (two, email2)]);
         let two = val_(2);
-        let q = q.dup_key_(a.user_id(), two);
+        let q = q.dup_key_(a.user_id_(), two);
 
         q
     });
 
     assert_eq!(
         bulk_insert(a.unwrap()).to_sql(),
-        "INSERT INTO User(User.user_id, User.email) VALUES (1, 'a@b.c') (2, 'd@e.c') \
-         ON DUPLICATE KEY UPDATE User.user_id = 2"
+        "INSERT INTO User(user_id, email) VALUES (1, 'a@b.c') (2, 'd@e.c') \
+         ON DUPLICATE KEY UPDATE user_id = 2"
             .to_string()
     );
 }

@@ -8,7 +8,28 @@ use hone::{hone_entity, hone_model};
 #[derive(Debug, Default, Clone)]
 pub struct User {}
 
-hone_model!(User, User, user_id => u32, email => String);
+impl User {
+    pub fn user_id(&self) -> Rc<HasValue<u32, Output=Column>> {
+        Rc::new(Column::new(format!("{}.{}", "User", "user_id").as_str()))
+    }
+    
+    pub fn user_id_(&self) -> Rc<HasValue<u32, Output=Column>> {
+        Rc::new(Column::new(format!("{}", "user_id").as_str()))
+    }
+    
+    pub fn email(&self) -> Rc<HasValue<String, Output=Column>> {
+        Rc::new(Column::new(format!("{}.{}", "User", "email").as_str()))
+    }
+
+    pub fn email_(&self) -> Rc<HasValue<String, Output=Column>> {
+        Rc::new(Column::new(format!("{}", "email").as_str()))
+    }
+}
+
+impl HasQuery for User {
+    type T = User;
+}
+
 hone_entity!(User, User, email, user_id);
 
 #[derive(Debug, Default, Clone)]
