@@ -355,3 +355,23 @@ where
     parens_(s)
 }
 
+pub fn rank_() -> Rc<HasValue<u32, Output=u32>> {
+    never_("RANK()")
+}
+
+pub fn partition_by_<'a, A, B, C, D, E, F>(
+    aggregate: Rc<HasValue<A, Output = B>>,
+    partition: Rc<HasValue<C, Output = D>>,
+    order: Option<Rc<HasValue<E, Output = F>>>,
+) -> Rc<'a + HasValue<A, Output=B>> where A: 'a + fmt::Display, B: 'a + ToLiteral, D: 'a + ToLiteral, F: 'a + ToLiteral {
+    let s = aggregate.to_sql() + " OVER (" + &in_partition(partition, order) + ")";
+    never_(s)
+}
+
+fn in_partition<A, B, C, D>(partition: Rc<HasValue<A, Output = B>>, order: Option<Rc<HasValue<C, Output = D>>>) -> String {
+    let mut s = "PARTITION BY ".to_string() + &partition.to_sql();
+    if let Some(o) = order {
+       s = s + " ORDER BY " + &o.to_sql();
+    }
+    s
+}

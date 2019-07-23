@@ -182,3 +182,17 @@ fn test_if() {
         "SELECT (IF((User.user_id = 1), 2, 3)) AS number FROM User".to_string()
     );
 }
+
+#[test]
+fn test_partition() {
+    let a = Query::<User>::from_by(|q, a| {
+        let a = partition_by_(rank_(), a.user_id(), Some(a.email()));
+        q.return_(a.as_("rank"))
+    });
+
+    assert_eq!(
+        select(a.unwrap()).to_sql(),
+        "SELECT RANK() OVER (PARTITION BY User.user_id ORDER BY User.email) AS rank \
+        FROM User".to_string()
+    );
+}
