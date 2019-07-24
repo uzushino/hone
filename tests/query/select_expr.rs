@@ -186,13 +186,14 @@ fn test_if() {
 #[test]
 fn test_partition() {
     let a = Query::<User>::from_by(|q, a| {
-        let a = partition_by_(rank_(), a.user_id(), Some(a.email()));
-        q.return_(a.as_("rank"))
+        let order = desc_(a.email());
+        let b = partition_by_(rank_(), a.user_id(), Some(order));
+        q.return_(b.as_("rank"))
     });
 
     assert_eq!(
         select(a.unwrap()).to_sql(),
-        "SELECT RANK() OVER (PARTITION BY User.user_id ORDER BY User.email) AS rank \
+        "SELECT RANK() OVER (PARTITION BY User.user_id ORDER BY User.email DESC) AS rank \
         FROM User".to_string()
     );
 }
