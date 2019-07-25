@@ -363,6 +363,37 @@ pub fn row_number_() -> Rc<HasValue<u32, Output=u32>> {
     never_("ROW_NUMBER()")
 }
 
+pub fn lag_<'a, A, B, C>(
+    column: Rc<HasValue<A, Output = Column>>,
+    offset: Option<Rc<HasValue<u32, Output = u32>>>,
+    default: Option<Rc<HasValue<B, Output = C>>>
+) -> Rc<'a + HasValue<A, Output=C>> where C: 'a + ToLiteral {
+    lag_lead_("lag", column, offset, default)
+}
+
+pub fn lead_<'a, A, B, C>(
+    column: Rc<HasValue<A, Output = Column>>,
+    offset: Option<Rc<HasValue<u32, Output = u32>>>,
+    default: Option<Rc<HasValue<B, Output = C>>>
+) -> Rc<'a + HasValue<A, Output=C>> where C: 'a + ToLiteral {
+    lag_lead_("lead", column, offset, default)
+}
+
+fn lag_lead_<'a, A, B, C>(
+    f: &str,
+    column: Rc<HasValue<A, Output = Column>>,
+    offset: Option<Rc<HasValue<u32, Output = u32>>>,
+    default: Option<Rc<HasValue<B, Output = C>>>
+) -> Rc<'a + HasValue<A, Output=C>> where C: 'a + ToLiteral {
+    let ret = match (column, offset, default) {
+        (n, Some(a), Some(b)) => format!("{}({}, {}, {})", f, n.to_sql(), a.to_sql(), b.to_sql()),
+        (n, Some(a), None) => format!("{}({}, {})", f, n.to_sql(), a.to_sql()),
+        (n, _, _) => format!("{}({})", f, n.to_sql()),
+        
+    };
+    never_(ret)
+}
+
 pub fn partition_by_<'a, A, B, C, D>(
     aggregate: Rc<HasValue<A, Output = B>>,
     partition: Rc<HasValue<C, Output = D>>,
