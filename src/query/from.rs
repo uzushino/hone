@@ -5,6 +5,7 @@ use std::rc::Rc;
 use crate::entity::Column as CL;
 use crate::entity::*;
 use crate::query::*;
+use crate::types::*;
 //use crate::types::Values;
 
 impl<'a, A> Query<'a, A> {
@@ -28,10 +29,10 @@ impl<'a, A> Query<'a, A> {
 */
     pub fn where_(self, b: Box<dyn HasValue<bool, Output=bool>>) -> Query<'a, A> {
         let w = WhereClause::Where(b);
-        //let n = self.state.borrow_mut().where_clause;
+        let n = std::mem::replace(&mut self.state.borrow_mut().where_clause, WhereClause::No);
+
         {
-            //(*self.state.borrow_mut()).where_clause = *n + w;
-            (*self.state.borrow_mut()).where_clause = w;
+            (*self.state.borrow_mut()).where_clause = n + w;
         }
 
         self
@@ -252,15 +253,16 @@ where
         Ok(f(qs, Self::Kind::default()))
     }
 }
+*/
 
-impl<A, B> FromQuery for Query<(A, B)>
+impl<'a, A, B> FromQuery<'a> for Query<'a, (A, B)>
 where
     A: Default + FromProcess<Item = A> + HasQuery<T = A>,
     B: Default + FromProcess<Item = B> + HasQuery<T = B>,
 {
     type Kind = (A, B);
 
-    fn from_() -> Result<Query<Self::Kind>, ()> {
+    fn from_() -> Result<Query<'a, Self::Kind>, ()> {
         let a = Query::<A>::from_()?;
         let b = Query::<B>::from_()?;
         let qs = Query::new((a.value, b.value));
@@ -270,9 +272,12 @@ where
             let mut sb = b.state.borrow_mut();
             sa.from_clause.append(&mut sb.from_clause.clone());
 
+            let aw = std::mem::replace(&mut sa.where_clause, WhereClause::No);
+            let bw = std::mem::replace(&mut sb.where_clause, WhereClause::No);
+
             let s = QueryState {
                 from_clause: sa.from_clause.clone(),
-                where_clause: sa.where_clause + sb.where_clause,
+                where_clause: aw + bw,
                 ..Default::default()
             };
 
@@ -282,7 +287,7 @@ where
         Ok(qs)
     }
 
-    fn from_by<F, R>(f: F) -> Result<Query<R>, ()>
+    fn from_by<F, R>(f: F) -> Result<Query<'a, R>, ()>
     where
         F: Fn(Query<Self::Kind>, Self::Kind) -> Query<R>,
     {
@@ -291,7 +296,7 @@ where
         Ok(f(qs, Self::Kind::default()))
     }
 }
-
+/*
 impl<A, B> Default for InnerJoin<A, B>
 where
     A: Default + HasQuery<T = A>,

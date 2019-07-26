@@ -7,7 +7,7 @@ pub trait Column {
     fn col_count() -> usize;
 }
 
-impl<A: ToString, DB: ToLiteral> Column for Rc<HasValue<A, Output=DB>> {
+impl<A: ToString, DB: ToLiteral> Column for Box<HasValue<A, Output=DB>> {
     fn cols(&self) -> String {
         self.to_string()
     }

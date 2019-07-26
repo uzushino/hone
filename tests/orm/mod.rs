@@ -32,11 +32,11 @@ struct Download {
 }
 
 impl Download {
-    pub fn id(&self) -> Rc<HasValue<i32, Output=Column>> {
+    pub fn id(&self) -> Box<HasValue<i32, Output=Column>> {
         never_("downloads.id")
     }
 
-    pub fn version(&self) -> Rc<HasValue<String, Output=Column>> {
+    pub fn version(&self) -> Box<HasValue<String, Output=Column>> {
         never_("downloads.version")
     }
 }
@@ -78,7 +78,8 @@ fn test_diesel() {
     let a = a.first().unwrap();
     let b = Query::<Download>::from_by(|q, m| {
         let id_ = val_(1);
-        let eq = eq_(m.id(), id_);
+        let eq = eq_(m.id().as_ref(), id_.as_ref());
+        let eq2 = eq_(m.id().as_ref(), id_.as_ref());
         let q = q.where_(eq);
         q
     });

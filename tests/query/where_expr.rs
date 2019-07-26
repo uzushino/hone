@@ -7,7 +7,7 @@ use crate::query::model::*;
 fn test_eq() {
     let u = User::default();
     let one = val_("a@b.c".to_string());
-    let eq = eq_(&*u.email(), &*one);
+    let eq = eq_(u.email().as_ref(), one.as_ref());
 
     assert_eq!("(User.email = 'a@b.c')", eq.to_string());
 }
@@ -123,12 +123,12 @@ fn test_having() {
             .to_string()
     );
 }
-
+*/
 #[test]
 fn test_where() {
     let a = Query::<User>::from_by(|q, a| {
         let one = val_(1);
-        let eq = eq_(a.user_id(), one);
+        let eq = eq_(a.user_id().as_ref(), one.as_ref());
         let q = q.where_(eq);
 
         q.return_(a.user_id())
@@ -140,7 +140,7 @@ fn test_where() {
     );
 
     let b = Query::<(_, _)>::from_by(|q, (a, b): (User, Library)| {
-        let eq = eq_(a.user_id(), b.library_id());
+        let eq = eq_(a.user_id().as_ref(), b.library_id().as_ref());
         q.where_(eq)
     });
 
@@ -155,8 +155,8 @@ fn test_where() {
         let one = val_(1);
         let two = val_(2);
 
-        let eq1 = eq_(a.user_id(), one);
-        let eq2 = eq_(b.library_id(), two);
+        let eq1 = eq_(a.user_id().as_ref(), one.as_ref());
+        let eq2 = eq_(b.library_id().as_ref(), two.as_ref());
 
         let q = q.where_(eq1);
         let q = q.where_(eq2);
@@ -175,10 +175,10 @@ fn test_where() {
         let one = val_(1);
         let two = val_(2);
 
-        let eq1 = eq_(a.user_id(), one);
-        let eq2 = eq_(b.library_id(), two);
+        let eq1 = eq_(a.user_id().as_ref(), one.as_ref());
+        let eq2 = eq_(b.library_id().as_ref(), two.as_ref());
 
-        let q = q.where_(or_(eq1, eq2));
+        let q = q.where_(or_(eq1.as_ref(), eq2.as_ref()));
 
         q
     });
@@ -194,7 +194,7 @@ fn test_where() {
         let one = val_(1);
         let two = val_(2);
         let three = val_(3);
-        let eq = in_(a.user_id(), val_list_(&[one, two, three]));
+        let eq = in_(a.user_id().as_ref(), val_list_(&[one, two, three]));
 
         q.where_(eq).return_(a)
     });
@@ -204,38 +204,23 @@ fn test_where() {
         "SELECT email, user_id FROM User WHERE (User.user_id IN ((1, 2, 3)))".to_string()
     );
 
-    let f = Query::<(User, Library)>::from_by(|q, (a, _b)| {
-        let one = val_(1);
-        let two = val_(2);
-        let three = val_(3);
-        let eq = in_(a.user_id(), val_list_(&[one, two, three]));
-        let q = q.where_(eq);
-
-        q.return_(a)
-    });
-
-    assert_eq!(
-        select(f.unwrap()).to_sql(),
-        "SELECT email, user_id FROM Library,User WHERE (User.user_id IN ((1, 2, 3)))".to_string()
-    );
-
     let g = Query::<User>::from_by(|q, a| {
         let one = val_(1);
 
         let q2 = Query::<Library>::from_by(|q, b| {
             let two = val_(2);
 
-            let eq = eq_(b.library_id(), two);
+            let eq = eq_(b.library_id().as_ref(), two.as_ref());
             let q = q.where_(eq);
 
             q.return_(b.title())
         });
 
-        let eq = eq_(a.user_id(), one);
+        let eq = eq_(a.user_id().as_ref(), one.as_ref());
         let q = q.where_(eq);
 
         let sql_sub = q2.unwrap();
-        let eq_sub = eq_(a.email(), sub_(sql_sub));
+        let eq_sub = eq_(a.email().as_ref(), sub_(sql_sub).as_ref());
         let q = q.where_(eq_sub);
 
         q.return_(a)
@@ -248,4 +233,3 @@ fn test_where() {
             .to_string()
     );
 }
-*/

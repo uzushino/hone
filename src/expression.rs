@@ -2,7 +2,7 @@ use std::fmt;
 use std::rc::Rc;
 
 use crate::entity::*;
-//use crate::query::*;
+use crate::query::*;
 use crate::types::*;
 
 pub fn parens_<'a, A, B, C>(a: A) -> Box<dyn 'a + HasValue<B, Output=C>> where A: ToString, C: 'a + ToLiteral {
@@ -28,20 +28,20 @@ pub fn not_eq_<A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Outp
   
     parens_(a + " <> " + &b)
 }
-
-fn if_not_empty_list<A>(v: impl HasValueList<A>, b: bool, e: Rc<HasValue<bool, Output=bool>>) -> Rc<HasValue<bool, Output=bool>> {
+*/
+fn if_not_empty_list<A>(v: impl HasValueList<A>, b: bool, e: Box<HasValue<bool, Output=bool>>) -> Box<HasValue<bool, Output=bool>> {
     match v {
         _ if v.is_empty() => val_(b),
         _ => e,
     }
 }
 
-pub fn in_<A, B>(lhs: Rc<HasValue<A, Output=B>>, rhs: impl HasValueList<A>) -> Rc<HasValue<bool, Output=bool>> 
+pub fn in_<'a, A, B>(lhs: &'a HasValue<A, Output=B>, rhs: impl HasValueList<A>) -> Box<HasValue<bool, Output=bool>> 
     where A: ToLiteral {
-    let comp: Rc<HasValue<A, Output=i32>> = parens_(rhs.to_string());
-    if_not_empty_list(rhs, false, binop_(" IN ", lhs, comp))
+    let comp: Box<HasValue<A, Output=i32>> = parens_(rhs.to_string());
+    if_not_empty_list(rhs, false, binop_(" IN ", lhs, comp.as_ref()))
 }
-
+/*
 pub fn not_in_<A, B>(lhs: Rc<HasValue<A, Output=B>>, rhs: impl HasValueList<A>) -> Rc<HasValue<bool, Output=bool>> 
     where A: ToLiteral {
     let comp: Rc<HasValue<A, Output=i32>> = parens_(rhs.to_string());
@@ -51,19 +51,19 @@ pub fn not_in_<A, B>(lhs: Rc<HasValue<A, Output=B>>, rhs: impl HasValueList<A>) 
 pub fn val_<'a, A>(typ: A) -> Box<dyn 'a + HasValue<A, Output=A>> where A: 'a + fmt::Display + ToLiteral {
     never_(typ)
 }
-/*
-pub fn val_list_<'a, A, B>(vs: &[Rc<'a + HasValue<A, Output=B>>]) -> impl HasValueList<A>
+
+pub fn val_list_<'a, A, B>(vs: &[Box<'a + HasValue<A, Output=B>>]) -> impl HasValueList<A>
     where A: 'a + fmt::Display, B: 'static + ToLiteral {
     if vs.is_empty() {
         return List::Empty as List<A, B>;
     }
 
-    let s = vs.to_vec().iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
+    let s = vs.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ");
     let v = Raw(NeedParens::Parens, s, std::marker::PhantomData);
 
     List::NonEmpty(Box::new(v)) as List<A, B>
 }
-
+/*
 pub fn gt_<A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=C>>) -> Rc<HasValue<bool, Output=bool>> {
     binop_(" > ", lhs, rhs)
 }
@@ -88,12 +88,12 @@ pub fn and_<'a, 'b, A, B, C>(lhs: &'a HasValue<A, Output=B>, rhs: &'a HasValue<A
     where B: ToLiteral, C: 'b + ToLiteral {
     binop_(" AND ", lhs, rhs)
 }
-/*
-pub fn or_<'a, A, B, C>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<A, Output=C>>) -> Rc<'a + HasValue<A, Output=C>> 
-    where B: ToLiteral, C: 'a + ToLiteral {
+
+pub fn or_<'a, 'b, A, B, C>(lhs: &'a HasValue<A, Output=B>, rhs: &'a HasValue<A, Output=C>) -> Box<dyn 'b + HasValue<A, Output=C>> 
+    where B: ToLiteral, C: 'b + ToLiteral {
     binop_(" OR ", lhs, rhs)
 }
-*/
+
 pub fn binop_<'a, 'b, A, B, C, D, E>(op: &str, lhs: &'a HasValue<A, Output=B>, rhs: &'a HasValue<A, Output=C>) -> Box<dyn 'b + HasValue<D, Output=E>>
     where E: 'b + ToLiteral {
     let a = lhs.to_string();
@@ -143,12 +143,12 @@ pub fn not_exists_<'a, A, B>(q: Query<Rc<HasValue<A, Output=B>>>) -> Rc<'a + Has
     where A: 'a + fmt::Display, B: 'static + ToLiteral {
     unsafe_sql_function("NOT EXISTS ", sub_(q), NeedParens::Never)
 }
-
-pub fn sub_<'a, A, B>(q: Query<Rc<HasValue<A, Output=B>>>) -> Rc<'a + HasValue<A, Output=B>>
+*/
+pub fn sub_<'a, A, B>(q: Query<'static, Box<HasValue<A, Output=B>>>) -> Box<'a + HasValue<A, Output=B>>
     where A: fmt::Display, B: 'a + ToLiteral {
     parens_(select(q).to_sql())
 }
-
+/*
 fn unsafe_sql_function<'a, A, B, C>(name: &str, arg: A, parens: NeedParens) -> Rc<'a + HasValue<B, Output=C>>
     where A: UnsafeSqlFunctionArgument, C: 'a + ToLiteral {
     let args = A::to_arg_list(arg);
