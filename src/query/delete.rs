@@ -1,8 +1,8 @@
 use crate::query::*;
 
-impl<A> Delete<A> {}
+impl<'a, A> Delete<'a, A> {}
 
-impl<A: Column> ToSql for Delete<A> {
+impl<'a, A: Column> ToSql for Delete<'a, A> {
     fn to_sql(&self) -> String {
         let mut sql = String::from("DELETE");
         let state = self.0.state.borrow();
@@ -24,9 +24,9 @@ impl<A: Column> ToSql for Delete<A> {
     }
 }
 
-impl<A> Truncate <A> {}
+impl<'a, A> Truncate <'a, A> {}
 
-impl<A: Column> ToSql for Truncate <A> {
+impl<'a, A: Column> ToSql for Truncate<'a, A> {
     fn to_sql(&self) -> String {
         let mut sql = String::from("TRUNCATE TABLE ");
         let state = self.0.state.borrow();

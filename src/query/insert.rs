@@ -1,7 +1,7 @@
 use crate::entity::HasEntityDef;
 use crate::query::*;
 
-impl<A> InsertInto<A> where A: HasEntityDef {
+impl<'a, A> InsertInto<'a, A> where A: HasEntityDef {
     fn make_table(&self) -> Result<String, ()> {
         Ok(A::table_name().name())
     }
@@ -17,7 +17,7 @@ impl<A> InsertInto<A> where A: HasEntityDef {
     }
 }
 
-impl<A: HasEntityDef> ToSql for InsertInto<A> {
+impl<'a, A: HasEntityDef> ToSql for InsertInto<'a, A> {
     fn to_sql(&self) -> String {
         let mut sql = String::from("INSERT INTO ");
         let state = self.0.state.borrow();
@@ -38,7 +38,7 @@ impl<A: HasEntityDef> ToSql for InsertInto<A> {
     }
 }
 
-impl<A, B> InsertSelect<A, B> where A: HasEntityDef, B: HasSelect {
+impl<'a, A, B> InsertSelect<'a, A, B> where A: HasEntityDef, B: HasSelect {
     fn make_table(&self) -> Result<String, ()> {
         Ok(A::table_name().name())
     }
@@ -49,7 +49,7 @@ impl<A, B> InsertSelect<A, B> where A: HasEntityDef, B: HasSelect {
     }
 }
 
-impl<A: HasEntityDef, B: HasSelect> ToSql for InsertSelect<A, B> {
+impl<'a, A: HasEntityDef, B: HasSelect> ToSql for InsertSelect<'a, A, B> {
     fn to_sql(&self) -> String {
         let mut sql = String::from("INSERT INTO ");
         let state = self.0.state.borrow();
@@ -66,7 +66,7 @@ impl<A: HasEntityDef, B: HasSelect> ToSql for InsertSelect<A, B> {
     }
 }
 
-impl<A> BulkInsert<A> where A: HasEntityDef {
+impl<'a, A> BulkInsert<'a, A> where A: HasEntityDef {
     fn make_table(&self) -> Result<String, ()> {
         Ok(A::table_name().name())
     }
@@ -91,7 +91,7 @@ impl<A> BulkInsert<A> where A: HasEntityDef {
     }
 }
 
-impl<A: HasEntityDef> ToSql for BulkInsert<A> {
+impl<'a, A: HasEntityDef> ToSql for BulkInsert<'a, A> {
     fn to_sql(&self) -> String {
         let mut sql = String::from("INSERT INTO ");
         let state = self.0.state.borrow();

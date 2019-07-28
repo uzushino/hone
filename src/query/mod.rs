@@ -5,10 +5,10 @@ use crate::entity::HasEntityDef;
 use crate::types::*;
 
 mod column;
-//mod delete;
+mod delete;
 mod from;
-//mod functions;
-//mod insert;
+pub mod functions;
+mod insert;
 mod select;
 //mod update;
 
@@ -124,11 +124,13 @@ where
 
     UpdateSelect(qs, Select(q))
 }
+*/
 
 pub trait HasInsert: ToSql {}
 
-pub struct InsertInto<A>(Query<A>);
-impl<A: HasEntityDef> HasInsert for InsertInto<A> {}
+pub struct InsertInto<'a, A>(Query<'a, A>);
+
+impl<'a, A: HasEntityDef> HasInsert for InsertInto<'a, A> {}
 
 pub trait ToValues {
     fn to_vec(&self) -> Vec<String>;
@@ -162,23 +164,23 @@ impl<A, B, C, T1: ToLiteral, T2: ToLiteral, T3: ToLiteral> ToValues for
     }
 }
 
-pub struct BulkInsert<A>(Query<A>);
-impl<A: HasEntityDef> HasInsert for BulkInsert<A> {}
+pub struct BulkInsert<'a, A>(Query<'a, A>);
+impl<'a, A: HasEntityDef> HasInsert for BulkInsert<'a, A> {}
 
-pub struct InsertSelect<A, B: HasSelect>(Query<A>, B);
-impl<A: HasEntityDef, B: HasSelect> HasInsert for InsertSelect<A, B> {}
+pub struct InsertSelect<'a, A, B: HasSelect>(Query<'a, A>, B);
+impl<'a, A: HasEntityDef, B: HasSelect> HasInsert for InsertSelect<'a, A, B> {}
 
-pub fn insert_into<A: HasEntityDef>(q: Query<A>) -> impl HasInsert {
+pub fn insert_into<A: HasEntityDef>(q: Query<'static, A>) -> impl HasInsert {
     InsertInto(q)
 }
 
-pub fn bulk_insert<A: HasEntityDef>(q: Query<A>) -> impl HasInsert {
+pub fn bulk_insert<A: HasEntityDef>(q: Query<'static, A>) -> impl HasInsert {
     BulkInsert(q)
 }
 
-pub fn insert_select<A: Column, B, F>(q: Query<A>, f: F) -> InsertSelect<B, impl HasSelect>
+pub fn insert_select<A: Column, B, F>(q: Query<'static, A>, f: F) -> InsertSelect<B, impl HasSelect>
 where
-    F: Fn(Query<B>, B, &Query<A>) -> Query<B>,
+    F: Fn(Query<'static, B>, B, &Query<'static, A>) -> Query<'static, B>,
     B: Default,
 {
     let qs = Query::new(B::default());
@@ -189,21 +191,17 @@ where
 
 pub trait HasDelete: ToSql {}
 
-pub struct Delete<A>(Query<A>);
-impl<A: Column> HasDelete for Delete<A> {}
+pub struct Delete<'a, A>(Query<'a, A>);
 
-pub fn delete<A: Column>(q: Query<A>) -> impl HasDelete {
+impl<'a, A: Column> HasDelete for Delete<'a, A> {}
+
+pub fn delete<A: Column>(q: Query<'static, A>) -> impl HasDelete {
     Delete(q)
 }
 
-pub struct Truncate<A>(Query<A>);
-impl<A: Column> HasDelete for Truncate <A> {}
+pub struct Truncate<'a, A>(Query<'a, A>);
+impl<'a, A: Column> HasDelete for Truncate<'a, A> {}
 
-pub fn truncate<A: Column>(q: Query<A>) -> impl HasDelete {
+pub fn truncate<A: Column>(q: Query<'static, A>) -> impl HasDelete {
     Truncate(q)
 }
-
-pub trait UnsafeSqlFunctionArgument {
-    fn to_arg_list(arg: Self) -> Vec<Rc<HasValue<bool, Output=bool>>>;
-}
-*/

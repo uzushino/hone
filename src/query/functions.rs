@@ -1,24 +1,27 @@
-use std::rc::Rc;
 use crate::expression::never_;
-use crate::query::UnsafeSqlFunctionArgument;
 use crate::types::{
     ToLiteral, 
     HasValue, 
 };
 
-impl<A, DB: ToLiteral> UnsafeSqlFunctionArgument for Rc<HasValue<A, Output=DB>> {
-    fn to_arg_list(a: Rc<HasValue<A, Output=DB>>) -> Vec<Rc<HasValue<bool, Output=bool>>> {
+pub trait UnsafeSqlFunctionArgument {
+    fn to_arg_list(arg: Self) -> Vec<Box<HasValue<bool, Output=bool>>>;
+}
+
+impl<A, DB: ToLiteral> UnsafeSqlFunctionArgument for Box<HasValue<A, Output=DB>> {
+    fn to_arg_list(a: Box<HasValue<A, Output=DB>>) -> Vec<Box<HasValue<bool, Output=bool>>> {
         vec![never_(a)]
     }
 }
 
-impl<A> UnsafeSqlFunctionArgument for Vec<A> where A: UnsafeSqlFunctionArgument + Clone {
-    fn to_arg_list(a: Vec<A>) -> Vec<Rc<HasValue<bool, Output=bool>>> {
+impl<A> UnsafeSqlFunctionArgument for Vec<A> where A: UnsafeSqlFunctionArgument + std::fmt::Display {
+    fn to_arg_list(a: Vec<A>) -> Vec<Box<HasValue<bool, Output=bool>>> {
         let mut result = vec![];
 
         for (_, i) in a.iter().enumerate() {
-            let v = UnsafeSqlFunctionArgument::to_arg_list(i.clone());
-            result.append(&mut v.to_vec())
+            let t: Box<HasValue<bool, Output=bool>> = never_(i);
+            let mut v = UnsafeSqlFunctionArgument::to_arg_list(t);
+            result.append(&mut v)
         }
 
         result
@@ -30,7 +33,7 @@ where
     A: UnsafeSqlFunctionArgument,
     B: UnsafeSqlFunctionArgument,
 {
-    fn to_arg_list(v: (A, B)) -> Vec<Rc<HasValue<bool, Output=bool>>> {
+    fn to_arg_list(v: (A, B)) -> Vec<Box<HasValue<bool, Output=bool>>> {
         let mut a = UnsafeSqlFunctionArgument::to_arg_list(v.0);
         let mut b = UnsafeSqlFunctionArgument::to_arg_list(v.1);
         let mut result = vec![];
@@ -48,7 +51,7 @@ where
     B: UnsafeSqlFunctionArgument,
     C: UnsafeSqlFunctionArgument,
 {
-    fn to_arg_list(v: (A, B, C)) -> Vec<Rc<HasValue<bool, Output=bool>>> {
+    fn to_arg_list(v: (A, B, C)) -> Vec<Box<HasValue<bool, Output=bool>>> {
         let mut a = UnsafeSqlFunctionArgument::to_arg_list(v.0);
         let mut b = UnsafeSqlFunctionArgument::to_arg_list(v.1);
         let mut c = UnsafeSqlFunctionArgument::to_arg_list(v.2);
@@ -69,7 +72,7 @@ where
     C: UnsafeSqlFunctionArgument,
     D: UnsafeSqlFunctionArgument,
 {
-    fn to_arg_list(v: (A, B, C, D)) -> Vec<Rc<HasValue<bool, Output=bool>>> {
+    fn to_arg_list(v: (A, B, C, D)) -> Vec<Box<HasValue<bool, Output=bool>>> {
         let mut result = vec![];
 
         let mut a = UnsafeSqlFunctionArgument::to_arg_list(v.0);

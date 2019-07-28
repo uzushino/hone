@@ -150,7 +150,7 @@ impl<A, B: ToLiteral> fmt::Display for List<A, B> {
 // Expr (OrderBy)
 pub trait HasOrder: fmt::Display {}
 
-pub struct OrderBy<A, B>(pub OrderByType, pub Rc<HasValue<A, Output=B>>);
+pub struct OrderBy<A, B>(pub OrderByType, pub Box<HasValue<A, Output=B>>);
 
 impl<A, B: ToLiteral> HasOrder for OrderBy<A, B> {}
 
@@ -165,13 +165,13 @@ impl<A, B: ToLiteral> fmt::Display for OrderBy<A, B> {
     }
 }
 
-pub type OrderClause = Rc<HasOrder>;
+pub type OrderClause = Box<HasOrder>;
 
 #[derive(Clone)]
 pub enum FromClause {
     Start(String),
-    Join(Rc<FromClause>, JoinKind, Rc<FromClause>, Option<Rc<HasValue<bool, Output=bool>>>),
-    OnClause(Rc<HasValue<bool, Output=bool>>),
+    Join(Box<FromClause>, JoinKind, Box<FromClause>, Option<Rc<Box<HasValue<bool, Output=bool>>>>),
+    OnClause(Rc<Box<HasValue<bool, Output=bool>>>),
 }
 
 impl fmt::Display for FromClause {
@@ -185,9 +185,9 @@ impl fmt::Display for FromClause {
 }
 
 impl FromClause {
-    pub fn on(self, on: Rc<HasValue<bool, Output=bool>>) -> Option<FromClause> {
+    pub fn on(self, on: Box<HasValue<bool, Output=bool>>) -> Option<FromClause> {
         match self {
-            FromClause::Join(lhs, knd, rhs, None) => Some(FromClause::Join(lhs, knd, rhs, Some(on))),
+            FromClause::Join(lhs, knd, rhs, None) => Some(FromClause::Join(lhs, knd, rhs, Some(Rc::new(on)))),
             _ => None,
         }
     }
@@ -257,8 +257,8 @@ pub trait HasSet: fmt::Display {
 }
 
 pub struct SetValue<A, B>(
-    pub Rc<HasValue<A, Output=Column>>, 
-    pub Rc<HasValue<A, Output=B>>
+    pub Box<HasValue<A, Output=Column>>, 
+    pub Box<HasValue<A, Output=B>>
 );
 
 impl<A, B: ToLiteral> HasSet for SetValue<A, B> {
@@ -345,33 +345,17 @@ impl<A, B> fmt::Display for GroupBy<A, B> {
 
 // DISTNCT(ON)
 pub trait HasDistinct: fmt::Display {
-    fn box_clone(&self) -> Box<HasDistinct>;
 }
 
-impl Clone for Box<HasDistinct> {
-    fn clone(&self) -> Box<HasDistinct> {
-        self.box_clone()
-    }
-}
+impl<A, B> HasDistinct for Box<HasValue<A, Output=B>> where A: 'static, B: 'static {}
 
-impl<A, B> HasDistinct for Rc<HasValue<A, Output=B>> where A: 'static, B: 'static {
-    fn box_clone(&self) -> Box<HasDistinct> {
-        Box::new((*self).clone())
-    }
-}
-
-#[derive(Clone)]
 pub enum Distinct {
     All,
     Standard,
     On(Vec<Box<dyn HasDistinct>>),
 }
 
-impl HasDistinct for Distinct {
-    fn box_clone(&self) -> Box<HasDistinct> {
-        Box::new((*self).clone())
-    }
-}
+impl HasDistinct for Distinct {}
 
 impl Default for Distinct {
     fn default() -> Self {

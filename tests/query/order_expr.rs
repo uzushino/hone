@@ -7,7 +7,7 @@ use crate::query::model::*;
 fn test_order() {
     let a = Query::<User>::from_by(|q, a| {
         let one = val_(1);
-        let eq = eq_(a.user_id(), one);
+        let eq = eq_(a.user_id().as_ref(), one.as_ref());
 
         let q = q.where_(eq);
         let q = q.order_(vec![asc_(a.user_id()), desc_(a.email())]);

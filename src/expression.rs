@@ -3,6 +3,7 @@ use std::rc::Rc;
 
 use crate::entity::*;
 use crate::query::*;
+use crate::query::functions::UnsafeSqlFunctionArgument;
 use crate::types::*;
 
 pub fn parens_<'a, A, B, C>(a: A) -> Box<dyn 'a + HasValue<B, Output=C>> where A: ToString, C: 'a + ToLiteral {
@@ -123,33 +124,34 @@ pub fn is_not_null_<A, B>(a: Rc<HasValue<A, Output=B>>) -> Rc<HasValue<bool, Out
     where A: fmt::Display, B: ToLiteral {
     parens_(a.to_string() + " IS NOT NULL")
 }
+*/
 
-pub fn asc_<'a, A, B>(exp: Rc<HasValue<A, Output=B>>) -> Rc<'a + HasOrder>
+pub fn asc_<'a, A, B>(exp: Box<HasValue<A, Output=B>>) -> Box<'a + HasOrder>
     where A: 'a + fmt::Display, B: 'a + ToLiteral {
-    Rc::new(OrderBy(OrderByType::Asc, exp))
+    Box::new(OrderBy(OrderByType::Asc, exp))
 }
 
-pub fn desc_<'a, A, B>(exp: Rc<HasValue<A, Output=B>>) -> Rc<'a + HasOrder>
+pub fn desc_<'a, A, B>(exp: Box<HasValue<A, Output=B>>) -> Box<'a + HasOrder>
 where A: 'a + fmt::Display, B: 'a + ToLiteral {
-    Rc::new(OrderBy(OrderByType::Desc, exp))
+    Box::new(OrderBy(OrderByType::Desc, exp))
 }
 
-pub fn exists_<'a, A, B>(q: Query<Rc<HasValue<A, Output=B>>>) -> Rc<HasValue<bool, Output=bool>>
+pub fn exists_<'a, A, B>(q: Query<'static, Box<HasValue<A, Output=B>>>) -> Box<HasValue<bool, Output=bool>>
     where A: fmt::Display, B: 'static + ToLiteral {
     unsafe_sql_function("EXISTS ", sub_(q), NeedParens::Never)
 }
 
-pub fn not_exists_<'a, A, B>(q: Query<Rc<HasValue<A, Output=B>>>) -> Rc<'a + HasValue<bool, Output=bool>>
+pub fn not_exists_<'a, A, B>(q: Query<'static, Box<HasValue<A, Output=B>>>) -> Box<'a + HasValue<bool, Output=bool>>
     where A: 'a + fmt::Display, B: 'static + ToLiteral {
     unsafe_sql_function("NOT EXISTS ", sub_(q), NeedParens::Never)
 }
-*/
+
 pub fn sub_<'a, A, B>(q: Query<'static, Box<HasValue<A, Output=B>>>) -> Box<'a + HasValue<A, Output=B>>
     where A: fmt::Display, B: 'a + ToLiteral {
     parens_(select(q).to_sql())
 }
-/*
-fn unsafe_sql_function<'a, A, B, C>(name: &str, arg: A, parens: NeedParens) -> Rc<'a + HasValue<B, Output=C>>
+
+fn unsafe_sql_function<'a, A, B, C>(name: &str, arg: A, parens: NeedParens) -> Box<'a + HasValue<B, Output=C>>
     where A: UnsafeSqlFunctionArgument, C: 'a + ToLiteral {
     let args = A::to_arg_list(arg);
     let results = args.iter().map(|v| v.to_string()).collect::<Vec<_>>();
@@ -162,10 +164,10 @@ fn unsafe_sql_function<'a, A, B, C>(name: &str, arg: A, parens: NeedParens) -> R
     never_(expr)
 }
 
-pub fn unsafe_sql_value<'a, A, B>(name: &str) -> Rc<'a + HasValue<A, Output=B>> where B: 'a + ToLiteral {
+pub fn unsafe_sql_value<'a, A, B>(name: &str) -> Box<'a + HasValue<A, Output=B>> where B: 'a + ToLiteral {
     never_(name)
 }
-
+/*
 pub fn random_() -> Rc<HasValue<i32, Output=i32>> {
     unsafe_sql_value("RANDOM()")
 }
@@ -173,28 +175,28 @@ pub fn random_() -> Rc<HasValue<i32, Output=i32>> {
 pub fn count_rows_() -> Rc<HasValue<i32, Output=i32>> {
     unsafe_sql_value("COUNT(*)")
 }
-
-pub fn not_<A, B>(a: Rc<HasValue<A, Output=B>>) -> Rc<HasValue<bool, Output=bool>> {
+*/
+pub fn not_<A, B>(a: Box<HasValue<A, Output=B>>) -> Box<HasValue<bool, Output=bool>> {
     never_("NOT ".to_string() + &a.to_sql())
 }
-
+/*
 pub fn set_<'a, A, B>(lhs: Rc<HasValue<A, Output=Column>>, rhs: Rc<HasValue<A, Output=B>>) -> Rc<'a + HasSet>
     where A: 'a + fmt::Display, B: 'a + ToLiteral, {
     Rc::new(SetValue(lhs, rhs))
 }
-
-pub fn sum_<'a, A>(a: A) -> Rc<'a + HasValue<u32, Output=Column>> where A: 'a + UnsafeSqlFunctionArgument {
+*/
+pub fn sum_<'a, A>(a: A) -> Box<'a + HasValue<u32, Output=Column>> where A: 'a + UnsafeSqlFunctionArgument {
     unsafe_sql_function("SUM", a, NeedParens::Parens)
 }
 
-pub fn count_<'a, A>(a: A) -> Rc<'a + HasValue<u32, Output=Column>> where A: 'a + UnsafeSqlFunctionArgument {
+pub fn count_<'a, A>(a: A) -> Box<'a + HasValue<u32, Output=Column>> where A: 'a + UnsafeSqlFunctionArgument {
     unsafe_sql_function("COUNT", a, NeedParens::Parens)
 }
 
-pub fn avg_<'a, A>(a: A) -> Rc<'a + HasValue<f32, Output=Column>> where A: 'a + UnsafeSqlFunctionArgument {
+pub fn avg_<'a, A>(a: A) -> Box<'a + HasValue<f32, Output=Column>> where A: 'a + UnsafeSqlFunctionArgument {
     unsafe_sql_function("AVG", a, NeedParens::Parens)
 }
-
+/*
 pub fn round_<'a, A>(a: A) -> Rc<'a + HasValue<f32, Output=Column>> where A: 'a + UnsafeSqlFunctionArgument {
     unsafe_sql_function("ROUND", a, NeedParens::Parens)
 }
@@ -208,24 +210,24 @@ pub fn ilike_<'a, A, B>(lhs: Rc<HasValue<A, Output=B>>, rhs: Rc<HasValue<String,
     let op: Rc<HasValue<A, Output=B>> = never_(lhs.to_sql());
     parens_(op.to_sql() + " ILIKE " + &(*rhs).to_sql())
 }
-
-pub fn don_<A, B>(a: Rc<HasValue<A, Output=B>>) -> Box<HasDistinct> where A: 'static, B: 'static {
+*/
+pub fn don_<A, B>(a: Box<HasValue<A, Output=B>>) -> Box<HasDistinct> where A: 'static, B: 'static {
     Box::new(a)
 }
 
-pub fn case_<'a, A, B, C>(when: &[(Rc<HasValue<bool, Output=bool>>, Rc<HasValue<A, Output=B>>)], expr: Rc<HasValue<A, Output=C>>) -> Rc<'a + HasValue<A, Output=C>> 
+pub fn case_<'a, A, B, C>(when: &[(Box<HasValue<bool, Output=bool>>, Box<HasValue<A, Output=B>>)], expr: Box<HasValue<A, Output=C>>) -> Box<'a + HasValue<A, Output=C>> 
     where A: 'a + fmt::Display, B: 'a + ToLiteral, C: 'a + ToLiteral {
     let s = "CASE".to_string() + &map_when(when) + " ELSE " + &expr.to_sql() + " END";
     parens_(s)
 }
 
-fn map_when<A, B>(when: &[(Rc<HasValue<bool, Output=bool>>, Rc<HasValue<A, Output=B>>)]) -> String {
+fn map_when<A, B>(when: &[(Box<HasValue<bool, Output=bool>>, Box<HasValue<A, Output=B>>)]) -> String {
     when.iter().fold(String::default(), |acc, (a, b)| {
         acc + " WHEN " + &a.to_sql() + " THEN " + &b.to_sql()
     })
 }
 
-pub fn when_<'a, A, B>(cond: Rc<HasValue<bool, Output=bool>>, _: (), expr: Rc<HasValue<A, Output=B>>) -> (Rc<HasValue<bool, Output=bool>>, Rc<HasValue<A, Output=B>>) 
+pub fn when_<'a, A, B>(cond: Box<HasValue<bool, Output=bool>>, _: (), expr: Box<HasValue<A, Output=B>>) -> (Box<HasValue<bool, Output=bool>>, Box<HasValue<A, Output=B>>) 
     where B: 'a + ToLiteral {
     (cond, expr)
 }
@@ -234,7 +236,6 @@ pub fn then_() -> () {
     ()
 }
 
-pub fn else_<A, B>(a: Rc<HasValue<A, Output=B>>) -> Rc<HasValue<A, Output=B>> {
+pub fn else_<A, B>(a: Box<HasValue<A, Output=B>>) -> Box<HasValue<A, Output=B>> {
     a
 }
-*/

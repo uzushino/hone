@@ -21,12 +21,12 @@ impl<'a, A> Query<'a, A> {
         q.state = self.state;
         q
     }
-/*
-    pub fn on_(self, b: Rc<HasValue<bool, Output=bool>>) -> Query<A> {
-        self.state.borrow_mut().from_clause.push(FromClause::OnClause(b));
+
+    pub fn on_(self, b: Box<HasValue<bool, Output=bool>>) -> Query<'a, A> {
+        self.state.borrow_mut().from_clause.push(FromClause::OnClause(Rc::new(b)));
         self
     }
-*/
+
     pub fn where_(self, b: Box<dyn HasValue<bool, Output=bool>>) -> Query<'a, A> {
         let w = WhereClause::Where(b);
         let n = std::mem::replace(&mut self.state.borrow_mut().where_clause, WhereClause::No);
@@ -37,12 +37,12 @@ impl<'a, A> Query<'a, A> {
 
         self
     }
-/*
-    pub fn order_(self, b: Vec<Rc<HasOrder>>) -> Query<A> {
+
+    pub fn order_(self, b: Vec<Box<HasOrder>>) -> Query<'a, A> {
         self.state.borrow_mut().order_clause = b;
         self
     }
-
+/*
     pub fn group_by_<T, DB: ToLiteral>(self, b: Rc<HasValue<T, Output=DB>>) -> Query<A>
     where
         T: 'static,
@@ -63,25 +63,23 @@ impl<'a, A> Query<'a, A> {
 
         self
     }
-
-    pub fn value_<T, DB: ToLiteral>(self, a: Rc<HasValue<T, Output=CL>>, b: Rc<HasValue<T, Output=DB>>) -> Query<A>
-    where
-        T: 'static,
-        DB: 'static,
+*/
+    pub fn value_<T, DB: ToLiteral>(self, a: Box<HasValue<T, Output=CL>>, b: Box<HasValue<T, Output=DB>>) -> Query<'a, A>
+    where T: 'static, DB: 'static,
     {
         let v = Box::new(SetValue(a, b));
         self.state.borrow_mut().set_clause.push(v);
         self
     }
-    
-    pub fn values_<T, S>(self, a: T, b: Vec<S>) -> Query<A>
+   /* 
+    pub fn values_<T, S>(self, a: T, b: Vec<S>) -> Query<'a, A>
     where T: ToValues + 'static, S: ToValues + 'static
     {
         self.state.borrow_mut().values_clause = Some(Box::new(Values(a, b)));
         self
     }
-
-    pub fn limit_(self, a: u32) -> Query<A> {
+    */
+    pub fn limit_(self, a: u32) -> Query<'a, A> {
         let s = self.state.borrow_mut().limit_clause.clone();
         {
             self.state.borrow_mut().limit_clause = s + LimitClause::Limit(Some(a), None);
@@ -89,7 +87,7 @@ impl<'a, A> Query<'a, A> {
         self
     }
 
-    pub fn offset_(self, a: u32) -> Query<A> {
+    pub fn offset_(self, a: u32) -> Query<'a, A> {
         let s = self.state.borrow_mut().limit_clause.clone();
         {
             self.state.borrow_mut().limit_clause = s + LimitClause::Limit(None, Some(a));
@@ -97,14 +95,14 @@ impl<'a, A> Query<'a, A> {
         self
     }
 
-    pub fn distinct_on_(self, mut a: Vec<Box<HasDistinct>>) -> Query<A> {
+    pub fn distinct_on_(self, mut a: Vec<Box<HasDistinct>>) -> Query<'a, A> {
         {
-            let s = &mut *self.state.borrow_mut();
-
-            match &mut s.distinct_clause {
-                Distinct::On(ref mut v) => {
+            let mut s = self.state.borrow_mut();
+            let d = std::mem::replace(&mut s.distinct_clause, Distinct::default());
+            match d {
+                Distinct::On(mut v) => {
                     v.append(&mut a);
-                    s.distinct_clause = Distinct::On(v.to_vec())
+                    s.distinct_clause = Distinct::On(v)
                 }
                 Distinct::All => s.distinct_clause = Distinct::On(a),
                 _ => {}
@@ -113,7 +111,7 @@ impl<'a, A> Query<'a, A> {
 
         self
     }
-*/
+
     fn from_start() -> FromPreprocess<A>
     where
         A: Default + HasEntityDef,
@@ -151,7 +149,7 @@ impl<A, B> IsJoin<A, B> for InnerJoin<A, B> {
         let (r1, rf) = get_process(rhs)?;
 
         let join_ = InnerJoin::smart_join(l1, r1);
-        let from_ = FromClause::Join(Rc::new(lf), JoinKind::InnerJoinKind, Rc::new(rf), None);
+        let from_ = FromClause::Join(Box::new(lf), JoinKind::InnerJoinKind, Box::new(rf), None);
 
         Ok(FromPreprocess(join_, from_))
     }
@@ -172,7 +170,7 @@ impl<A, B> IsJoin<A, B> for LeftJoin<A, B> {
         let (l1, lf) = get_process(lhs)?;
         let (r1, rf) = get_process(rhs)?;
         let join_ = LeftJoin::smart_join(l1, r1);
-        let from_ = FromClause::Join(Rc::new(lf), JoinKind::LeftOuterJoinKind, Rc::new(rf), None);
+        let from_ = FromClause::Join(Box::new(lf), JoinKind::LeftOuterJoinKind, Box::new(rf), None);
 
         Ok(FromPreprocess(join_, from_))
     }
@@ -193,13 +191,13 @@ impl<A, B> IsJoin<A, B> for RightJoin<A, B> {
         let (l1, lf) = get_process(lhs)?;
         let (r1, rf) = get_process(rhs)?;
         let join_ = RightJoin::smart_join(l1, r1);
-        let from_ = FromClause::Join(Rc::new(lf), JoinKind::RightOuterJoinKind, Rc::new(rf), None);
+        let from_ = FromClause::Join(Box::new(lf), JoinKind::RightOuterJoinKind, Box::new(rf), None);
 
         Ok(FromPreprocess(join_, from_))
     }
 }
-/*
-impl<A> Query<Option<A>> {
+
+impl<'a, A> Query<'a, Option<A>> {
     fn from_option() -> FromPreprocess<Option<A>>
     where
         A: Default + HasEntityDef,
@@ -208,7 +206,7 @@ impl<A> Query<Option<A>> {
         FromPreprocess(Some(a.0), a.1)
     }
 }
-*/
+
 impl<'a, A> FromQuery<'a> for Query<'a, A>
 where A: Default + HasQuery<T = A> + FromProcess<Item = A>,
 {
@@ -229,14 +227,14 @@ where A: Default + HasQuery<T = A> + FromProcess<Item = A>,
         Ok(f(qs, Self::Kind::default()))
     }
 }
-/*
-impl<A> FromQuery for Query<Option<A>>
+
+impl<'a, A> FromQuery<'a> for Query<'a, Option<A>>
 where
     A: Default + HasEntityDef + HasQuery<T = A>,
 {
     type Kind = Option<A>;
 
-    fn from_() -> Result<Query<Self::Kind>, ()> {
+    fn from_() -> Result<Query<'a, Self::Kind>, ()> {
         let mut qs = Query::new(Option::<A>::default());
         let s = Option::<A>::from_process()?;
         let _ = Query::<Option<A>>::from_finish(&mut qs, s);
@@ -244,7 +242,7 @@ where
         Ok(qs)
     }
 
-    fn from_by<F, R>(f: F) -> Result<Query<R>, ()>
+    fn from_by<F, R>(f: F) -> Result<Query<'a, R>, ()>
     where
         F: Fn(Query<Self::Kind>, Self::Kind) -> Query<R>,
     {
@@ -253,7 +251,6 @@ where
         Ok(f(qs, Self::Kind::default()))
     }
 }
-*/
 
 impl<'a, A, B> FromQuery<'a> for Query<'a, (A, B)>
 where
@@ -270,7 +267,7 @@ where
         {
             let mut sa = a.state.borrow_mut();
             let mut sb = b.state.borrow_mut();
-            sa.from_clause.append(&mut sb.from_clause.clone());
+            sa.from_clause.append(&mut sb.from_clause);
 
             let aw = std::mem::replace(&mut sa.where_clause, WhereClause::No);
             let bw = std::mem::replace(&mut sb.where_clause, WhereClause::No);
@@ -296,7 +293,7 @@ where
         Ok(f(qs, Self::Kind::default()))
     }
 }
-/*
+
 impl<A, B> Default for InnerJoin<A, B>
 where
     A: Default + HasQuery<T = A>,
@@ -338,7 +335,7 @@ where
 impl<A, B> HasQuery for RightJoin<A, B> {
     type T = RightJoin<A, B>;
 }
-*/
+
 pub trait FromProcess {
     type Item;
 
@@ -355,7 +352,7 @@ where
         Ok(Query::<Self::Item>::from_start())
     }
 }
-/*
+
 impl<A> FromProcess for Option<A>
 where
     A: Default + HasEntityDef + HasQuery<T = A>,
@@ -411,21 +408,20 @@ where
         RightJoin::<A, B>::from_join(lhs, rhs)
     }
 }
-*/
 
-pub fn set_on(join: &FromClause, on: &Rc<HasValue<bool, Output=bool>>) -> Option<FromClause> {
+pub fn set_on(join: &FromClause, on: Rc<Box<HasValue<bool, Output=bool>>>) -> Option<FromClause> {
     match join.clone() {
         FromClause::Join(lhs, knd, rhs, on_) => {
-            if let Some(f) = set_on(rhs.borrow(), on) {
-                return Some(FromClause::Join(lhs, knd, Rc::new(f), on_));
+            if let Some(f) = set_on(rhs.borrow(), on.clone()) {
+                return Some(FromClause::Join(lhs, knd, Box::new(f), on_));
             }
 
-            if let Some(f) = set_on(lhs.borrow(), on) {
-                return Some(FromClause::Join(Rc::new(f), knd, rhs, on_));
+            if let Some(f) = set_on(lhs.borrow(), on.clone()) {
+                return Some(FromClause::Join(Box::new(f), knd, rhs, on_));
             }
 
             match on_ {
-                None => Some(FromClause::Join(lhs, knd, rhs, Some(on.clone()))),
+                None => Some(FromClause::Join(lhs, knd, rhs, Some(on))),
                 _ => None,
             }
         }
@@ -433,12 +429,13 @@ pub fn set_on(join: &FromClause, on: &Rc<HasValue<bool, Output=bool>>) -> Option
     }
 }
 
-pub fn find_imcomplete_and_set_on(joins: &[FromClause], on: Rc<HasValue<bool, Output=bool>>) -> Result<Vec<FromClause>, Rc<HasValue<bool, Output=bool>>> {
+pub fn find_imcomplete_and_set_on(joins: &[FromClause], on: Rc<Box<HasValue<bool, Output=bool>>>) -> Result<Vec<FromClause>, Rc<Box<HasValue<bool, Output=bool>>>> {
     match joins.split_first() {
         Some((ref join, rest)) => {
-            if let Some(f) = set_on(*join, &on) {
+            if let Some(f) = set_on(*join, on.clone()) {
                 let mut rest = rest.to_vec();
                 rest.push(f);
+
                 return Ok(rest);
             }
 
@@ -459,7 +456,7 @@ pub fn combine_joins(fs: &[FromClause], acc: &mut [FromClause]) -> Result<Vec<Fr
         },
         Some((head, rest)) => {
             let mut acc = acc.to_vec();
-            acc.push(head.clone());
+            acc.push((*head).clone());
             combine_joins(rest, acc.as_mut_slice())
         }
         _ => {

@@ -9,8 +9,8 @@ fn test_inner_join() {
     let a = Query::<InnerJoin<_, _>>::from_by(|q, InnerJoin(a, b): InnerJoin<User, Library>| {
         let one = val_(1);
 
-        let on_eq = eq_(a.user_id(), b.library_id());
-        let eq = eq_(a.user_id(), one);
+        let on_eq = eq_(a.user_id().as_ref(), b.library_id().as_ref());
+        let eq = eq_(a.user_id().as_ref(), one.as_ref());
 
         let q = q.on_(on_eq);
         let q = q.where_(eq);
@@ -32,10 +32,10 @@ fn test_left_join() {
     let b = Query::<LeftJoin<_, _>>::from_by(|q, LeftJoin(a, InnerJoin(b, c)): LeftJoin<User, InnerJoin<Library, Library>>| {
         let one = val_(1);
 
-        let on_eq1 = eq_(a.user_id(), b.library_id());
-        let on_eq2 = eq_(b.library_id(), c.library_id());
+        let on_eq1 = eq_(a.user_id().as_ref(), b.library_id().as_ref());
+        let on_eq2 = eq_(b.library_id().as_ref(), c.library_id().as_ref());
 
-        let eq = eq_(a.user_id(), one);
+        let eq = eq_(a.user_id().as_ref(), one.as_ref());
 
         let q = q.on_(on_eq1);
         let q = q.on_(on_eq2);
@@ -59,8 +59,8 @@ fn test_right_join() {
     let a = Query::<RightJoin<_, _>>::from_by(|q, RightJoin(a, b): RightJoin<User, Library>| {
         let one = val_(1);
 
-        let on_eq = eq_(a.user_id(), b.library_id());
-        let eq = eq_(a.user_id(), one);
+        let on_eq = eq_(a.user_id().as_ref(), b.library_id().as_ref());
+        let eq = eq_(a.user_id().as_ref(), one.as_ref());
 
         let q = q.on_(on_eq);
         let q = q.where_(eq);
@@ -83,10 +83,10 @@ fn test_nested_inner_join() {
         |q, InnerJoin(InnerJoin(InnerJoin(a, b), _), _): InnerJoin<InnerJoin<InnerJoin<User, Library>, Library>, Library>| {
             let one = val_(1);
 
-            let on_eq1 = eq_(a.user_id(), b.library_id());
-            let on_eq2 = eq_(a.user_id(), b.library_id());
-            let on_eq3 = eq_(a.user_id(), b.library_id());
-            let eq = eq_(a.user_id(), one);
+            let on_eq1 = eq_(a.user_id().as_ref(), b.library_id().as_ref());
+            let on_eq2 = eq_(a.user_id().as_ref(), b.library_id().as_ref());
+            let on_eq3 = eq_(a.user_id().as_ref(), b.library_id().as_ref());
+            let eq = eq_(a.user_id().as_ref(), one.as_ref());
 
             let q = q.on_(on_eq1);
             let q = q.on_(on_eq2);

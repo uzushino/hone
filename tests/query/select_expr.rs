@@ -7,7 +7,7 @@ use crate::query::model::*;
 fn test_select() {
     let a = Query::<User>::from_by(|q, a| {
         let one = val_(1);
-        let eq = eq_(a.user_id(), one);
+        let eq = eq_(a.user_id().as_ref(), one.as_ref());
         let q = q.where_(eq);
 
         q.return_((a.user_id(), a.email(), val_(2)))
@@ -22,7 +22,9 @@ fn test_select() {
 #[test]
 fn test_distinct() {
     let a = Query::<User>::from_by(|q, a| {
-        let q = q.distinct_on_(vec![don_(a.user_id()), don_(a.email())]);
+        let q = q.distinct_on_(vec![
+            don_(a.user_id()), 
+            don_(a.email())]);
 
         q.return_((a.user_id(), a.email()))
     });
@@ -88,14 +90,14 @@ fn test_case() {
     let a = Query::<User>::from_by(|q, a| {
         let sub1 = Query::<User>::from_by(|q, u| {
             let one = val_(1);
-            let eq = eq_(a.user_id(), one);
+            let eq = eq_(a.user_id().as_ref(), one.as_ref());
             let q = q.where_(eq);
             q.return_(u.email())
         }).unwrap();
         
         let sub2 = Query::<User>::from_by(|q, u| {
             let one = val_(1);
-            let eq = eq_(a.user_id(), one);
+            let eq = eq_(a.user_id().as_ref(), one.as_ref());
             let q = q.where_(eq);
             let q = q.limit_(1);
 
