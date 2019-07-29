@@ -425,18 +425,16 @@ where
 }
 
 pub fn set_on(join: &FromClause, on: &Rc<HasValue<bool, Output = bool>>) -> Option<FromClause> {
-    match join.clone() {
-        FromClause::Join(lhs, knd, rhs, on_) => {
+    match join {
+        FromClause::Join(lhs, _, rhs, on_) => {
             if let Some(f) = set_on(rhs.borrow(), on) {
-                return Some(FromClause::Join(lhs, knd, Rc::new(f), on_));
+                return Some(join.clone().set_rhs(f));
             }
-
             if let Some(f) = set_on(lhs.borrow(), on) {
-                return Some(FromClause::Join(Rc::new(f), knd, rhs, on_));
+                return Some(join.clone().set_lhs(f));
             }
-
             match on_ {
-                None => Some(FromClause::Join(lhs, knd, rhs, Some(on.clone()))),
+                None => Some(join.clone().set_on(on.clone())),
                 _ => None,
             }
         }

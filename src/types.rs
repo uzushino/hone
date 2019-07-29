@@ -218,6 +218,32 @@ pub enum FromClause {
     OnClause(Rc<HasValue<bool, Output = bool>>),
 }
 
+impl FromClause {
+    pub fn set_rhs(self, n: FromClause) -> FromClause {
+        match self {
+            FromClause::Join(lhs, knd, _, on) =>
+                FromClause::Join(lhs, knd, Rc::new(n), on),
+            _ => self,
+        }
+    }
+    
+    pub fn set_lhs(self, n: FromClause) -> FromClause {
+        match self {
+            FromClause::Join(_, knd, rhs, on) =>
+                FromClause::Join(Rc::new(n), knd, rhs, on),
+            _ => self,
+        }
+    }
+    
+    pub fn set_on(self, on: Rc<HasValue<bool, Output = bool>>) -> FromClause {
+        match self {
+            FromClause::Join(lhs, knd, rhs, _) =>
+                FromClause::Join(lhs, knd, rhs, Some(on)),
+            _ => self,
+        }
+    }
+}
+
 impl fmt::Display for FromClause {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
