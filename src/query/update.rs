@@ -25,7 +25,7 @@ impl<A: Column> ToSql for Update<A> {
         if let Ok(a) = self.make_set(&state.set_clause) {
             sql = sql + " SET " + &a;
         }
-
+        
         if let Ok(a) = self.make_where(&state.where_clause) {
             sql = sql + " WHERE " + &a;
         }
