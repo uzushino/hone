@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 impl<A, DB: ToLiteral> UnsafeSqlFunctionArgument for Rc<HasValue<A, Output = DB>> {
     fn to_arg_list(a: &Rc<HasValue<A, Output = DB>>) -> Vec<Rc<HasValue<bool, Output = bool>>> {
-        vec![never_(a)]
+        vec![never_(a.to_sql())]
     }
 }
 

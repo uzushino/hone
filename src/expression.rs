@@ -7,18 +7,18 @@ use crate::types::*;
 
 pub fn parens_<'a, A, B, C>(a: A) -> Rc<'a + HasValue<B, Output = C>>
 where
-    A: ToString,
+    A: Into<String>,
     C: 'a + ToLiteral,
 {
-    Rc::new(Raw(NeedParens::Parens, a.to_string(), std::marker::PhantomData))
+    Rc::new(Raw(NeedParens::Parens, a.into(), std::marker::PhantomData))
 }
 
 pub fn never_<'a, A, B, C>(a: A) -> Rc<'a + HasValue<B, Output = C>>
 where
-    A: ToString,
+    A: Into<String>,
     C: 'a + ToLiteral,
 {
-    Rc::new(Raw(NeedParens::Never, a.to_string(), std::marker::PhantomData))
+    Rc::new(Raw(NeedParens::Never, a.into(), std::marker::PhantomData))
 }
 
 pub fn star_<A: HasEntityDef>() -> Rc<HasValue<Star, Output = Column>> {
@@ -75,7 +75,7 @@ pub fn val_<'a, A>(typ: A) -> Rc<'a + HasValue<A, Output = A>>
 where
     A: 'a + fmt::Display + ToLiteral,
 {
-    never_(typ)
+    never_(typ.to_string())
 }
 
 pub fn val_list_<'a, A, B>(vs: &[Rc<'a + HasValue<A, Output = B>>]) -> impl HasValueList<A>
