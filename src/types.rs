@@ -194,7 +194,7 @@ impl<A, B: ToLiteral> fmt::Display for List<A, B> {
 // Expr (OrderBy)
 pub trait HasOrder: fmt::Display {}
 
-pub struct OrderBy<A, B>(pub OrderByType, pub Rc<HasValue<A, Output = B>>);
+pub struct OrderBy<A, B>(pub OrderByType, pub SqlExpr<A, B>);
 
 impl<A, B: ToLiteral> HasOrder for OrderBy<A, B> {}
 
@@ -214,7 +214,7 @@ pub type OrderClause = Rc<HasOrder>;
 #[derive(Clone)]
 pub enum FromClause {
     Start(String),
-    Join(Rc<FromClause>, JoinKind, Rc<FromClause>, Option<Rc<HasValue<bool, Output = bool>>>),
+    Join(Rc<FromClause>, JoinKind, Rc<FromClause>, Option<SqlExpr<bool, bool>>),
     OnClause(Rc<HasValue<bool, Output = bool>>),
 }
 
@@ -235,7 +235,7 @@ impl FromClause {
         }
     }
     
-    pub fn set_on(self, on: Rc<HasValue<bool, Output = bool>>) -> FromClause {
+    pub fn set_on(self, on: SqlExpr<bool, bool>) -> FromClause {
         match self {
             FromClause::Join(lhs, knd, rhs, _) =>
                 FromClause::Join(lhs, knd, rhs, Some(on)),
@@ -255,7 +255,7 @@ impl fmt::Display for FromClause {
 }
 
 impl FromClause {
-    pub fn on(self, on: Rc<HasValue<bool, Output = bool>>) -> Option<FromClause> {
+    pub fn on(self, on: SqlExpr<bool, bool>) -> Option<FromClause> {
         match self {
             FromClause::Join(lhs, knd, rhs, None) => Some(FromClause::Join(lhs, knd, rhs, Some(on))),
             _ => None,
@@ -265,7 +265,7 @@ impl FromClause {
 
 #[derive(Clone)]
 pub enum WhereClause {
-    Where(Rc<HasValue<bool, Output = bool>>),
+    Where(SqlExpr<bool, bool>),
     No,
 }
 
@@ -327,7 +327,7 @@ pub trait HasSet: fmt::Display {
     fn value(&self) -> String;
 }
 
-pub struct SetValue<A, B>(pub Rc<HasValue<A, Output = Column>>, pub Rc<HasValue<A, Output = B>>);
+pub struct SetValue<A, B>(pub SqlExpr<A, Column>, pub SqlExpr<A, B>);
 
 impl<A, B: ToLiteral> HasSet for SetValue<A, B> {
     fn column(&self) -> String {
