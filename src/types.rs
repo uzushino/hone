@@ -30,7 +30,9 @@ pub struct FromPreprocess<A>(pub A, pub FromClause);
 impl<A> HasPreprocess for FromPreprocess<A> {}
 
 pub trait ToLiteral {
-    fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String;
+    fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
+        format!("{}", v.to_string())
+    }
 }
 
 impl ToLiteral for String {
@@ -39,41 +41,13 @@ impl ToLiteral for String {
     }
 }
 
-impl ToLiteral for bool {
-    fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
-        format!("{}", v.to_string())
-    }
-}
+impl ToLiteral for bool {}
+impl ToLiteral for i32 {}
+impl ToLiteral for u32 {}
+impl ToLiteral for Column {}
+impl ToLiteral for Star {}
 
-impl ToLiteral for i32 {
-    fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
-        format!("{}", v.to_string())
-    }
-}
-
-impl ToLiteral for u32 {
-    fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
-        format!("{}", v.to_string())
-    }
-}
-
-impl ToLiteral for Column {
-    fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
-        format!("{}", v.to_string())
-    }
-}
-
-impl ToLiteral for Star {
-    fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
-        format!("{}", v.to_string())
-    }
-}
-
-impl<S> ToLiteral for Alias<S> {
-    fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
-        format!("{}", v.to_string())
-    }
-}
+impl<S> ToLiteral for Alias<S> {}
 
 #[derive(Clone)]
 pub struct Alias<A>(pub String, pub String, std::marker::PhantomData<A>);
