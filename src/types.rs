@@ -31,13 +31,13 @@ impl<A> HasPreprocess for FromPreprocess<A> {}
 
 pub trait ToLiteral {
     fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
-        format!("{}", v.to_string())
+        format!("{}", v)
     }
 }
 
 impl ToLiteral for String {
     fn to_literal<'a, A: fmt::Display>(v: &'a A) -> String {
-        format!("'{}'", v.to_string())
+        format!("'{}'", v)
     }
 }
 
@@ -46,7 +46,6 @@ impl ToLiteral for i32 {}
 impl ToLiteral for u32 {}
 impl ToLiteral for Column {}
 impl ToLiteral for Star {}
-
 impl<S> ToLiteral for Alias<S> {}
 
 #[derive(Clone)]
