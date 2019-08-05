@@ -241,6 +241,10 @@ pub fn count_rows_() -> Rc<HasValue<i32, Output = i32>> {
     unsafe_sql_value("COUNT(*)")
 }
 
+pub fn count_columns_<A>(a: Rc<HasValue<A, Output = Column>>) -> Rc<HasValue<i32, Output = i32>> {
+    unsafe_sql_function("COUNT", a, NeedParens::Parens)
+}
+
 pub fn not_<A, B>(a: Rc<HasValue<A, Output = B>>) -> Rc<HasValue<bool, Output = bool>> {
     never_("NOT ".to_string() + &a.to_sql())
 }
