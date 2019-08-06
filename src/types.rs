@@ -357,6 +357,7 @@ impl fmt::Display for LimitClause {
                 if let Some(n) = limit {
                     result.push(format!("LIMIT {}", n));
                 }
+
                 if let Some(n) = offset {
                     result.push(format!("OFFSET {}", n));
                 }
@@ -372,7 +373,7 @@ impl fmt::Display for LimitClause {
 
 pub trait HasGroupBy: fmt::Display {}
 
-pub struct GroupBy<A, B>(pub Rc<HasValue<A, Output = B>>);
+pub struct GroupBy<A, B>(pub SqlExpr<A, B>);
 
 impl<A, B> HasGroupBy for GroupBy<A, B> {}
 
@@ -395,7 +396,7 @@ impl Clone for Box<HasDistinct> {
     }
 }
 
-impl<A, B> HasDistinct for Rc<HasValue<A, Output = B>>
+impl<A, B> HasDistinct for SqlExpr<A, B>
 where
     A: 'static,
     B: 'static,
@@ -509,7 +510,7 @@ pub trait HasDuplicateKey {
     fn dup_keys(&self) -> (String, String);
 }
 
-pub struct DuplicateKey<A, B>(pub Rc<HasValue<A, Output = Column>>, pub Rc<HasValue<A, Output = B>>);
+pub struct DuplicateKey<A, B>(pub SqlExpr<A, Column>, pub SqlExpr<A, B>);
 
 impl<A, B> HasDuplicateKey for DuplicateKey<A, B> {
     fn dup_keys(&self) -> (String, String) {
