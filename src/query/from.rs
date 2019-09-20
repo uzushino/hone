@@ -28,12 +28,8 @@ impl<A> Query<A> {
 
     pub fn where_(self, b: Rc<HasValue<bool, Output = bool>>) -> Query<A> {
         let w = WhereClause::Where(b);
-        let n = self.state.borrow_mut().where_clause.clone();
-
-        {
-            (*self.state.borrow_mut()).where_clause = n + w;
-        }
-
+        let mut s = self.state.borrow_mut().where_clause.clone() + w;
+        std::mem::swap(&mut s, &mut self.state.borrow_mut().where_clause);
         self
     }
 
