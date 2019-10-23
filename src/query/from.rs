@@ -281,13 +281,13 @@ where
         {
             let mut sa = a.state.borrow_mut();
             let mut sb = b.state.borrow_mut();
-            sa.from_clause.append(&mut sb.from_clause.clone());
+            sa.from_clause.append(&mut sb.from_clause);
 
-            let s = QueryState {
-                from_clause: sa.from_clause.clone(),
+            let mut s = QueryState {
                 where_clause: sa.where_clause.clone() + sb.where_clause.clone(),
                 ..Default::default()
             };
+            std::mem::replace(&mut s.from_clause, (* sa.from_clause).to_vec());
 
             qs.state.replace(s);
         }
