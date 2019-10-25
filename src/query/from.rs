@@ -28,7 +28,7 @@ impl<A> Query<A> {
 
     pub fn where_(self, b: Rc<HasValue<bool, Output = bool>>) -> Query<A> {
         let w = WhereClause::Where(b);
-        let mut s = self.state.borrow_mut().where_clause.clone() + w;
+        let mut s = self.state.borrow_mut().where_clause.add(w);
         std::mem::swap(&mut s, &mut self.state.borrow_mut().where_clause);
         self
     }
@@ -53,7 +53,7 @@ impl<A> Query<A> {
         let n = self.state.borrow_mut().having_clause.clone();
 
         {
-            (*self.state.borrow_mut()).having_clause = n + w;
+            (*self.state.borrow_mut()).having_clause = n.add(w);
         }
 
         self
@@ -284,9 +284,10 @@ where
             sa.from_clause.append(&mut sb.from_clause);
 
             let mut s = QueryState {
-                where_clause: sa.where_clause.clone() + sb.where_clause.clone(),
+                where_clause: sa.where_clause.add(sb.where_clause.clone()),
                 ..Default::default()
             };
+
             std::mem::replace(&mut s.from_clause, (* sa.from_clause).to_vec());
 
             qs.state.replace(s);

@@ -60,7 +60,7 @@ where
     A: ToLiteral,
 {
     let comp: Rc<HasValue<A, Output = i32>> = parens_(rhs.to_string());
-    if_not_empty_list(rhs, false, binop_(" IN ", lhs, comp))
+    if_not_empty_list(rhs, false, binop_(" IN ", &lhs, &comp))
 }
 
 pub fn not_in_<A, B>(lhs: Rc<HasValue<A, Output = B>>, rhs: impl HasValueList<A>) -> Rc<HasValue<bool, Output = bool>>
@@ -68,7 +68,7 @@ where
     A: ToLiteral,
 {
     let comp: Rc<HasValue<A, Output = i32>> = parens_(rhs.to_string());
-    if_not_empty_list(rhs, false, binop_(" NOT IN ", lhs, comp))
+    if_not_empty_list(rhs, false, binop_(" NOT IN ", &lhs, &comp))
 }
 
 pub fn val_<'a, A>(typ: A) -> Rc<'a + HasValue<A, Output = A>>
@@ -93,27 +93,27 @@ where
     List::NonEmpty(Box::new(v)) as List<A, B>
 }
 
-pub fn gt_<A, B, C>(lhs: Rc<HasValue<A, Output = B>>, rhs: Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>> {
+pub fn gt_<A, B, C>(lhs: &Rc<HasValue<A, Output = B>>, rhs: &Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>> {
     binop_(" > ", lhs, rhs)
 }
 
-pub fn gte_<A, B, C>(lhs: Rc<HasValue<A, Output = B>>, rhs: Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>> {
+pub fn gte_<A, B, C>(lhs: &Rc<HasValue<A, Output = B>>, rhs: &Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>> {
     binop_(" >= ", lhs, rhs)
 }
 
-pub fn lt_<A, B, C>(lhs: Rc<HasValue<A, Output = B>>, rhs: Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>> {
+pub fn lt_<A, B, C>(lhs: &Rc<HasValue<A, Output = B>>, rhs: &Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>> {
     binop_(" < ", lhs, rhs)
 }
 
-pub fn lte_<A, B, C>(lhs: Rc<HasValue<A, Output = B>>, rhs: Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>> {
+pub fn lte_<A, B, C>(lhs: &Rc<HasValue<A, Output = B>>, rhs: &Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>> {
     binop_(" <= ", lhs, rhs)
 }
 
-pub fn re_<A, B, C>(lhs: Rc<HasValue<A, Output = B>>, rhs: Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>> {
+pub fn re_<A, B, C>(lhs: &Rc<HasValue<A, Output = B>>, rhs: &Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>> {
     binop_(" ~ ", lhs, rhs)
 }
 
-pub fn and_<'a, A, B, C>(lhs: Rc<HasValue<A, Output = B>>, rhs: Rc<HasValue<A, Output = C>>) -> Rc<'a + HasValue<A, Output = C>>
+pub fn and_<'a, A, B, C>(lhs: &Rc<HasValue<A, Output = B>>, rhs: &Rc<HasValue<A, Output = C>>) -> Rc<'a + HasValue<A, Output = C>>
 where
     B: ToLiteral,
     C: 'a + ToLiteral,
@@ -121,7 +121,7 @@ where
     binop_(" AND ", lhs, rhs)
 }
 
-pub fn or_<'a, A, B, C>(lhs: Rc<HasValue<A, Output = B>>, rhs: Rc<HasValue<A, Output = C>>) -> Rc<'a + HasValue<A, Output = C>>
+pub fn or_<'a, A, B, C>(lhs: &Rc<HasValue<A, Output = B>>, rhs: &Rc<HasValue<A, Output = C>>) -> Rc<'a + HasValue<A, Output = C>>
 where
     B: ToLiteral,
     C: 'a + ToLiteral,
@@ -129,7 +129,7 @@ where
     binop_(" OR ", lhs, rhs)
 }
 
-pub fn binop_<'a, A, B, C, D, E>(op: &str, lhs: Rc<HasValue<A, Output = B>>, rhs: Rc<HasValue<A, Output = C>>) -> Rc<'a + HasValue<D, Output = E>>
+pub fn binop_<'a, A, B, C, D, E>(op: &str, lhs: &Rc<HasValue<A, Output = B>>, rhs: &Rc<HasValue<A, Output = C>>) -> Rc<'a + HasValue<D, Output = E>>
 where
     E: 'a + ToLiteral,
 {

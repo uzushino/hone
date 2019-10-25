@@ -45,19 +45,19 @@ fn test_relational_operator() {
     let u = User::default();
     let one = val_(1);
 
-    let q = gt_(u.user_id(), one);
+    let q = gt_(&u.user_id(), &one);
     assert_eq!("(User.user_id > 1)", q.to_string());
 
     let one = val_(1);
-    let q = gte_(u.user_id(), one);
+    let q = gte_(&u.user_id(), &one);
     assert_eq!("(User.user_id >= 1)", q.to_string());
 
     let one = val_(1);
-    let q = lt_(u.user_id(), one);
+    let q = lt_(&u.user_id(), &one);
     assert_eq!("(User.user_id < 1)", q.to_string());
 
     let one = val_(1);
-    let q = lte_(u.user_id(), one);
+    let q = lte_(&u.user_id(), &one);
     assert_eq!("(User.user_id <= 1)", q.to_string());
 }
 
@@ -66,7 +66,7 @@ fn test_is_null() {
     let u = User::default();
     let is_null = is_null_(u.user_id());
     let is_not_null = is_not_null_(u.user_id());
-    let between = and_(is_null, is_not_null);
+    let between = and_(&is_null, &is_not_null);
 
     assert_eq!("((User.user_id IS NULL) AND (User.user_id IS NOT NULL))", between.to_string());
 }
@@ -88,7 +88,6 @@ fn test_limit_offset() {
         "SELECT User.user_id FROM User WHERE (User.user_id = 1) LIMIT 100 OFFSET 200".to_string()
     );
 }
-
 #[test]
 fn test_groupby() {
     let a = Query::<User>::from_by(|q, a| {
@@ -99,8 +98,7 @@ fn test_groupby() {
 
     assert_eq!(
         select(a.unwrap()).to_sql(),
-        "SELECT User.user_id FROM User GROUP BY User.user_id, User.email".to_string()
-    );
+        "SELECT User.user_id FROM User GROUP BY User.user_id, User.email".to_string());
 }
 
 #[test]
@@ -178,7 +176,7 @@ fn test_where() {
         let eq1 = eq_(a.user_id(), one);
         let eq2 = eq_(b.library_id(), two);
 
-        let q = q.where_(or_(eq1, eq2));
+        let q = q.where_(or_(&eq1, &eq2));
 
         q
     });

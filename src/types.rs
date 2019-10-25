@@ -242,6 +242,20 @@ pub enum WhereClause {
     No,
 }
 
+impl WhereClause {
+
+    pub fn add(&self, other: Self) -> WhereClause {
+        match self {
+            WhereClause::Where(l) => match other {
+                WhereClause::Where(ref r) => WhereClause::Where(and_(l, r).clone()),
+                WhereClause::No => WhereClause::Where(l.clone()),
+            },
+            WhereClause::No => other,
+        }
+    }
+}
+
+/*
 impl Add for WhereClause {
     type Output = Self;
 
@@ -255,6 +269,7 @@ impl Add for WhereClause {
         }
     }
 }
+*/
 
 impl fmt::Display for WhereClause {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
