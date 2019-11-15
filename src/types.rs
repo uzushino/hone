@@ -76,7 +76,7 @@ pub trait HasValue<A>: fmt::Display {
     }
 }
 
-pub type SqlExpr<A, B> = Rc<HasValue<A, Output = B>>;
+pub type SqlExpr<A, B> = Rc<dyn HasValue<A, Output = B>>;
 
 #[derive(Clone)]
 pub enum NeedParens {
@@ -182,13 +182,13 @@ impl<A, B: ToLiteral> fmt::Display for OrderBy<A, B> {
     }
 }
 
-pub type OrderClause = Rc<HasOrder>;
+pub type OrderClause = Rc<dyn HasOrder>;
 
 #[derive(Clone)]
 pub enum FromClause {
     Start(String),
     Join(Rc<FromClause>, JoinKind, Rc<FromClause>, Option<SqlExpr<bool, bool>>),
-    OnClause(Rc<HasValue<bool, Output = bool>>),
+    OnClause(Rc<dyn HasValue<bool, Output = bool>>),
 }
 
 impl FromClause {
@@ -333,7 +333,7 @@ impl<A, B: ToLiteral> fmt::Display for SetValue<A, B> {
     }
 }
 
-pub type SetClause = Box<HasSet>;
+pub type SetClause = Box<dyn HasSet>;
 
 // LIMIT / OFFSET
 
@@ -392,7 +392,7 @@ pub struct GroupBy<A, B>(pub SqlExpr<A, B>);
 
 impl<A, B> HasGroupBy for GroupBy<A, B> {}
 
-pub type GroupByClause = Box<HasGroupBy>;
+pub type GroupByClause = Box<dyn HasGroupBy>;
 
 impl<A, B> fmt::Display for GroupBy<A, B> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -402,11 +402,11 @@ impl<A, B> fmt::Display for GroupBy<A, B> {
 
 // DISTNCT(ON)
 pub trait HasDistinct: fmt::Display {
-    fn box_clone(&self) -> Box<HasDistinct>;
+    fn box_clone(&self) -> Box<dyn HasDistinct>;
 }
 
-impl Clone for Box<HasDistinct> {
-    fn clone(&self) -> Box<HasDistinct> {
+impl Clone for Box<dyn HasDistinct> {
+    fn clone(&self) -> Box<dyn HasDistinct> {
         self.box_clone()
     }
 }
@@ -416,7 +416,7 @@ where
     A: 'static,
     B: 'static,
 {
-    fn box_clone(&self) -> Box<HasDistinct> {
+    fn box_clone(&self) -> Box<dyn HasDistinct> {
         Box::new((*self).clone())
     }
 }
@@ -429,7 +429,7 @@ pub enum Distinct {
 }
 
 impl HasDistinct for Distinct {
-    fn box_clone(&self) -> Box<HasDistinct> {
+    fn box_clone(&self) -> Box<dyn HasDistinct> {
         Box::new((*self).clone())
     }
 }
@@ -456,9 +456,9 @@ impl fmt::Display for Distinct {
 
 pub type DistinctClause = Distinct;
 
-pub type ValuesClause = Box<HasValues>;
+pub type ValuesClause = Box<dyn HasValues>;
 
-pub type DuplicateClause = Box<HasDuplicateKey>;
+pub type DuplicateClause = Box<dyn HasDuplicateKey>;
 
 pub struct QueryState {
     pub distinct_clause: DistinctClause,

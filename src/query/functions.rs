@@ -3,8 +3,8 @@ use crate::query::UnsafeSqlFunctionArgument;
 use crate::types::{HasValue, ToLiteral};
 use std::rc::Rc;
 
-impl<A, DB: ToLiteral> UnsafeSqlFunctionArgument for Rc<HasValue<A, Output = DB>> {
-    fn to_arg_list(a: &Rc<HasValue<A, Output = DB>>) -> Vec<Rc<HasValue<bool, Output = bool>>> {
+impl<A, DB: ToLiteral> UnsafeSqlFunctionArgument for Rc<dyn HasValue<A, Output = DB>> {
+    fn to_arg_list(a: &Rc<dyn HasValue<A, Output = DB>>) -> Vec<Rc<dyn HasValue<bool, Output = bool>>> {
         vec![never_(a.to_sql())]
     }
 }
@@ -13,7 +13,7 @@ impl<A> UnsafeSqlFunctionArgument for Vec<A>
 where
     A: UnsafeSqlFunctionArgument + Clone,
 {
-    fn to_arg_list(a: &Vec<A>) -> Vec<Rc<HasValue<bool, Output = bool>>> {
+    fn to_arg_list(a: &Vec<A>) -> Vec<Rc<dyn HasValue<bool, Output = bool>>> {
         let mut result = vec![];
 
         for i in a.iter() {
@@ -30,7 +30,7 @@ where
     A: UnsafeSqlFunctionArgument,
     B: UnsafeSqlFunctionArgument,
 {
-    fn to_arg_list(v: &(A, B)) -> Vec<Rc<HasValue<bool, Output = bool>>> {
+    fn to_arg_list(v: &(A, B)) -> Vec<Rc<dyn HasValue<bool, Output = bool>>> {
         let mut a = UnsafeSqlFunctionArgument::to_arg_list(&v.0);
         let mut b = UnsafeSqlFunctionArgument::to_arg_list(&v.1);
         let mut result = vec![];
@@ -48,7 +48,7 @@ where
     B: UnsafeSqlFunctionArgument,
     C: UnsafeSqlFunctionArgument,
 {
-    fn to_arg_list(v: &(A, B, C)) -> Vec<Rc<HasValue<bool, Output = bool>>> {
+    fn to_arg_list(v: &(A, B, C)) -> Vec<Rc<dyn HasValue<bool, Output = bool>>> {
         let mut a = UnsafeSqlFunctionArgument::to_arg_list(&v.0);
         let mut b = UnsafeSqlFunctionArgument::to_arg_list(&v.1);
         let mut c = UnsafeSqlFunctionArgument::to_arg_list(&v.2);
@@ -69,7 +69,7 @@ where
     C: UnsafeSqlFunctionArgument,
     D: UnsafeSqlFunctionArgument,
 {
-    fn to_arg_list(v: &(A, B, C, D)) -> Vec<Rc<HasValue<bool, Output = bool>>> {
+    fn to_arg_list(v: &(A, B, C, D)) -> Vec<Rc<dyn HasValue<bool, Output = bool>>> {
         let mut result = vec![];
 
         let mut a = UnsafeSqlFunctionArgument::to_arg_list(&v.0);

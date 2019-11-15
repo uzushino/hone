@@ -99,7 +99,7 @@ where
         Ok(A::table_name().name())
     }
 
-    fn make_column(&self, values: &Box<HasValues>) -> Result<String, ()> {
+    fn make_column(&self, values: &Box<dyn HasValues>) -> Result<String, ()> {
         let c = values.columns();
 
         if c.is_empty() {
@@ -109,7 +109,7 @@ where
         Ok(c.join(", "))
     }
 
-    fn make_values(&self, clause: &Box<HasValues>) -> Result<String, ()> {
+    fn make_values(&self, clause: &Box<dyn HasValues>) -> Result<String, ()> {
         let values = clause
             .values()
             .iter()

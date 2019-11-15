@@ -21,24 +21,24 @@ impl<A> Query<A> {
         q
     }
 
-    pub fn on_(self, b: Rc<HasValue<bool, Output = bool>>) -> Query<A> {
+    pub fn on_(self, b: Rc<dyn HasValue<bool, Output = bool>>) -> Query<A> {
         self.state.borrow_mut().from_clause.push(FromClause::OnClause(b));
         self
     }
 
-    pub fn where_(self, b: Rc<HasValue<bool, Output = bool>>) -> Query<A> {
+    pub fn where_(self, b: Rc<dyn HasValue<bool, Output = bool>>) -> Query<A> {
         let w = WhereClause::Where(b);
         let mut s = self.state.borrow_mut().where_clause.add(w);
         std::mem::swap(&mut s, &mut self.state.borrow_mut().where_clause);
         self
     }
 
-    pub fn order_(self, b: Vec<Rc<HasOrder>>) -> Query<A> {
+    pub fn order_(self, b: Vec<Rc<dyn HasOrder>>) -> Query<A> {
         self.state.borrow_mut().order_clause = b;
         self
     }
 
-    pub fn group_by_<T, DB: ToLiteral>(self, b: Rc<HasValue<T, Output = DB>>) -> Query<A>
+    pub fn group_by_<T, DB: ToLiteral>(self, b: Rc<dyn HasValue<T, Output = DB>>) -> Query<A>
     where
         T: 'static,
         DB: 'static,
@@ -48,7 +48,7 @@ impl<A> Query<A> {
         self
     }
 
-    pub fn having_(self, b: Rc<HasValue<bool, Output = bool>>) -> Query<A> {
+    pub fn having_(self, b: Rc<dyn HasValue<bool, Output = bool>>) -> Query<A> {
         let w = WhereClause::Where(b);
         let n = self.state.borrow_mut().having_clause.clone();
 
@@ -59,7 +59,7 @@ impl<A> Query<A> {
         self
     }
 
-    pub fn value_<T, DB: ToLiteral>(self, a: Rc<HasValue<T, Output = CL>>, b: Rc<HasValue<T, Output = DB>>) -> Query<A>
+    pub fn value_<T, DB: ToLiteral>(self, a: Rc<dyn HasValue<T, Output = CL>>, b: Rc<dyn HasValue<T, Output = DB>>) -> Query<A>
     where
         T: 'static,
         DB: 'static,
@@ -94,7 +94,7 @@ impl<A> Query<A> {
         self
     }
 
-    pub fn distinct_on_(self, mut a: Vec<Box<HasDistinct>>) -> Query<A> {
+    pub fn distinct_on_(self, mut a: Vec<Box<dyn HasDistinct>>) -> Query<A> {
         {
             let s = &mut *self.state.borrow_mut();
 
@@ -111,7 +111,7 @@ impl<A> Query<A> {
         self
     }
 
-    pub fn dup_key_<S, T>(self, column: Rc<HasValue<S, Output = CL>>, value: Rc<HasValue<S, Output = T>>) -> Query<A>
+    pub fn dup_key_<S, T>(self, column: Rc<dyn HasValue<S, Output = CL>>, value: Rc<dyn HasValue<S, Output = T>>) -> Query<A>
     where
         S: 'static,
         T: 'static,
@@ -421,7 +421,7 @@ where
     }
 }
 
-pub fn set_on(join: &FromClause, on: &Rc<HasValue<bool, Output = bool>>) -> Option<FromClause> {
+pub fn set_on(join: &FromClause, on: &Rc<dyn HasValue<bool, Output = bool>>) -> Option<FromClause> {
     match join {
         FromClause::Join(lhs, _, rhs, on_) => {
             if let Some(f) = set_on(rhs.borrow(), on) {
@@ -441,8 +441,8 @@ pub fn set_on(join: &FromClause, on: &Rc<HasValue<bool, Output = bool>>) -> Opti
 
 pub fn find_imcomplete_and_set_on(
     joins: &[FromClause],
-    on: Rc<HasValue<bool, Output = bool>>,
-) -> Result<Vec<FromClause>, Rc<HasValue<bool, Output = bool>>> {
+    on: &Rc<dyn HasValue<bool, Output = bool>>,
+) -> Result<Vec<FromClause>, Rc<dyn HasValue<bool, Output = bool>>> {
     match joins.split_first() {
         Some((ref join, rest)) => {
             if let Some(f) = set_on(*join, &on) {
@@ -456,19 +456,22 @@ pub fn find_imcomplete_and_set_on(
 
             Ok(v)
         }
-        None => Err(on),
+        None => Err(on.clone()),
     }
 }
 
 pub fn combine_joins(fs: &[FromClause], acc: &mut [FromClause]) -> Result<Vec<FromClause>, ()> {
     match fs.split_first() {
-        Some((&FromClause::OnClause(ref on), rest)) => match find_imcomplete_and_set_on(acc, on.clone()) {
-            Ok(mut acc_) => combine_joins(rest, acc_.as_mut_slice()),
-            Err(_) => Err(()),
-        },
+        Some((FromClause::OnClause(on), rest)) => {
+            match find_imcomplete_and_set_on(acc, on) {
+                Ok(mut acc_) => combine_joins(rest, acc_.as_mut_slice()),
+                Err(_) => Err(()),
+            }
+        }
         Some((head, rest)) => {
             let mut acc = acc.to_vec();
             acc.push(head.clone());
+
             combine_joins(rest, acc.as_mut_slice())
         }
         _ => {

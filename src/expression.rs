@@ -5,7 +5,7 @@ use crate::entity::*;
 use crate::query::*;
 use crate::types::*;
 
-pub fn parens_<'a, A, B, C>(a: A) -> Rc<'a + HasValue<B, Output = C>>
+pub fn parens_<'a, A, B, C>(a: A) -> Rc<dyn 'a + HasValue<B, Output = C>>
 where
     A: Into<String>,
     C: 'a + ToLiteral,
@@ -13,7 +13,7 @@ where
     Rc::new(Raw(NeedParens::Parens, a.into(), std::marker::PhantomData))
 }
 
-pub fn never_<'a, A, B, C>(a: A) -> Rc<'a + HasValue<B, Output = C>>
+pub fn never_<'a, A, B, C>(a: A) -> Rc<dyn 'a + HasValue<B, Output = C>>
 where
     A: Into<String>,
     C: 'a + ToLiteral,
@@ -21,12 +21,12 @@ where
     Rc::new(Raw(NeedParens::Never, a.into(), std::marker::PhantomData))
 }
 
-pub fn star_<A: HasEntityDef>() -> Rc<HasValue<Star, Output = Column>> {
+pub fn star_<A: HasEntityDef>() -> Rc<dyn HasValue<Star, Output = Column>> {
     let t = A::table_name();
     Rc::new(Column::new(format!("{}.{}", t.name(), "*").as_str()))
 }
 
-pub fn eq_<A, B, C>(lhs: Rc<HasValue<A, Output = B>>, rhs: Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>>
+pub fn eq_<A, B, C>(lhs: Rc<dyn HasValue<A, Output = B>>, rhs: Rc<dyn HasValue<A, Output = C>>) -> Rc<dyn HasValue<bool, Output = bool>>
 where
     A: ToLiteral,
     B: ToLiteral,
@@ -37,7 +37,7 @@ where
     parens_(a + " = " + &b)
 }
 
-pub fn not_eq_<A, B, C>(lhs: Rc<HasValue<A, Output = B>>, rhs: Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>>
+pub fn not_eq_<A, B, C>(lhs: Rc<dyn HasValue<A, Output = B>>, rhs: Rc<dyn HasValue<A, Output = C>>) -> Rc<dyn HasValue<bool, Output = bool>>
 where
     A: ToLiteral,
     B: ToLiteral,
@@ -48,37 +48,37 @@ where
     parens_(a + " <> " + &b)
 }
 
-fn if_not_empty_list<A>(v: impl HasValueList<A>, b: bool, e: Rc<HasValue<bool, Output = bool>>) -> Rc<HasValue<bool, Output = bool>> {
+fn if_not_empty_list<A>(v: impl HasValueList<A>, b: bool, e: Rc<dyn HasValue<bool, Output = bool>>) -> Rc<dyn HasValue<bool, Output = bool>> {
     if v.is_empty() {
         return val_(b);
     }
     e
 }
 
-pub fn in_<A, B>(lhs: Rc<HasValue<A, Output = B>>, rhs: impl HasValueList<A>) -> Rc<HasValue<bool, Output = bool>>
+pub fn in_<A, B>(lhs: Rc<dyn HasValue<A, Output = B>>, rhs: impl HasValueList<A>) -> Rc<dyn HasValue<bool, Output = bool>>
 where
     A: ToLiteral,
 {
-    let comp: Rc<HasValue<A, Output = i32>> = parens_(rhs.to_string());
+    let comp: Rc<dyn HasValue<A, Output = i32>> = parens_(rhs.to_string());
     if_not_empty_list(rhs, false, binop_(" IN ", &lhs, &comp))
 }
 
-pub fn not_in_<A, B>(lhs: Rc<HasValue<A, Output = B>>, rhs: impl HasValueList<A>) -> Rc<HasValue<bool, Output = bool>>
+pub fn not_in_<A, B>(lhs: Rc<dyn HasValue<A, Output = B>>, rhs: impl HasValueList<A>) -> Rc<dyn HasValue<bool, Output = bool>>
 where
     A: ToLiteral,
 {
-    let comp: Rc<HasValue<A, Output = i32>> = parens_(rhs.to_string());
+    let comp: Rc<dyn HasValue<A, Output = i32>> = parens_(rhs.to_string());
     if_not_empty_list(rhs, false, binop_(" NOT IN ", &lhs, &comp))
 }
 
-pub fn val_<'a, A>(typ: A) -> Rc<'a + HasValue<A, Output = A>>
+pub fn val_<'a, A>(typ: A) -> Rc<dyn 'a + HasValue<A, Output = A>>
 where
     A: 'a + fmt::Display + ToLiteral,
 {
     never_(typ.to_string())
 }
 
-pub fn val_list_<'a, A, B>(vs: &[Rc<'a + HasValue<A, Output = B>>]) -> impl HasValueList<A>
+pub fn val_list_<'a, A, B>(vs: &[Rc<dyn 'a + HasValue<A, Output = B>>]) -> impl HasValueList<A>
 where
     A: 'a + fmt::Display,
     B: 'static + ToLiteral,
@@ -93,27 +93,27 @@ where
     List::NonEmpty(Box::new(v)) as List<A, B>
 }
 
-pub fn gt_<A, B, C>(lhs: &Rc<HasValue<A, Output = B>>, rhs: &Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>> {
+pub fn gt_<A, B, C>(lhs: &Rc<dyn HasValue<A, Output = B>>, rhs: &Rc<dyn HasValue<A, Output = C>>) -> Rc<dyn HasValue<bool, Output = bool>> {
     binop_(" > ", lhs, rhs)
 }
 
-pub fn gte_<A, B, C>(lhs: &Rc<HasValue<A, Output = B>>, rhs: &Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>> {
+pub fn gte_<A, B, C>(lhs: &Rc<dyn HasValue<A, Output = B>>, rhs: &Rc<dyn HasValue<A, Output = C>>) -> Rc<dyn HasValue<bool, Output = bool>> {
     binop_(" >= ", lhs, rhs)
 }
 
-pub fn lt_<A, B, C>(lhs: &Rc<HasValue<A, Output = B>>, rhs: &Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>> {
+pub fn lt_<A, B, C>(lhs: &Rc<dyn HasValue<A, Output = B>>, rhs: &Rc<dyn HasValue<A, Output = C>>) -> Rc<dyn HasValue<bool, Output = bool>> {
     binop_(" < ", lhs, rhs)
 }
 
-pub fn lte_<A, B, C>(lhs: &Rc<HasValue<A, Output = B>>, rhs: &Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>> {
+pub fn lte_<A, B, C>(lhs: &Rc<dyn HasValue<A, Output = B>>, rhs: &Rc<dyn HasValue<A, Output = C>>) -> Rc<dyn HasValue<bool, Output = bool>> {
     binop_(" <= ", lhs, rhs)
 }
 
-pub fn re_<A, B, C>(lhs: &Rc<HasValue<A, Output = B>>, rhs: &Rc<HasValue<A, Output = C>>) -> Rc<HasValue<bool, Output = bool>> {
+pub fn re_<A, B, C>(lhs: &Rc<dyn HasValue<A, Output = B>>, rhs: &Rc<dyn HasValue<A, Output = C>>) -> Rc<dyn HasValue<bool, Output = bool>> {
     binop_(" ~ ", lhs, rhs)
 }
 
-pub fn and_<'a, A, B, C>(lhs: &Rc<HasValue<A, Output = B>>, rhs: &Rc<HasValue<A, Output = C>>) -> Rc<'a + HasValue<A, Output = C>>
+pub fn and_<'a, A, B, C>(lhs: &Rc<dyn HasValue<A, Output = B>>, rhs: &Rc<dyn HasValue<A, Output = C>>) -> Rc<dyn 'a + HasValue<A, Output = C>>
 where
     B: ToLiteral,
     C: 'a + ToLiteral,
@@ -121,7 +121,7 @@ where
     binop_(" AND ", lhs, rhs)
 }
 
-pub fn or_<'a, A, B, C>(lhs: &Rc<HasValue<A, Output = B>>, rhs: &Rc<HasValue<A, Output = C>>) -> Rc<'a + HasValue<A, Output = C>>
+pub fn or_<'a, A, B, C>(lhs: &Rc<dyn HasValue<A, Output = B>>, rhs: &Rc<dyn HasValue<A, Output = C>>) -> Rc<dyn 'a + HasValue<A, Output = C>>
 where
     B: ToLiteral,
     C: 'a + ToLiteral,
@@ -129,7 +129,7 @@ where
     binop_(" OR ", lhs, rhs)
 }
 
-pub fn binop_<'a, A, B, C, D, E>(op: &str, lhs: &Rc<HasValue<A, Output = B>>, rhs: &Rc<HasValue<A, Output = C>>) -> Rc<'a + HasValue<D, Output = E>>
+pub fn binop_<'a, A, B, C, D, E>(op: &str, lhs: &Rc<dyn HasValue<A, Output = B>>, rhs: &Rc<dyn HasValue<A, Output = C>>) -> Rc<dyn 'a + HasValue<D, Output = E>>
 where
     E: 'a + ToLiteral,
 {
@@ -140,10 +140,10 @@ where
 }
 
 pub fn between_<A, B, C, D>(
-    comp: Rc<HasValue<A, Output = B>>,
-    lhs: Rc<HasValue<A, Output = C>>,
-    rhs: Rc<HasValue<A, Output = D>>,
-) -> Rc<HasValue<bool, Output = bool>>
+    comp: Rc<dyn HasValue<A, Output = B>>,
+    lhs: Rc<dyn HasValue<A, Output = C>>,
+    rhs: Rc<dyn HasValue<A, Output = D>>,
+) -> Rc<dyn HasValue<bool, Output = bool>>
 where
     B: ToLiteral,
     C: ToLiteral,
@@ -156,21 +156,21 @@ where
     parens_(e + " BETWEEN " + &a + " TO " + &b)
 }
 
-pub fn is_null_<A, B>(a: Rc<HasValue<A, Output = B>>) -> Rc<HasValue<bool, Output = bool>>
+pub fn is_null_<A, B>(a: Rc<dyn HasValue<A, Output = B>>) -> Rc<dyn HasValue<bool, Output = bool>>
 where
     B: ToLiteral,
 {
     parens_(a.to_sql() + " IS NULL")
 }
 
-pub fn is_not_null_<A, B>(a: Rc<HasValue<A, Output = B>>) -> Rc<HasValue<bool, Output = bool>>
+pub fn is_not_null_<A, B>(a: Rc<dyn HasValue<A, Output = B>>) -> Rc<dyn HasValue<bool, Output = bool>>
 where
     B: ToLiteral,
 {
     parens_(a.to_sql() + " IS NOT NULL")
 }
 
-pub fn asc_<'a, A, B>(exp: Rc<HasValue<A, Output = B>>) -> Rc<'a + HasOrder>
+pub fn asc_<'a, A, B>(exp: Rc<dyn HasValue<A, Output = B>>) -> Rc<dyn 'a + HasOrder>
 where
     A: 'a + fmt::Display,
     B: 'a + ToLiteral,
@@ -178,7 +178,7 @@ where
     Rc::new(OrderBy(OrderByType::Asc, exp))
 }
 
-pub fn desc_<'a, A, B>(exp: Rc<HasValue<A, Output = B>>) -> Rc<'a + HasOrder>
+pub fn desc_<'a, A, B>(exp: Rc<dyn HasValue<A, Output = B>>) -> Rc<dyn 'a + HasOrder>
 where
     A: 'a + fmt::Display,
     B: 'a + ToLiteral,
@@ -186,7 +186,7 @@ where
     Rc::new(OrderBy(OrderByType::Desc, exp))
 }
 
-pub fn exists_<'a, A, B>(q: Query<Rc<HasValue<A, Output = B>>>) -> Rc<HasValue<bool, Output = bool>>
+pub fn exists_<'a, A, B>(q: Query<Rc<dyn HasValue<A, Output = B>>>) -> Rc<dyn HasValue<bool, Output = bool>>
 where
     A: fmt::Display,
     B: 'static + ToLiteral,
@@ -194,7 +194,7 @@ where
     unsafe_sql_function("EXISTS ", sub_(q), NeedParens::Never)
 }
 
-pub fn not_exists_<'a, A, B>(q: Query<Rc<HasValue<A, Output = B>>>) -> Rc<'a + HasValue<bool, Output = bool>>
+pub fn not_exists_<'a, A, B>(q: Query<Rc<dyn HasValue<A, Output = B>>>) -> Rc<dyn 'a + HasValue<bool, Output = bool>>
 where
     A: 'a + fmt::Display,
     B: 'static + ToLiteral,
@@ -202,7 +202,7 @@ where
     unsafe_sql_function("NOT EXISTS ", sub_(q), NeedParens::Never)
 }
 
-pub fn sub_<'a, A, B>(q: Query<Rc<HasValue<A, Output = B>>>) -> Rc<'a + HasValue<A, Output = B>>
+pub fn sub_<'a, A, B>(q: Query<Rc<dyn HasValue<A, Output = B>>>) -> Rc<dyn 'a + HasValue<A, Output = B>>
 where
     A: fmt::Display,
     B: 'a + ToLiteral,
@@ -210,7 +210,7 @@ where
     parens_(select(q).to_sql())
 }
 
-fn unsafe_sql_function<'a, A, B, C>(name: &str, arg: A, parens: NeedParens) -> Rc<'a + HasValue<B, Output = C>>
+fn unsafe_sql_function<'a, A, B, C>(name: &str, arg: A, parens: NeedParens) -> Rc<dyn 'a + HasValue<B, Output = C>>
 where
     A: UnsafeSqlFunctionArgument,
     C: 'a + ToLiteral,
@@ -226,30 +226,30 @@ where
     never_(expr)
 }
 
-pub fn unsafe_sql_value<'a, A, B>(name: &str) -> Rc<'a + HasValue<A, Output = B>>
+pub fn unsafe_sql_value<'a, A, B>(name: &str) -> Rc<dyn 'a + HasValue<A, Output = B>>
 where
     B: 'a + ToLiteral,
 {
     never_(name)
 }
 
-pub fn random_() -> Rc<HasValue<i32, Output = i32>> {
+pub fn random_() -> Rc<dyn HasValue<i32, Output = i32>> {
     unsafe_sql_value("RANDOM()")
 }
 
-pub fn count_rows_() -> Rc<HasValue<i32, Output = i32>> {
+pub fn count_rows_() -> Rc<dyn HasValue<i32, Output = i32>> {
     unsafe_sql_value("COUNT(*)")
 }
 
-pub fn count_columns_<A>(a: Rc<HasValue<A, Output = Column>>) -> Rc<HasValue<i32, Output = i32>> {
+pub fn count_columns_<A>(a: Rc<dyn HasValue<A, Output = Column>>) -> Rc<dyn HasValue<i32, Output = i32>> {
     unsafe_sql_function("COUNT", a, NeedParens::Parens)
 }
 
-pub fn not_<A, B>(a: Rc<HasValue<A, Output = B>>) -> Rc<HasValue<bool, Output = bool>> {
+pub fn not_<A, B>(a: Rc<dyn HasValue<A, Output = B>>) -> Rc<dyn HasValue<bool, Output = bool>> {
     never_("NOT ".to_string() + &a.to_sql())
 }
 
-pub fn set_<'a, A, B>(lhs: Rc<HasValue<A, Output = Column>>, rhs: Rc<HasValue<A, Output = B>>) -> Rc<'a + HasSet>
+pub fn set_<'a, A, B>(lhs: Rc<dyn HasValue<A, Output = Column>>, rhs: Rc<dyn HasValue<A, Output = B>>) -> Rc<dyn 'a + HasSet>
 where
     A: 'a + fmt::Display,
     B: 'a + ToLiteral,
@@ -257,51 +257,51 @@ where
     Rc::new(SetValue(lhs, rhs))
 }
 
-pub fn sum_<'a, A>(a: A) -> Rc<'a + HasValue<u32, Output = Column>>
+pub fn sum_<'a, A>(a: A) -> Rc<dyn 'a + HasValue<u32, Output = Column>>
 where
     A: 'a + UnsafeSqlFunctionArgument,
 {
     unsafe_sql_function("SUM", a, NeedParens::Parens)
 }
 
-pub fn count_<'a, A>(a: A) -> Rc<'a + HasValue<u32, Output = Column>>
+pub fn count_<'a, A>(a: A) -> Rc<dyn 'a + HasValue<u32, Output = Column>>
 where
     A: 'a + UnsafeSqlFunctionArgument,
 {
     unsafe_sql_function("COUNT", a, NeedParens::Parens)
 }
 
-pub fn avg_<'a, A>(a: A) -> Rc<'a + HasValue<f32, Output = Column>>
+pub fn avg_<'a, A>(a: A) -> Rc<dyn 'a + HasValue<f32, Output = Column>>
 where
     A: 'a + UnsafeSqlFunctionArgument,
 {
     unsafe_sql_function("AVG", a, NeedParens::Parens)
 }
 
-pub fn round_<'a, A>(a: A) -> Rc<'a + HasValue<f32, Output = Column>>
+pub fn round_<'a, A>(a: A) -> Rc<dyn 'a + HasValue<f32, Output = Column>>
 where
     A: 'a + UnsafeSqlFunctionArgument,
 {
     unsafe_sql_function("ROUND", a, NeedParens::Parens)
 }
 
-pub fn like_<'a, A, B>(lhs: Rc<HasValue<A, Output = B>>, rhs: Rc<HasValue<String, Output = String>>) -> Rc<'a + HasValue<bool, Output = String>>
+pub fn like_<'a, A, B>(lhs: Rc<dyn HasValue<A, Output = B>>, rhs: Rc<dyn HasValue<String, Output = String>>) -> Rc<dyn 'a + HasValue<bool, Output = String>>
 where
     B: ToLiteral,
 {
-    let op: Rc<HasValue<A, Output = B>> = never_(lhs.to_sql());
+    let op: Rc<dyn HasValue<A, Output = B>> = never_(lhs.to_sql());
     parens_(op.to_sql() + " LIKE " + &rhs.to_sql())
 }
 
-pub fn ilike_<'a, A, B>(lhs: Rc<HasValue<A, Output = B>>, rhs: Rc<HasValue<String, Output = String>>) -> Rc<'a + HasValue<bool, Output = String>>
+pub fn ilike_<'a, A, B>(lhs: Rc<dyn HasValue<A, Output = B>>, rhs: Rc<dyn HasValue<String, Output = String>>) -> Rc<dyn 'a + HasValue<bool, Output = String>>
 where
     B: ToLiteral,
 {
-    let op: Rc<HasValue<A, Output = B>> = never_(lhs.to_sql());
+    let op: Rc<dyn HasValue<A, Output = B>> = never_(lhs.to_sql());
     parens_(op.to_sql() + " ILIKE " + &rhs.to_sql())
 }
 
-pub fn don_<A, B>(a: Rc<HasValue<A, Output = B>>) -> Box<HasDistinct>
+pub fn don_<A, B>(a: Rc<dyn HasValue<A, Output = B>>) -> Box<dyn HasDistinct>
 where
     A: 'static,
     B: 'static,
@@ -310,9 +310,9 @@ where
 }
 
 pub fn case_<'a, A, B, C>(
-    when: &[(Rc<HasValue<bool, Output = bool>>, Rc<HasValue<A, Output = B>>)],
-    expr: Rc<HasValue<A, Output = C>>,
-) -> Rc<'a + HasValue<A, Output = C>>
+    when: &[(Rc<dyn HasValue<bool, Output = bool>>, Rc<dyn HasValue<A, Output = B>>)],
+    expr: Rc<dyn HasValue<A, Output = C>>,
+) -> Rc<dyn 'a + HasValue<A, Output = C>>
 where
     A: 'a + fmt::Display,
     B: 'a + ToLiteral,
@@ -322,16 +322,16 @@ where
     parens_(s)
 }
 
-fn map_when<A, B>(when: &[(Rc<HasValue<bool, Output = bool>>, Rc<HasValue<A, Output = B>>)]) -> String {
+fn map_when<A, B>(when: &[(Rc<dyn HasValue<bool, Output = bool>>, Rc<dyn HasValue<A, Output = B>>)]) -> String {
     when.iter()
         .fold(String::default(), |acc, (a, b)| acc + " WHEN " + &a.to_sql() + " THEN " + &b.to_sql())
 }
 
 pub fn when_<'a, A, B>(
-    cond: Rc<HasValue<bool, Output = bool>>,
+    cond: Rc<dyn HasValue<bool, Output = bool>>,
     _: (),
-    expr: Rc<HasValue<A, Output = B>>,
-) -> (Rc<HasValue<bool, Output = bool>>, Rc<HasValue<A, Output = B>>)
+    expr: Rc<dyn HasValue<A, Output = B>>,
+) -> (Rc<dyn HasValue<bool, Output = bool>>, Rc<dyn HasValue<A, Output = B>>)
 where
     B: 'a + ToLiteral,
 {
@@ -342,15 +342,15 @@ pub fn then_() -> () {
     ()
 }
 
-pub fn else_<A, B>(a: Rc<HasValue<A, Output = B>>) -> Rc<HasValue<A, Output = B>> {
+pub fn else_<A, B>(a: Rc<dyn HasValue<A, Output = B>>) -> Rc<dyn HasValue<A, Output = B>> {
     a
 }
 
 pub fn if_<'a, A, B, C>(
-    cond: Rc<HasValue<bool, Output = bool>>,
-    expr: Rc<HasValue<A, Output = B>>,
-    _else: Rc<HasValue<A, Output = C>>,
-) -> Rc<'a + HasValue<A, Output = B>>
+    cond: Rc<dyn HasValue<bool, Output = bool>>,
+    expr: Rc<dyn HasValue<A, Output = B>>,
+    _else: Rc<dyn HasValue<A, Output = C>>,
+) -> Rc<dyn 'a + HasValue<A, Output = B>>
 where
     A: 'a + fmt::Display,
     B: 'a + ToLiteral,
@@ -359,36 +359,36 @@ where
     parens_(s)
 }
 
-pub fn rank_() -> Rc<HasValue<u32, Output=u32>> {
+pub fn rank_() -> Rc<dyn HasValue<u32, Output=u32>> {
     never_("RANK()")
 }
 
-pub fn row_number_() -> Rc<HasValue<u32, Output=u32>> {
+pub fn row_number_() -> Rc<dyn HasValue<u32, Output=u32>> {
     never_("ROW_NUMBER()")
 }
 
 pub fn lag_<'a, A, B, C>(
-    column: Rc<HasValue<A, Output = Column>>,
-    offset: Option<Rc<HasValue<u32, Output = u32>>>,
-    default: Option<Rc<HasValue<B, Output = C>>>
-) -> Rc<'a + HasValue<A, Output=C>> where C: 'a + ToLiteral {
+    column: Rc<dyn HasValue<A, Output = Column>>,
+    offset: Option<Rc<dyn HasValue<u32, Output = u32>>>,
+    default: Option<Rc<dyn HasValue<B, Output = C>>>
+) -> Rc<dyn 'a + HasValue<A, Output=C>> where C: 'a + ToLiteral {
     lag_lead_("lag", column, offset, default)
 }
 
 pub fn lead_<'a, A, B, C>(
-    column: Rc<HasValue<A, Output = Column>>,
-    offset: Option<Rc<HasValue<u32, Output = u32>>>,
-    default: Option<Rc<HasValue<B, Output = C>>>
-) -> Rc<'a + HasValue<A, Output=C>> where C: 'a + ToLiteral {
+    column: Rc<dyn HasValue<A, Output = Column>>,
+    offset: Option<Rc<dyn HasValue<u32, Output = u32>>>,
+    default: Option<Rc<dyn HasValue<B, Output = C>>>
+) -> Rc<dyn 'a + HasValue<A, Output=C>> where C: 'a + ToLiteral {
     lag_lead_("lead", column, offset, default)
 }
 
 fn lag_lead_<'a, A, B, C>(
     f: &str,
-    column: Rc<HasValue<A, Output = Column>>,
-    offset: Option<Rc<HasValue<u32, Output = u32>>>,
-    default: Option<Rc<HasValue<B, Output = C>>>
-) -> Rc<'a + HasValue<A, Output=C>> where C: 'a + ToLiteral {
+    column: Rc<dyn HasValue<A, Output = Column>>,
+    offset: Option<Rc<dyn HasValue<u32, Output = u32>>>,
+    default: Option<Rc<dyn HasValue<B, Output = C>>>
+) -> Rc<dyn 'a + HasValue<A, Output=C>> where C: 'a + ToLiteral {
     let ret = match (column, offset, default) {
         (n, Some(a), Some(b)) => format!("{}({}, {}, {})", f, n.to_sql(), a.to_sql(), b.to_sql()),
         (n, Some(a), None) => format!("{}({}, {})", f, n.to_sql(), a.to_sql()),
@@ -399,15 +399,15 @@ fn lag_lead_<'a, A, B, C>(
 }
 
 pub fn partition_by_<'a, A, B, C, D>(
-    aggregate: Rc<HasValue<A, Output = B>>,
-    partition: Rc<HasValue<C, Output = D>>,
-    order: Option<Rc<HasOrder>>,
-) -> Rc<'a + HasValue<A, Output=B>> where A: 'a + fmt::Display, B: 'a + ToLiteral, D: 'a + ToLiteral {
+    aggregate: Rc<dyn HasValue<A, Output = B>>,
+    partition: Rc<dyn HasValue<C, Output = D>>,
+    order: Option<Rc<dyn HasOrder>>,
+) -> Rc<dyn 'a + HasValue<A, Output=B>> where A: 'a + fmt::Display, B: 'a + ToLiteral, D: 'a + ToLiteral {
     let s = aggregate.to_sql() + " OVER (" + &in_partition(partition, order) + ")";
     never_(s)
 }
 
-fn in_partition<A, B>(partition: Rc<HasValue<A, Output = B>>, order: Option<Rc<HasOrder>>) -> String {
+fn in_partition<A, B>(partition: Rc<dyn HasValue<A, Output = B>>, order: Option<Rc<dyn HasOrder>>) -> String {
     let mut s = "PARTITION BY ".to_string() + &partition.to_sql();
     if let Some(o) = order {
        s = s + " ORDER BY " + &o.to_string();

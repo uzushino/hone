@@ -7,7 +7,7 @@ pub trait Column {
     fn col_count() -> usize;
 }
 
-impl<A, B: ToLiteral> Column for Rc<HasValue<A, Output = B>> {
+impl<A, B: ToLiteral> Column for Rc<dyn HasValue<A, Output = B>> {
     fn cols(&self) -> String {
         self.to_sql()
     }
